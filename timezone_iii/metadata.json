@@ -1,0 +1,47 @@
+{
+  "name": "timezone_iii",
+  "description": "Configures the timezone for node",
+  "long_description": "[![Chef cookbook](https://img.shields.io/cookbook/v/timezone_iii.svg)]()\n[![Code Climate](https://codeclimate.com/github/Stromweld/timezone_iii/badges/gpa.svg)](https://codeclimate.com/github/Stromweld/timezone_iii)\n[![Issue Count](https://codeclimate.com/github/Stromweld/timezone_iii/badges/issue_count.svg)](https://codeclimate.com/github/Stromweld/timezone_iii)\n\n# timezone_iii\n\nThe Timezone III cookbook contains recipes for installing the latest tzdata (a.k.a. IANA or Olson) timezone database and setting the timezone on your system.  It is a fork of the [timezone-ii cookbook by Lawrence Gilbert.](https://supermarket.chef.io/cookbooks/timezone-ii).\n\n## Requirements\n\nAmazon Linux should use chef-client 13. The default recipe picks the correct recipe to run based on node['platform_family']. In chef-client 13 ohai assigns amazon as it's own platform_family instead of rhel in previous chef-clients.\n\nThis cookbook is known to work with:\n\n* Amazon Linux\n* CentOS and RHEL\n* Debian\n* Fedora\n* Gentoo\n* PLD Linux\n* Ubuntu\n* Windows\n\nIt _should_ work with any OS that uses the IANA/Olson timezone database and stores local timezone data in /etc/localtime (the only OS I know of that does _not_ do this is MS Windows).  However, some OSs not mentioned above have their own system utility for setting the timezone, and this may overwrite the changes made by this cookbook.\n\n## Attributes\n\n| Attribute | Default | Comment |\n| -------------  | -------------  | -------------  |\n| ['timezone_iii']['timezone'] | 'value_for_platform_family(debian: 'Etc/UTC', default: 'UTC')' | String, timezone to set OS to |\n| ['timezone_iii']['clock_utc'] | `nil` | String(true,false), UTC setting in /etc/sysconfig/clock (RHEL family only) |\n| ['timezone_iii']['tzdata_dir'] | '/usr/share/zoneinfo' | String, the path to the root of the tzdata files; the default value is for most known distributions of Linux |\n| ['timezone_iii']['localtime_path'] | '/etc/localtime' | String, the path to the file used by the kernel to read the local timezone's settings; the default works for Linux and other *ix variants |\n| ['timezone_iii']['use_symlink'] | false | Boolean, whether to use a symlink into the tzdata tree rather than make a copy of the appropriate timezone data file (amazon and linux_generic recipes only) |\n\n## Usage\n\nSet the ['timezone_iii']['timezone'] attribute to your desired timezone and include the \"timezone_iii\" recipe in your node's run list:\n\n    {\n      \"name\": \"my_node\",\n      \"timezone_iii\" {\n        \"timezone\": \"Africa/Timbuktu\"\n      },\n      \"run_list\": [\n        \"recipe[timezone_iii]\"\n      ]\n    }\n\n### timezone_iii::default\n\nThe default recipe will first install or upgrade the IANA/Olson timezone database package for your OS (`timezone-data` on Gentoo, `tzdata` on all other linux platforms). Then it will call one of the recipes below according to your node's platform.\n\n### timezone_iii::amazon\n\nThis changes the timezone on Amazon Linux by:\n\n1. including the \"timezone_iii::linux_generic\" recipe then;\n2. including the \"timezone_iii::rhel\" recipe.\n\nRefer to the sections for those recipes for details.\n\n### timezone_iii::debian\n\nThis changes the timezone on Debian-family platforms by:\n\n1. writing the value of `['timezone_iii']['timezone']` to `/etc/timezone` then;\n2. calling `dpkg-reconfigure -f noninteractive tzdata`;\n3. if `dpkg-reconfigure` amends the timezone value (e.g. by changing \"UTC\" to \"Etc/UTC\" or \"EET\" to \"Europe/Helsinki\"), it logs a warning.\n\nOnly the `['timezone_iii']['timezone']` attribute is used; all others are ignored.\n\n### timezone_iii::linux_generic\n\nThis changes the time on all OSs without a more specific recipe. It assumes that the kernel gets data on the local timezone from `/etc/localtime`. (This is true for FreeBSD as well as Linux, so \"linux_generic\" is a bit of a misnomer.)\n\nWhat this recipe does:\n\n1. verifies that the value of `['timezone_iii']['timezone']` corresponds with a timezone data file under the directory specified in `timezone.tzdata_dir` (default:`/usr/share/zoneinfo`), then;\n2. creates a copy of or symbolic link to that data file in the path specified in `timezone.localtime_path` (default: `/etc/localtime`).\n\nThe truthiness of `timezone.use_symlink` (default: `false`) determines whether a symlink or a copy is made.\n\n### timezone_iii::pld\n\nThis changes the timezone on PLD Linux. It writes the appropriate timezone configuration file, making use of the `['timezone_iii']['timezone']` and `['timezone_iii']['tzdata_dir']` attributes. Other attributes are ignored.\n\n### timezone_iii::rhel\n\nThis changes the timezone on RedHat Enterprise Linux (RHEL) and RHEL-family platforms such as CentOS.  It is intended only for versions prior to 7.0, but should the recipe be called on a system with version 7.0 or newer, it will automatically include the \"timezone_iii::rhel7\" recipe and do nothing else.\n\nThis recipe updates the `/etc/sysconfig/clock` file with the value of the `['timezone_iii']['timezone']` attribute, then calls `tzdata-update` (if available) to change the timezone. All node attributes other than `['timezone_iii']['timezone']` are ignored.\n\n### timezone_iii::rhel7\n\nThis changes the timezone on EL 7 platforms by calling `timedatectl set-timezone` with the value of `['timezone_iii']['timezone']`.\n\nOnly the `['timezone_iii']['timezone']` attribute is used; all others are ignored.\n\n### timezone_iii::windows\n\nThis changes the timezone on windows platforms by calling `tzutil.exe` with the value of `['timezone_iii']['timezone']`. To get a list of timezones to use with windows you can run the command `tzutil.exe /l | more` on the command line and use the standard name under the offset info.\n\nOnly the `['timezone_iii']['timezone']` attribute is used; all others are ignored.\n\n## Contributing\n\n1. Fork the [repository on GitHub](https://github.com/Stromweld/timezone_iii);\n2. Write your change;\n3. If at all possible, write tests for your change and ensure they all pass;\n4. Submit a pull request using GitHub.\n\n## Acknowledgements\n\nThanks to:\n\n* Larry Gilbert, for launching the timezone-ii cookbook\n* James Harton, for launching the timezone cookbook\n* Elan Ruusamäe, for PLD support\n* Mike Conigliaro, for bringing testing up to date\n* \"fraD00r4\", for RHEL/CentOS support\n\n## License and Authors\n\n* Copyright © 2010 James Harton <james@sociable.co.nz>\n* Copyright © 2013-2015 Lawrence Leonard Gilbert <larry@L2G.to>\n* Copyright © 2013 Elan Ruusamäe <glen@delfi.ee>\n* Copyright © 2013 fraD00r4 <frad00r4@gmail.com>\n* Copyright © 2017 Corey Hemminger <hemminger@hotmail.com>\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use\nthis file except in compliance with the License.  You may obtain a copy of the\nLicense at\n\n     http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software distributed\nunder the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR\nCONDITIONS OF ANY KIND, either express or implied.  See the License for the\nspecific language governing permissions and limitations under the License.\n",
+  "maintainer": "Corey Hemminger",
+  "maintainer_email": "hemminger@hotmail.com",
+  "license": "Apache-2.0",
+  "platforms": {
+    "amazon": ">= 0.0.0",
+    "centos": ">= 0.0.0",
+    "debian": ">= 0.0.0",
+    "fedora": ">= 0.0.0",
+    "gentoo": ">= 0.0.0",
+    "ubuntu": ">= 0.0.0",
+    "pld": ">= 0.0.0",
+    "redhat": ">= 0.0.0",
+    "suse": ">= 0.0.0",
+    "windows": ">= 0.0.0"
+  },
+  "dependencies": {
+
+  },
+  "providing": {
+
+  },
+  "attributes": {
+
+  },
+  "recipes": {
+
+  },
+  "version": "1.1.6",
+  "source_url": "https://github.com/Stromweld/timezone_iii",
+  "issues_url": "https://github.com/Stromweld/timezone_iii/issues",
+  "privacy": false,
+  "chef_versions": [
+    [
+      ">= 12.1"
+    ]
+  ],
+  "ohai_versions": [
+
+  ],
+  "gems": [
+
+  ]
+}
