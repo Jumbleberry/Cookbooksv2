@@ -1,10 +1,5 @@
 include_recipe "configure"
 
-# Instance is on AWS
-if node.attribute?(:ec2)
-
-end
-
 if node['environment'] != "production"
     include_recipe cookbook_name + "::trust"
 end
@@ -16,5 +11,10 @@ include_recipe cookbook_name + "::kernel"
 include_recipe cookbook_name + "::filesystem"
 include_recipe cookbook_name + "::redis"
 include_recipe cookbook_name + "::consul"
+include_recipe cookbook_name + "::vault"
+include_recipe cookbook_name + "::openresty"
 
-include_recipe 'hashicorp-vault::default'
+# Instance is on AWS
+if node.attribute?(:ec2)
+
+end
