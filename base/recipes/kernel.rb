@@ -4,3 +4,8 @@ node[cookbook_name]['kernel'].each_pair do |property, value|
         value value
     end
 end
+
+# Disable transparent huge pages
+execute "disable-thp" do
+    command "echo madvise | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  end
