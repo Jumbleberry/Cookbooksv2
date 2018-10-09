@@ -24,3 +24,10 @@ default['dnsmasq']['dns_options'] = [
   'domain-needed',
   'bogus-priv'
 ]
+
+# default['openresty']['source']['version']     = '1.11.2.5'
+# default['openresty']['source']['file_prefix'] = 'openresty'
+# default['openresty']['source']['checksum']    = 'f8cc203e8c0fcd69676f65506a3417097fc445f57820aa8e92d7888d8ad657b9'
+
+default['openresty']['service']['restart_on_update'] = false
+default['openresty']['service']['start_on_boot'] = false
