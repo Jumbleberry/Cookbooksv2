@@ -13,6 +13,7 @@ include_recipe 'dnsmasq'
 
 include_recipe cookbook_name + "::packages"
 include_recipe cookbook_name + "::kernel"
+include_recipe cookbook_name + "::filesystem"
 include_recipe cookbook_name + "::redis"
 include_recipe cookbook_name + "::consul"
 
