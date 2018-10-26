@@ -1,1 +1,1 @@
-include_recipe 'openresty::default'
+include_recipe "openresty::default"
