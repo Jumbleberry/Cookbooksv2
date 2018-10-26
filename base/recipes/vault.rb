@@ -1,1 +1,1 @@
-include_recipe 'hashicorp-vault::default'
+include_recipe "hashicorp-vault::default"
