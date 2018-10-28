@@ -1,4 +1,9 @@
-include_recipe "configure"
+apt_update "update" do
+  frequency 86400
+  action :periodic
+end
+
+include_recipe "configure::base"
 
 if node["environment"] != "production"
   include_recipe cookbook_name + "::trust"
@@ -13,6 +18,7 @@ include_recipe cookbook_name + "::redis"
 include_recipe cookbook_name + "::consul"
 include_recipe cookbook_name + "::vault"
 include_recipe cookbook_name + "::openresty"
+include_recipe cookbook_name + "::php"
 include_recipe cookbook_name + "::phalcon"
 
 # Instance is on AWS
