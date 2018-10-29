@@ -1,19 +1,9 @@
 # we're running on a vagrant machine - make it easier to manage /var/www/
-if node.attribute?(:ec2)
-
-  # Make sure directory exists
-  directory "/var/www/" do
-    owner node["user"]
-    group node["user"]
-    recursive true
-    action :create
-  end
-
-  # On vagrant, use symlinks to home
-else
+if !node.attribute?(:ec2)
 
   # Delete dir if its not a symlink
-  directory "/var/www" do
+  directory "www-data-non-symlink" do
+    path "/var/www"
     recursive true
     action :delete
     not_if { File.symlink?("/var/www") }

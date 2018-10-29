@@ -1,6 +1,6 @@
 execute "curl -s #{node["phalcon"]["install_script"]} | sudo bash"
 
-package "#{node["php"]["version"]}-phalcon" do
+package "php#{node["php"]["version"]}-phalcon" do
   action :install
   version node["phalcon"]["version"]
 end

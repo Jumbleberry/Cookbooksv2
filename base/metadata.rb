@@ -7,11 +7,10 @@ version "0.1.0"
 chef_version ">= 12.1" if respond_to?(:chef_version)
 
 depends "consul"
-depends "configure"
+depends "consul-template"
 depends "trusted_certificate"
 depends "sysctl"
 depends "redisio"
 depends "dnsmasq"
 depends "hashicorp-vault"
 depends "openresty"
-depends "phalcon"

@@ -1,0 +1,20 @@
+description "Consul Template Service (Upstart)"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on runlevel [06]
+
+kill timeout 20
+
+setuid <%= @service_user %>
+setgid <%= @service_group %>
+
+<%- @environment.each do |key, val| -%>
+env <%= key %>="<%= val %>"
+<%- end -%>
+env CONSUL_TEMPLATE_LOG=<%= @loglevel %>
+env GOMAXPROCS=${GOMAXPROCS}
+
+exec <%= @command %> <%= @options %>
+
+respawn
+respawn limit 10 10
