@@ -1,0 +1,29 @@
+# This is a configuration file for /etc/init.d/gearman-job-server; it allows
+# you to perform common modifications to the behavior of the gearman-job-server
+# daemon startup without editing the init script (and thus getting prompted by
+# dpkg on upgrades).  We all love dpkg prompts.
+
+# Examples ( from http://gearman.org/index.php?id=manual:job_server )
+#
+# Use drizzle as persistent queue store
+# PARAMS="-q libdrizzle --libdrizzle-db=some_db --libdrizzle-table=gearman_queue"
+#
+# Use mysql as persistent queue store
+# PARAMS="-q libdrizzle --libdrizzle-host=10.0.0.1 --libdrizzle-user=gearman \
+#                       --libdrizzle-password=secret --libdrizzle-db=some_db \
+#                       --libdrizzle-table=gearman_queue --libdrizzle-mysql"
+#
+# Missing examples for memcache persitent queue store...
+
+# Parameters to pass to gearmand.
+PARAMS='<% if @gearman.key?("mysql") %>\
+    -q mysql \
+    --mysql-host="<%= @gearman['mysql']['host'] %>" \
+    --mysql-user="<%= @gearman['mysql']['user'] %>" \
+    --mysql-password="<%= @gearman['mysql']['password'] %>" \
+    --mysql-db="<%= @gearman['mysql']['db'] %>" \
+    --mysql-table="<%= @gearman['mysql']['table'] %>" \
+    --mysql-port=<%= @gearman['mysql']['port'] %> \
+<% end %>
+    -L 127.0.0.1 \
+    --job-retries=<%= @gearman['retries'] %>'

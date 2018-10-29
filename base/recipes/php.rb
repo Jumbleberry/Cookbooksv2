@@ -19,7 +19,7 @@ node["php"]["packages"].each do |pkg, version|
 end
 
 #Register Php service
-service "#{node["php"]["version"]}-fpm" do
+service "php#{node["php"]["version"]}-fpm" do
   supports :status => true, :restart => true, :reload => true, :stop => true
   action [:enable, :stop]
 end
@@ -30,7 +30,7 @@ directory "/var/log/php/" do
 end
 
 file "/var/log/php/error.log" do
-  mode "0777"
+  mode "0644"
   owner "www-data"
   group "www-data"
   action :create_if_missing
