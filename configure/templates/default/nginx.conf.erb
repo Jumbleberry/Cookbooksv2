@@ -1,0 +1,215 @@
+user <%= node['openresty']['user'] %><% if node['openresty']['user'] != node['openresty']['group'] %> <%= node['openresty']['group'] %><% end %>;
+worker_processes  <%= node['openresty']['worker_processes'] %>;
+<% if node['openresty']['worker_auto_affinity'] && node['openresty']['worker_processes'] != 'auto' %>
+worker_cpu_affinity <%= node['openresty']['worker_cpu_affinity'] %>;
+<% end %>
+
+<% if node['openresty']['worker_rlimit_nofile'] -%>
+worker_rlimit_nofile <%= node['openresty']['worker_rlimit_nofile'] %>;
+<% end -%>
+
+error_log  <%= node['openresty']['log_dir'] %>/error.log;
+pid        <%= node['openresty']['pid'] %>;
+
+events {
+  worker_connections  <%= node['openresty']['worker_connections'] %>;
+<% if node['openresty']['multi_accept'] -%>
+  multi_accept on;
+<% end -%>
+<% if node['openresty']['event'] -%>
+  use <%= node['openresty']['event'] %>;
+<% end -%>
+}
+
+http {
+  <% if @kernel_supports_aio  && node['openresty']['try_aio'] %>
+  sendfile                off;
+  aio                     on;
+  directio                512;
+  output_buffers          1 128k;
+  <% else %>
+  sendfile                on;
+  <% end %>
+
+  # PCI compliance
+  server_tokens           off;
+
+  tcp_nopush              on;
+  tcp_nodelay             on;
+
+  client_body_timeout     15s;
+  client_header_timeout   15s;
+  
+  <% if node['openresty']['keepalive'] == "on" %>
+  keepalive_requests      <%= node['openresty']['keepalive_requests'] %>;
+  keepalive_timeout       <%= node['openresty']['keepalive_timeout'] %>;
+  <% end %>
+
+  server_names_hash_bucket_size <%= node['openresty']['server_names_hash_bucket_size'] %>;
+  types_hash_max_size     <%= node['openresty']['types_hash_max_size'] %>;
+  types_hash_bucket_size  <%= node['openresty']['types_hash_bucket_size'] %>;
+
+  open_file_cache         max=<%= node['openresty']['open_file_cache']['max'] %> inactive=<%= node['openresty']['open_file_cache']['inactive'] %>;
+  open_file_cache_valid   <%= node['openresty']['open_file_cache']['valid'] %>;
+  open_file_cache_min_uses <%= node['openresty']['open_file_cache']['min_uses'] %>;
+  open_file_cache_errors  <%= node['openresty']['open_file_cache']['errors'] %>;
+
+  client_max_body_size    <%= node['openresty']['client_max_body_size'] %>;
+  client_body_buffer_size <%= node['openresty']['client_body_buffer_size'] %>;
+  large_client_header_buffers <%= node['openresty']['large_client_header_buffers'] %>;
+
+  uninitialized_variable_warn off;
+  
+  fastcgi_read_timeout    600;
+  fastcgi_buffers         128 16k;
+  fastcgi_buffer_size     16k;
+  
+  resolver                1.0.0.1                    1.1.1.1
+                          208.67.222.222             208.67.220.220
+                          8.8.8.8                    8.8.4.4
+                          valid=30s                  ipv6=off;
+  
+  ##
+  # Logging Settings
+  ##
+  log_format  main        '$remote_addr - $remote_user [$time_local] '
+                          '"$host" "$request" "$http_accept" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for" '
+                          '$request_time $upstream_response_time $pipe';
+  
+  access_log              /var/log/nginx/access.log main buffer=64k flush=30s;
+  error_log               /var/log/nginx/error.log warn;
+  
+  map $request_uri $loggable {
+      ~*^/thisthingisnotathing 0;
+      ~*^/nginx                0;
+      ~*^/status(.php)?        0;
+      ~*^/fpm(-ping)?          0;
+      ~*^/favicon.ico          0;
+      ~*^/robots.txt           0;
+      ~*^/hsts                 0;
+      ~*^/v1                   0;
+      ~*^/+(\?|$)              0;
+      default                  1;
+  }
+  
+  ##
+  # AWS Instances
+  ##
+  # Hydra
+  set_real_ip_from        34.199.251.151;
+  set_real_ip_from        34.204.144.75;
+  set_real_ip_from        34.231.185.78;
+  set_real_ip_from        34.231.238.143;
+  set_real_ip_from        34.233.228.49;
+  set_real_ip_from        34.234.165.192;
+  set_real_ip_from        52.44.129.193;
+  # Mesh
+  set_real_ip_from        34.232.35.154;
+  set_real_ip_from        54.174.129.156;
+  set_real_ip_from        54.175.57.137;
+  # Processing
+  set_real_ip_from        54.174.39.211;
+  set_real_ip_from        54.175.48.31;
+  set_real_ip_from        54.86.13.90;
+  
+  ##
+  # Private Address Space (AWS/Internal)
+  ##
+  set_real_ip_from        10.0.0.0/8;
+  set_real_ip_from        127.0.0.1/32;
+  set_real_ip_from        172.16.0.0/12;
+  set_real_ip_from        192.168.0.0/16;
+  set_real_ip_from        fd00::/8;
+  
+  ##
+  # CloudFlare
+  ##
+  set_real_ip_from        103.21.244.0/22;
+  set_real_ip_from        103.22.200.0/22;
+  set_real_ip_from        103.31.4.0/22;
+  set_real_ip_from        104.16.0.0/12;
+  set_real_ip_from        108.162.192.0/18;
+  set_real_ip_from        131.0.72.0/22;
+  set_real_ip_from        141.101.64.0/18;
+  set_real_ip_from        162.158.0.0/15;
+  set_real_ip_from        172.64.0.0/13;
+  set_real_ip_from        173.245.48.0/20;
+  set_real_ip_from        188.114.96.0/20;
+  set_real_ip_from        190.93.240.0/20;
+  set_real_ip_from        197.234.240.0/22;
+  set_real_ip_from        198.41.128.0/17;
+  set_real_ip_from        2400:cb00::/32;
+  set_real_ip_from        2405:8100::/32;
+  set_real_ip_from        2405:b500::/32;
+  set_real_ip_from        2606:4700::/32;
+  set_real_ip_from        2803:f800::/32;
+  set_real_ip_from        2c0f:f248::/32;
+  set_real_ip_from        2a06:98c0::/29;
+  
+  real_ip_header          X-Forwarded-For;
+  real_ip_recursive       on;
+  
+  ##
+  # Scheme Detection
+  ##
+  map $http_x_forwarded_proto $real_scheme {
+      ''                  $scheme;
+      default             $scheme;
+      https               https;
+      http                http;
+  }
+  
+  map $real_scheme $is_https {
+      default             '';
+      https               on;
+  }
+  
+  ##
+  # Gzip Settings
+  ##
+  gzip                    <%= node['openresty']['gzip'] %>;
+  <% if node['openresty']['gzip'] == "on" %>
+  gzip_http_version       <%= node['openresty']['gzip_http_version'] %>;
+  gzip_comp_level         <%= node['openresty']['gzip_comp_level'] %>;
+  gzip_proxied            <%= node['openresty']['gzip_proxied'] %>;
+  gzip_vary               <%= node['openresty']['gzip_vary'] %>;
+  <% if node['openresty']['gzip_buffers'] -%>
+  gzip_buffers            <%= node['openresty']['gzip_buffers'] %>;
+  <% end -%>
+  gzip_types              <%= node['openresty']['gzip_types'].join(' ') %>;
+  gzip_min_length         1000;
+  gzip_disable            "MSIE [1-6]\.";
+  <% end %>
+  
+  ##
+  # Banned user agents
+  ##
+  map $http_user_agent $block_ua {
+      default             0;
+      '~*Jorgee'          1;
+      'Mozilla/5.0'       1;
+      'Mozilla/4.0 (compatible; Synapse)' 1;
+  }
+  
+  <% if node['openresty']['lua_package_path'] %>
+  lua_package_path        <%= node['openresty']['lua_package_path'] %>;
+  <% end %>
+  <% if node['openresty']['lua_package_cpath'] %>
+  lua_package_cpath       <%= node['openresty']['lua_package_cpath'] %>;
+  <% end %>
+  
+  <% if node['openresty']['generate_dhparams'] %>
+  ssl_dhparam             <%= node['openresty']['dir'] %>/dhparams.pem;
+  <% end %>
+
+  ##
+  # Virtual Host Configs
+  ##
+  include                 <%= node['openresty']['dir'] %>/mime.types;
+  default_type            text/plain;
+  
+  include                 <%= node['openresty']['dir'] %>/conf.d/*.conf;
+  include                 <%= node['openresty']['dir'] %>/sites-enabled/*;
+}

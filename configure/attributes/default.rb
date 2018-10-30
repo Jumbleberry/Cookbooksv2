@@ -10,6 +10,14 @@ default["etc_environment"] = {
 
 default["timezone_iii"]["timezone"] = node["tz"]
 
+default["openresty"]["keepalive_requests"] = 1024
+default["openresty"]["keepalive_timeout"] = 300
+default["openresty"]["open_file_cache"]["max"] = 10000
+default["openresty"]["open_file_cache"]["inactive"] = "5m"
+default["openresty"]["open_file_cache"]["valid"] = "5m"
+default["openresty"]["open_file_cache"]["min_uses"] = 2
+default["openresty"]["gzip_comp_level"] = 6
+
 default["php"]["fpm"]["display_errors"] = "Off"
 default["php"]["fpm"]["listen"] = "/var/run/php5-fpm.sock"
 default["php"]["fpm"]["pm"] = "dynamic"
