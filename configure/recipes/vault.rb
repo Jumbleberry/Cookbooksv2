@@ -40,5 +40,4 @@ edit_resource(:template, "/etc/environment") do
       :environment => node["etc_environment"],
     }
   })
-  notifies :restart, "service[consul-template]", :immediate
 end if node["etc_environment"]
