@@ -37,10 +37,26 @@ default["consul_template"]["service_group"] = "www-data"
 default["consul_template"]["consul_addr"] = "127.0.0.1:8500"
 default["consul_template"]["vault_addr"] = default["hashicorp-vault"]["config"]["address"]
 
-# default['openresty']['source']['version']     = '1.11.2.5'
-# default['openresty']['source']['file_prefix'] = 'openresty'
-# default['openresty']['source']['checksum']    = 'f8cc203e8c0fcd69676f65506a3417097fc445f57820aa8e92d7888d8ad657b9'
+default["openssl_source"]["openssl"]["version"] = "1.0.2p"
+default["openssl_source"]["openssl"]["prefix"] = "/usr"
+default["openssl_source"]["openssl"]["url"] = "https://www.openssl.org/source/openssl-#{default["openssl_source"]["openssl"]["version"]}.tar.gz"
+default["openssl_source"]["openssl"]["checksum"] = "50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00"
+default["openssl_source"]["openssl"]["configure_flags"] = [
+  "--openssldir=/etc/ssl",
+  "--libdir=lib",
+  "shared",
+  "-Wl,-R,'$(LIBRPATH)'",
+  "-Wl,--enable-new-dtags",
+]
 
+default["openresty"]["source"]["version"] = "1.11.2.5"
+default["openresty"]["source"]["file_prefix"] = "openresty"
+default["openresty"]["source"]["checksum"] = "f8cc203e8c0fcd69676f65506a3417097fc445f57820aa8e92d7888d8ad657b9"
+default["openresty"]["max_subrequests"] = 250
+# default["openresty"]["extra_modules"] += ["base::openresty_modules"]
+default["openresty"]["source"]["default_configure_flags"] += [
+ # "--with-openssl=#{Chef::Config["file_cache_path"]}/openssl-#{default["openssl_source"]["openssl"]["version"]}",
+  ]
 default["openresty"]["user_home"] = "/dev/null"
 default["openresty"]["service"]["restart_on_update"] = false
 default["openresty"]["service"]["start_on_boot"] = false
