@@ -1,5 +1,6 @@
 source "https://supermarket.getchef.com"
 
+cookbook "apt", "~> 7.1"
 cookbook "consul", "~> 3.1"
 cookbook "trusted_certificate", "~> 3.2"
 cookbook "ohai", "~> 5.2"

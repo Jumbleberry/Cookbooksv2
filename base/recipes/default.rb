@@ -1,8 +1,4 @@
-apt_update "update" do
-  frequency 86400
-  action :periodic
-end
-
+include_recipe "apt"
 include_recipe "configure::base"
 
 if node["environment"] != "production"

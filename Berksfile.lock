@@ -1,4 +1,5 @@
 DEPENDENCIES
+  apt (~> 7.1.0)
   consul (~> 3.1)
   datadog (~> 2.16.1)
   dnsmasq (~> 0.2)

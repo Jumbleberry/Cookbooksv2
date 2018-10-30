@@ -7,6 +7,8 @@ default[cookbook_name]["kernel"]["shmmax"] = "201326592"
 default[cookbook_name]["kernel"]["shmall"] = "268435456"
 default[cookbook_name]["kernel"]["shmmni"] = "8192"
 
+default["apt"]["compile_time_update"] = true
+
 default["dnsmasq"]["dns"] = {
   "all-servers" => nil,
   "log-async" => 50,
