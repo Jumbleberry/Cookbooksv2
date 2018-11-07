@@ -19,7 +19,7 @@ if node.attribute?(:ec2)
 else
   if !defined?(vault_token) or vault_token.nil?
     begin
-      vault_token = Vault.auth.github(::File.exist?("/home/vagrant/.github") ? IO.read("/home/vagrant/.github").strip : "")
+      vault_token = Vault.auth.github(::File.exist?("/home/vagrant/.github-token") ? IO.read("/home/vagrant/.github-token").strip : "")
       vault_token = vault_token.auth.client_token
     rescue
       vault_token = nil
@@ -41,3 +41,7 @@ edit_resource(:template, "/etc/environment") do
     }
   })
 end if node["etc_environment"]
+
+edit_resource(:chef_gem, "rubyzip") do
+  compile_time false
+end

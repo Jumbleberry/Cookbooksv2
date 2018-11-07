@@ -5,7 +5,7 @@ default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
 default["etc_environment"] = {
   "VAULT_ADDR" => "https://vault.jumbleberry.com",
   "ENV" => node["chef_environment"] || node["environment"],
-  "GITHUB" => ::File.exist?("/home/vagrant/.github") ? IO.read("/home/vagrant/.github").strip : "",
+  "GITHUB" => ::File.exist?("/home/vagrant/.github-token") ? IO.read("/home/vagrant/.github-token").strip : "",
 }
 
 default["timezone_iii"]["timezone"] = node["tz"]

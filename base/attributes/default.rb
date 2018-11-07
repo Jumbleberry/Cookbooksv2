@@ -27,6 +27,10 @@ default["dnsmasq"]["dns_options"] = [
   "bogus-priv",
 ]
 
+default["redisio"]["package_install"] = false
+default["redisio"]["bypass_setup"] = false
+default["redisio"]["version"] = "3.2.4"
+
 default["hashicorp-vault"]["gems"] = {
   "vault" => "0.12.0",
 }
@@ -85,6 +89,8 @@ default["php"]["packages"] = {
 }
 
 default["gearman"]["version"] = "1.1.*"
+default["gearman"]["manager"]["repository"] = "https://github.com/brianlmoon/GearmanManager.git"
+default["gearman"]["manager"]["revision"] = "ffc828dac2547aff76cb4962bb3fcc4f454ec8a2"
 
 default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
 default["phalcon"]["version"] = "3.4.1-1+php#{php_version}"

@@ -25,3 +25,32 @@ file "/var/log/gearmand.log" do
   group "gearman"
   action :create_if_missing
 end
+
+git "gearman-manager" do
+  destination "/usr/share/gearman-manager"
+  repository node["gearman"]["manager"]["repository"]
+  revision node["gearman"]["manager"]["revision"]
+  action :sync
+  notifies :run, "execute[gearman-manager-install]", :immediately
+end
+
+# Install gearman manager
+execute "gearman-manager-install" do
+  command "echo 1 | /bin/bash install.sh"
+  cwd "/usr/share/gearman-manager/install"
+  user "root"
+  action :nothing
+end
+
+# We need to chmod gearman manager...
+file "/usr/local/bin/gearman-manager" do
+  action :touch
+  mode "0755"
+  owner "root"
+  group "root"
+end
+
+service "gearman-manager" do
+  supports :status => true, :restart => true, :reload => true, :stop => true
+  action [:enable, :stop]
+end
