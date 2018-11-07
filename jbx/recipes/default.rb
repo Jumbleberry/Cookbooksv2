@@ -39,6 +39,7 @@ openresty_site "api.jumbleberry.com" do
     hostname: "api.jumble.dev",
     path: "/var/www/jbx/public",
   })
+  timing :delayed
   action :enable
   notifies :enable, "service[nginx]", :delayed
   notifies :start, "service[nginx]", :delayed
@@ -56,9 +57,9 @@ end
     action action
     only_if { should }
     notifies :create, "consul_template_config[jbx.credentials.json]", :immediately
-    notifies :run, "execute[/bin/bash deploy.sh]", :immediately
+    notifies :run, "execute[/bin/bash deploy.sh]", :delayed
     if node.attribute?(:ec2)
-      notifies :run, "execute[database-migrations]", :immediately
+      notifies :run, "execute[database-migrations]", :delayed
     end
   end
 end
@@ -69,7 +70,7 @@ consul_template_config "jbx.credentials.json" do
     destination: "/var/www/jbx/config/credentials.json",
     command: "service php#{node["php"]["version"]}-fpm reload",
   }]
-  action :nothing
+  only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
   notifies :enable, "service[consul-template]", :immediate
   notifies :start, "service[consul-template]", :immediate
   notifies :reload, "service[consul-template]", :immediate
