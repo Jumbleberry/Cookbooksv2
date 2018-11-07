@@ -16,7 +16,7 @@ template "/etc/nginx/ssl/api.jumble.dev.key.tpl" do
   mode "0644"
   variables({
     :app => "jbx",
-    :domain => "api.jumble.dev",
+    :domain => "api",
   })
   notifies :create, "consul_template_config[api.ssl.key.json]", :immediately
 end
@@ -50,6 +50,7 @@ end
     destination node["jbx"]["path"]
     repository node["jbx"]["git-url"]
     checkout_branch node["jbx"]["branch"]
+    revision node["jbx"]["branch"]
     user node[:user]
     group "www-data"
     action action
