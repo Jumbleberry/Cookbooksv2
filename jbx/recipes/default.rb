@@ -1,6 +1,3 @@
-package "git" do
-  action :install
-end
 include_recipe "configure::services"
 
 if !node.attribute?(:ec2)
