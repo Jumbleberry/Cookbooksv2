@@ -12,4 +12,6 @@ if !node.attribute?(:ec2)
     action :manage
     members ["www-data"]
   end
+
+  include_recipe "root_ssh_agent::ppid"
 end
