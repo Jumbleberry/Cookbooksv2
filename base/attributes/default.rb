@@ -86,6 +86,7 @@ default["php"]["packages"] = {
   "php#{php_version}-mbstring" => "*",
   "php#{php_version}-gettext" => "*",
   "php#{php_version}-gd" => "*",
+  "php#{php_version}-soap" => "*",
 }
 
 default["gearman"]["version"] = "1.1.*"
