@@ -1,4 +1,3 @@
-include_recipe "php"
 execute "curl -s #{node["phalcon"]["install_script"]} | sudo bash"
 
 package "#{node["php"]["version"]}-phalcon" do
