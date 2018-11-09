@@ -4,7 +4,7 @@ default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
 
 default["etc_environment"] = {
   "VAULT_ADDR" => "https://vault.jumbleberry.com",
-  "ENV" => node["chef_environment"] || node["environment"],
+  "ENV" => node["environment"],
   "GITHUB" => ::File.exist?("/home/vagrant/.github-token") ? IO.read("/home/vagrant/.github-token").strip : "",
 }
 
@@ -27,7 +27,7 @@ default["php"]["fpm"]["min_spare_servers"] = "10"
 default["php"]["fpm"]["max_spare_servers"] = "40"
 default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib"
 
-default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{node["php"]["version"]}/mods-available"]
-default["php"]["fpm"]["conf_dirs_alias"] = ["/etc/php/#{node["php"]["version"]}/cli/conf.d", "/etc/php/#{node["php"]["version"]}/fpm/conf.d"]
+default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{node["php"]["version"]}/mods-available"]
+default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{node["php"]["version"]}/cli", "/etc/php/#{node["php"]["version"]}/fpm"]
 
 default["gearman"]["retries"] = 1

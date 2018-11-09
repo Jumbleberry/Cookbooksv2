@@ -1,7 +1,7 @@
 include_recipe "apt"
 include_recipe "configure::base"
 
-if node["environment"] != "production"
+if node["environment"] != "prod"
   include_recipe cookbook_name + "::trust"
 end
 

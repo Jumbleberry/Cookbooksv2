@@ -1,5 +1,5 @@
 #Fpm configurations
-node["php"]["fpm"]["conf_dirs_alias"].each do |path|
+node["php"]["fpm"]["conf_dirs"].each do |path|
   template path + "/php.ini" do
     source "php.ini.erb"
     variables({
