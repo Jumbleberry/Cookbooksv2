@@ -24,6 +24,12 @@ node["php"]["packages"].each do |pkg, version|
   end
 end
 
+template "/lib/systemd/system/php#{node["php"]["version"]}-fpm.service" do
+  source "php-fpm.service.erb"
+  notifies :restart, "execute[systemctl-daemon-reload]", :immediately
+  notifies :restart, "service[php#{node["php"]["version"]}-fpm]", :delayed
+end
+
 #Register Php service
 service "php#{node["php"]["version"]}-fpm" do
   supports :status => true, :restart => true, :reload => true, :stop => true

@@ -1,0 +1,14 @@
+[Unit]
+Description=The PHP <%= node["php"]["version"] %> FastCGI Process Manager
+Documentation=man:php-fpm<%= node["php"]["version"] %>(8)
+After=network.target
+
+[Service] 
+Type=notify
+PIDFile=/run/php/php<%= node["php"]["version"] %>-fpm.pid
+EnvironmentFile=-/etc/environment
+ExecStart=/usr/sbin/php-fpm<%= node["php"]["version"] %> --nodaemonize --fpm-config /etc/php/<%= node["php"]["version"] %>/fpm/php-fpm.conf
+ExecReload=/bin/kill -USR2 $MAINPID
+
+[Install]
+WantedBy=multi-user.target
