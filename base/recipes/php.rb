@@ -5,12 +5,6 @@ apt_repository "php-ppa" do
   components ["main"]
 end
 
-apt_repository "gearman-ppa" do
-  uri "ppa:ondrej/pkg-gearman"
-  distribution node["lsb"]["codename"]
-  components ["main"]
-end
-
 apt_update "update-php" do
   frequency 86400
   action :periodic
@@ -26,7 +20,7 @@ end
 
 template "/lib/systemd/system/php#{node["php"]["version"]}-fpm.service" do
   source "php-fpm.service.erb"
-  notifies :restart, "execute[systemctl-daemon-reload]", :immediately
+  notifies :run, "execute[systemctl-daemon-reload]", :immediately
   notifies :restart, "service[php#{node["php"]["version"]}-fpm]", :delayed
 end
 
