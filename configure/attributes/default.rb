@@ -27,7 +27,8 @@ default["php"]["fpm"]["min_spare_servers"] = "10"
 default["php"]["fpm"]["max_spare_servers"] = "40"
 default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib"
 
-default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{node["php"]["version"]}/mods-available"]
-default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{node["php"]["version"]}/cli", "/etc/php/#{node["php"]["version"]}/fpm"]
+php_version = node["php"]["version"] || "7.1"
+default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
+default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#{php_version}/fpm"]
 
 default["gearman"]["retries"] = 1

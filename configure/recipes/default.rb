@@ -1,3 +1,4 @@
+include_recipe cookbook_name + "::services"
 include_recipe cookbook_name + "::base"
 include_recipe cookbook_name + "::consul-template"
 include_recipe cookbook_name + "::openresty"
