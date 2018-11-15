@@ -1,4 +1,4 @@
-<% ssl = File.file?("/etc/nginx/ssl/#{@hostname}.pem") %>
+<% ssl = File.file?("/etc/nginx/ssl/#{@hostname}.tpl") %>
 server {
     listen 80;
     server_name <%= @hostname %> www.<%= @hostname %>;

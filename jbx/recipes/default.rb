@@ -1,3 +1,4 @@
+require "vault"
 include_recipe "configure::services"
 
 if !node.attribute?(:ec2)
@@ -18,6 +19,7 @@ template "/etc/nginx/ssl/api.jumble.dev.key.tpl" do
     :app => "jbx",
     :domain => "api",
   })
+  only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][:api].nil? }
   notifies :create, "consul_template_config[api.ssl.key.json]", :immediately
 end
 consul_template_config "api.ssl.key.json" do
