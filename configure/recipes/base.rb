@@ -7,7 +7,12 @@ include_recipe "ntp"
 
 ssh_known_hosts_entry "github.com"
 
-if !node.attribute?(:ec2)
+if node.attribute?(:ec2)
+  group "www-data" do
+    action :manage
+    members ["ubuntu"]
+  end
+else
   group "vagrant" do
     action :manage
     members ["www-data"]
