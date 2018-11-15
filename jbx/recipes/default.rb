@@ -89,10 +89,10 @@ end
 if node.attribute?(:ec2)
   # Run database migrations
   execute "database-migrations" do
-    cwd "#{node["jbx"]["core"]["path"]}/application/cli"
+    cwd "#{node["jbx"]["path"]}/application/cli"
     command "php cli.php migrations:migrate --no-interaction"
     timeout 86400
-    not_if { ::Dir.glob("#{node["jbx"]["core"]["path"]}/application/migrations/*.php").empty? }
+    not_if { ::Dir.glob("#{node["jbx"]["path"]}/application/migrations/*.php").empty? }
     action :nothing
   end
 end
