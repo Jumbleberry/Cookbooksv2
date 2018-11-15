@@ -16,6 +16,14 @@ end
 
 # Create new tokens if existing token is expired, or on first launch
 if node.attribute?(:ec2)
+  if !defined?(vault_token) or vault_token.nil?
+    begin
+      login_command = "VAULT_ADDR=\"#{node["hashicorp-vault"]["config"]["address"]}\" vault login -token-only -method=aws header_value=vault.jumbleberry.com role=#{node["environment"]}-#{node["role"]}"
+      vault_token = shell_out(login_command).stdout
+    rescue
+      vault_token = nil
+    end
+  end
 else
   if !defined?(vault_token) or vault_token.nil?
     begin

@@ -3,7 +3,7 @@ cookbook_name = "configure"
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
 
 default["etc_environment"] = {
-  "VAULT_ADDR" => "https://vault.jumbleberry.com",
+  "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
   "ENV" => node["environment"],
   "GITHUB" => ::File.exist?("/home/vagrant/.github-token") ? IO.read("/home/vagrant/.github-token").strip : "",
 }
