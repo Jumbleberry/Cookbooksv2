@@ -42,7 +42,7 @@ ruby_block "Give root access to the forwarded ssh agent" do
     Dir.glob('/tmp/ssh*/agent*').each do |fn|
       agents[fn.match(/agent\.(\d+)$/)[1]] = fn
     end
-    while ppid != '1'
+    while ppid != '1' && ppid != '0'
       if (agent = agents[ppid])
         ENV['SSH_AUTH_SOCK'] = agent
         break
