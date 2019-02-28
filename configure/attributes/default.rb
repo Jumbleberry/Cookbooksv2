@@ -5,7 +5,7 @@ default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
 default["etc_environment"] = {
   "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
   "ENV" => node["environment"],
-  "GITHUB" => ::File.exist?("/home/vagrant/.github-token") ? IO.read("/home/vagrant/.github-token").strip : "",
+  "GITHUB" => ::File.exist?("/home/#{node["user"]}/.github-token") ? IO.read("/home/#{node["user"]}/.github-token").strip : "",
 }
 
 default["timezone_iii"]["timezone"] = node["tz"]

@@ -1,3 +1,4 @@
+include_recipe cookbook_name + "::user"
 include_recipe cookbook_name + "::ipaddress"
 include_recipe "etc_environment"
 include_recipe "dnsmasq"
@@ -13,7 +14,7 @@ if node.attribute?(:ec2)
     members ["ubuntu"]
   end
 else
-  group "vagrant" do
+  group node["user"] do
     action :manage
     members ["www-data"]
   end
