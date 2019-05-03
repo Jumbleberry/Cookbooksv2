@@ -4,10 +4,12 @@
 
 Dir.open('/home').each do |user|
   next if user.start_with?('.')
-  directory "/home/#{user}" do
-    mode '0700'
-    action :create
-    recursive false
-    only_if do Dir.exist?("/home/#{user}") end
+  uid = "#{node['etc']['passwd']["#{user}"]['uid']}".to_i  
+  if  999 < uid && uid < 60001
+    directory "/home/#{user}" do
+      mode '0700'
+      action :create
+      recursive false
+    end 
   end
 end

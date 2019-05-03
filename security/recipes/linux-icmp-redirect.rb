@@ -10,7 +10,7 @@ icmp_redirect = ['net.ipv4.conf.all.accept_redirects'    , \
                  'net.ipv4.conf.default.secure_redirects' ]
 
 icmp_redirect.each do |params| 
-  sysctl params do 
+  sysctl_param params do 
     value 0 
   end
 end
