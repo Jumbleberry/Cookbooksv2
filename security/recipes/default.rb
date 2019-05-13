@@ -1,6 +1,7 @@
 # Security fixes 
 case node['platform']
-when 'ubuntu'
+# tested on Ubuntu 16.04.6 / 18.04.2, Centos7.6.1810 , ec2 amzn.2 (20190504.0.0) 
+when 'ubuntu', 'amazon', 'centos'
   include_recipe 'security::linux-icmp-redirect'
   include_recipe 'security::unix-umask-unsafe'
   include_recipe 'security::generic-tcp-timestamp'
