@@ -51,6 +51,9 @@ file "/usr/local/bin/gearman-manager" do
 end
 
 service "gearman-manager" do
+  if node['lsb']['release'].to_f > 16
+    provider Chef::Provider::Service::Systemd
+  end
   supports :status => true, :restart => true, :reload => true, :stop => true
   action [:enable, :stop]
 end
