@@ -19,10 +19,15 @@ if !node.attribute?(:ec2)
     cwd "/usr/share/phalcon-devtools"
     code <<-EOH
               ./phalcon.sh
-              ln -s /usr/share/phalcon-devtools/phalcon.php /usr/bin/phalcon
           EOH
     not_if do
       ::File.exists?("/usr/bin/phalcon")
     end
+    notifies :create, "link[/usr/bin/phalcon]", :immediately
+  end
+
+  link "/usr/bin/phalcon" do
+    to "/usr/share/phalcon-devtools/phalcon"
+    action :nothing
   end
 end
