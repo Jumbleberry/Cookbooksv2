@@ -19,6 +19,7 @@ edit_resource(:service, "consul-template") do
 end
 
 edit_resource(:service, "nginx") do
+  provider Chef::Provider::Service::Systemd
   supports :status => true, :restart => true, :reload => true
 end
 

@@ -2,6 +2,7 @@ apt_repository "gearman-ppa" do
   uri "ppa:ondrej/pkg-gearman"
   distribution node["lsb"]["codename"]
   components ["main"]
+  not_if { node['lsb']['release'].to_f > 18 }
 end
 
 apt_update "update-gearman" do
