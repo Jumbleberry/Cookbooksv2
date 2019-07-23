@@ -1,3 +1,4 @@
 Host github.com
+  StrictHostKeyChecking no
   ForwardAgent yes
   IdentityFile ~/.ssh/jumbleberry-github
