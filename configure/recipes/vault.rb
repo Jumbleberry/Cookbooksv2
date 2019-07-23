@@ -7,6 +7,7 @@ require "vault"
 
 # Attempt to renew an existing token
 begin
+  Vault.address = node["hashicorp-vault"]["config"]["address"]
   vault_token = Vault.auth_token.lookup_self()
   Vault.auth_token.renew_self()
   vault_token = vault_token.data[:id]

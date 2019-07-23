@@ -1,0 +1,1 @@
+{{ with secret (print "secret/data/" (env "ENV") "/keys") }}{{ index .Data.data "deploybot" }}{{ end }}
