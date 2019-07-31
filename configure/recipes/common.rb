@@ -9,14 +9,14 @@ include_recipe "ntp"
 if !node.attribute?(:ec2)
   include_recipe "root_ssh_agent::ppid"
 
-  group ["www-data"] do
-    action :manage
-    members node["user"]
-  end
-else
   group node["user"] do
     action :manage
     members ["www-data"]
+  end
+else
+  group ["www-data"] do
+    action :manage
+    members node["user"]
   end
 end
 
