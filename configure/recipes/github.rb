@@ -12,7 +12,7 @@ cookbook_file "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/config" do
 end
 
 if node.attribute?(:ec2)
-  template "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github.tpl" do
+  cookbook_file "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github.tpl" do
     source "jumbleberry-github.tpl"
     mode "0644"
     notifies :create, "consul_template_config[jumbleberry-github]", :immediately
