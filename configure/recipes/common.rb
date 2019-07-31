@@ -15,10 +15,10 @@ if !node.attribute?(:ec2)
     members ["www-data"]
   end
 else
-  group ["www-data"] do
+  group "www-data" do
     append true
     action :manage
-    members node["user"]
+    members [node["user"]]
   end
 end
 
