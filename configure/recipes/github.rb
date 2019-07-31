@@ -15,7 +15,6 @@ if node.attribute?(:ec2)
   template "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github.tpl" do
     source "jumbleberry-github.tpl"
     mode "0644"
-    only_if { (keys = Vault.logical.read("secret/data/#{node["environment"]}/keys")) && !keys.data[:data][:deploybot].nil? }
     notifies :create, "consul_template_config[jumbleberry-github]", :immediately
     owner node[:user]
     group node[:user]
