@@ -23,6 +23,7 @@ if node.attribute?(:ec2)
     begin
       login_command = "VAULT_ADDR=\"#{node["hashicorp-vault"]["config"]["address"]}\" vault login -token-only -method=aws header_value=vault.jumbleberry.com role=#{node["environment"]}-#{node["role"]}"
       vault_token = shell_out(login_command).stdout
+      Vault.token = vault_token
     rescue
       vault_token = nil
     end
@@ -57,3 +58,5 @@ end if node["etc_environment"]
 edit_resource(:chef_gem, "rubyzip") do
   compile_time false
 end
+
+include_recipe "etc_environment"
