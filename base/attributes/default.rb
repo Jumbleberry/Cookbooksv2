@@ -63,7 +63,7 @@ default["openresty"]["max_subrequests"] = 250
 default["openresty"]["source"]["default_configure_flags"] += [
  # "--with-openssl=#{Chef::Config["file_cache_path"]}/openssl-#{default["openssl_source"]["openssl"]["version"]}",
   ]
-default["openresty"]["user_home"] = "/dev/null"
+
 default["openresty"]["service"]["restart_on_update"] = false
 default["openresty"]["service"]["start_on_boot"] = false
 
