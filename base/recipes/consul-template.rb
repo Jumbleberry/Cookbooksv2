@@ -10,3 +10,8 @@ end
 edit_resource(:service, "consul-template") do
   action %i[enable stop]
 end
+
+edit_resource(:user, "www-data") do
+  home node['openresty']['user_home']
+  shell node['openresty']['user_shell']
+end
