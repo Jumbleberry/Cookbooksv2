@@ -17,7 +17,10 @@ default["openresty"]["open_file_cache"]["inactive"] = "5m"
 default["openresty"]["open_file_cache"]["valid"] = "5m"
 default["openresty"]["open_file_cache"]["min_uses"] = 2
 default["openresty"]["gzip_comp_level"] = 6
-default['openresty']['user_shell']    = '/bin/bash'
+override["openresty"]["user_id"] = 33
+override["openresty"]["group_id"] = 33
+override["openresty"]["user_home"] = "/var/www"
+override["openresty"]["user_shell"] = "/bin/bash"
 
 default["php"]["fpm"]["display_errors"] = "Off"
 default["php"]["fpm"]["listen"] = "/var/run/php5-fpm.sock"

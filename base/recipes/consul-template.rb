@@ -12,6 +12,9 @@ edit_resource(:service, "consul-template") do
 end
 
 edit_resource(:user, "www-data") do
-  home node['openresty']['user_home']
-  shell node['openresty']['user_shell']
+  home node["openresty"]["user_home"]
+  shell node["openresty"]["user_shell"]
+  uid node["openresty"]["user_id"]
+  gid node["openresty"]["group_id"]
+  action :create
 end

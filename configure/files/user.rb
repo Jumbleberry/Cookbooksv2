@@ -5,9 +5,9 @@ Ohai.plugin(:User) do
 
   collect_data(:default) do
     if (etc["passwd"].key?("vagrant"))
-      user("vagrant")
+      user("www-data")
     elsif (etc["passwd"].key?("ubuntu"))
-      user("ubuntu")
+      user("www-data")
     else
       user("root")
     end
