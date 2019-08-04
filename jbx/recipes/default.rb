@@ -52,7 +52,6 @@ end
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
     repository node["jbx"]["git-url"]
-    checkout_branch node["jbx"]["branch"]
     revision node["jbx"]["branch"]
     user node[:user]
     group node[:user]
