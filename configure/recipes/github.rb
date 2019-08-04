@@ -24,7 +24,7 @@ if node.attribute?(:ec2)
     templates [{
       source: "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github.tpl",
       destination: "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github",
-      perms: 0600,
+      command: "chmod 600 #{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github",
     }]
     action :nothing
     notifies :enable, "service[consul-template]", :immediate
