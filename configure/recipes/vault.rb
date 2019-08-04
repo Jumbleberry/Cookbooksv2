@@ -24,6 +24,7 @@ if node.attribute?(:ec2)
       login_command = "VAULT_ADDR=\"#{node["hashicorp-vault"]["config"]["address"]}\" vault login -token-only -method=aws header_value=vault.jumbleberry.com role=#{node["environment"]}-#{node["role"]}"
       vault_token = shell_out(login_command).stdout
       Vault.token = vault_token
+      Vault.auth_token.lookup_self()
     rescue
       vault_token = nil
     end
