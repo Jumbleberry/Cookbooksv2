@@ -48,14 +48,14 @@ openresty_site "api.jumbleberry.com" do
   notifies :reload, "service[nginx]", :delayed
 end
 
-{:checkout => true, :sync => node[:user] != "vagrant"}.each do |action, should|
+{:checkout => true, :sync => node.attribute?(:ec2)}.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
     repository node["jbx"]["git-url"]
     checkout_branch node["jbx"]["branch"]
     revision node["jbx"]["branch"]
     user node[:user]
-    group "www-data"
+    group node[:user]
     action action
     only_if { should }
     notifies :create, "consul_template_config[jbx.credentials.json]", :immediately
