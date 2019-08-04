@@ -31,7 +31,8 @@ if node.attribute?(:ec2)
 else
   if !defined?(vault_token) or vault_token.nil?
     begin
-      vault_token = Vault.auth.github(::File.exist?("/home/vagrant/.github-token") ? IO.read("/home/vagrant/.github-token").strip : "")
+      home_dir = node["etc"]["passwd"][node[:user]]["dir"]
+      vault_token = Vault.auth.github(::File.exist?("#{home_dir}/.github-token") ? IO.read("#{home_dir}/.github-token").strip : "")
       vault_token = vault_token.auth.client_token
     rescue
       vault_token = nil
