@@ -2,12 +2,6 @@ cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
 
-default["etc_environment"] = {
-  "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
-  "ENV" => node["environment"],
-  "GITHUB" => ::File.exist?("/home/#{node[:user]}/.github-token") ? IO.read("/home/#{node[:user]}/.github-token").strip : "",
-}
-
 default["timezone_iii"]["timezone"] = node["tz"]
 
 default["openresty"]["keepalive_requests"] = 1024
@@ -36,3 +30,11 @@ default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
 default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#{php_version}/fpm"]
 
 default["gearman"]["retries"] = 1
+
+user_home_dir = node["openresty"]["user_home"]
+
+default["etc_environment"] = {
+  "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
+  "ENV" => node["environment"],
+  "GITHUB" => ::File.exist?("#{user_home_dir}/.github-token") ? IO.read("#{user_home_dir}/.github-token").strip : "",
+}

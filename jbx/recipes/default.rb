@@ -12,6 +12,7 @@ cookbook_file "/etc/nginx/ssl/api.jumble.dev.pem" do
   action :create
   notifies :reload, "service[nginx]", :delayed
 end
+
 template "/etc/nginx/ssl/api.jumble.dev.key.tpl" do
   source "cert.erb"
   mode "0644"
@@ -22,6 +23,7 @@ template "/etc/nginx/ssl/api.jumble.dev.key.tpl" do
   only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][:api].nil? }
   notifies :create, "consul_template_config[api.ssl.key.json]", :immediately
 end
+
 consul_template_config "api.ssl.key.json" do
   templates [{
     source: "/etc/nginx/ssl/api.jumble.dev.key.tpl",
@@ -33,7 +35,7 @@ consul_template_config "api.ssl.key.json" do
   notifies :start, "service[consul-template]", :immediate
   notifies :reload, "service[consul-template]", :immediate
 end
-
+'''
 # Creates the api virtual host
 openresty_site "api.jumbleberry.com" do
   template "api.jumbleberry.com.erb"
@@ -47,7 +49,8 @@ openresty_site "api.jumbleberry.com" do
   notifies :start, "service[nginx]", :delayed
   notifies :reload, "service[nginx]", :delayed
 end
-
+'''
+'''
 {:checkout => true, :sync => node.attribute?(:ec2)}.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
@@ -64,7 +67,8 @@ end
     end
   end
 end
-
+'''
+'''
 consul_template_config "jbx.credentials.json" do
   templates [{
     source: "/var/www/jbx/config/credentials.json.tpl",
@@ -76,11 +80,13 @@ consul_template_config "jbx.credentials.json" do
   notifies :start, "service[consul-template]", :immediate
   notifies :reload, "service[consul-template]", :immediate
 end
+'''
 
 # Run the deploy script
 execute "/bin/bash deploy.sh" do
   cwd "/var/www/jbx"
-  user "root"
+  #user "root"
+  user node[:user]
   notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :delayed
   notifies :start, "service[php#{node["php"]["version"]}-fpm]", :delayed
   notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :delayed
