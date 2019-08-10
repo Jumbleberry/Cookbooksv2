@@ -90,7 +90,6 @@ end
 # Run the deploy script
 execute "/bin/bash deploy.sh" do
   cwd "/var/www/jbx"
-  #user "root"
   user node[:user]
   notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :delayed
   notifies :start, "service[php#{node["php"]["version"]}-fpm]", :delayed
