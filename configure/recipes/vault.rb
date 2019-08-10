@@ -45,7 +45,6 @@ ENV["VAULT_TOKEN"] = vault_token
 
 edit_resource(:template, "/etc/environment") do
   source "environment.erb"
-  cookbook "configure"
   mode 0664
   owner "root"
   group "root"
@@ -54,7 +53,7 @@ edit_resource(:template, "/etc/environment") do
       :environment => node["etc_environment"],
     }
   })
-end if node["etc_environment"]
+end
 
 edit_resource(:chef_gem, "rubyzip") do
   compile_time false
