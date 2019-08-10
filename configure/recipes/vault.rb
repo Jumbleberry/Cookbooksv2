@@ -43,6 +43,12 @@ end
 node.force_override["etc_environment"]["VAULT_TOKEN"] = vault_token
 ENV["VAULT_TOKEN"] = vault_token
 
+edit_resource(:chef_gem, "rubyzip") do
+  compile_time false
+end
+
+include_recipe "etc_environment"
+
 edit_resource(:template, "/etc/environment") do
   source "environment.erb"
   mode 0664
@@ -54,9 +60,3 @@ edit_resource(:template, "/etc/environment") do
     }
   })
 end
-
-edit_resource(:chef_gem, "rubyzip") do
-  compile_time false
-end
-
-include_recipe "etc_environment"
