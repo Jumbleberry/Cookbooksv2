@@ -28,14 +28,24 @@ consul_template_config "api.ssl.key.json" do
   templates [{
     source: "/etc/nginx/ssl/api.jumble.dev.key.tpl",
     destination: "/etc/nginx/ssl/api.jumble.dev.key",
-    command: "service nginx reload",
+    command: "(service nginx reload 2>/dev/null || service nginx start)",
   }]
   action :nothing
   notifies :enable, "service[consul-template]", :immediate
   notifies :start, "service[consul-template]", :immediate
   notifies :reload, "service[consul-template]", :immediate
 end
-'''
+
+ruby_block "wait for api.jumble.dev" do
+  block do
+    iter = 0
+    until ::File.exists?("/etc/nginx/ssl/api.jumble.dev.key") || iter > 15
+      sleep 1
+      iter += 1
+    end
+  end
+end
+
 # Creates the api virtual host
 openresty_site "api.jumbleberry.com" do
   template "api.jumbleberry.com.erb"
@@ -49,8 +59,6 @@ openresty_site "api.jumbleberry.com" do
   notifies :start, "service[nginx]", :delayed
   notifies :reload, "service[nginx]", :delayed
 end
-'''
-'''
 {:checkout => true, :sync => node.attribute?(:ec2)}.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
@@ -67,8 +75,6 @@ end
     end
   end
 end
-'''
-'''
 consul_template_config "jbx.credentials.json" do
   templates [{
     source: "/var/www/jbx/config/credentials.json.tpl",
@@ -80,7 +86,6 @@ consul_template_config "jbx.credentials.json" do
   notifies :start, "service[consul-template]", :immediate
   notifies :reload, "service[consul-template]", :immediate
 end
-'''
 
 # Run the deploy script
 execute "/bin/bash deploy.sh" do
@@ -91,6 +96,14 @@ execute "/bin/bash deploy.sh" do
   notifies :start, "service[php#{node["php"]["version"]}-fpm]", :delayed
   notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :delayed
   action :nothing
+  only_if do
+    iter = 0
+    until ::File.exists?("/var/www/jbx/config/credentials.json") || iter > 15
+      sleep 1
+      iter += 1
+    end
+    ::File.exists?("/var/www/jbx/config/credentials.json")
+  end
 end
 
 if node.attribute?(:ec2)

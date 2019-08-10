@@ -32,8 +32,7 @@ if node.attribute?(:ec2)
 else
   if !defined?(vault_token) or vault_token.nil?
     begin
-      home_dir = node["openresty"]["user_home"]
-      vault_token = Vault.auth.github(::File.exist?("#{home_dir}/.github-token") ? IO.read("#{home_dir}/.github-token").strip : "")
+      vault_token = Vault.auth.github(node["etc_environment"]["GITHUB"])
       vault_token = vault_token.auth.client_token
     rescue
       vault_token = nil
