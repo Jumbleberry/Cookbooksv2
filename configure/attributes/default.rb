@@ -31,10 +31,8 @@ default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#
 
 default["gearman"]["retries"] = 1
 
-user_home_dir = node["openresty"]["user_home"]
-
 default["etc_environment"] = {
   "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
   "ENV" => node["environment"],
-  "GITHUB" => ::File.exist?("#{user_home_dir}/.github-token") ? IO.read("#{user_home_dir}/.github-token").strip : "",
+  "GITHUB" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
 }
