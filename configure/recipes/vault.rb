@@ -8,40 +8,45 @@ end
 require "vault"
 
 # Attempt to renew an existing token
-begin
-  Vault.address = node["hashicorp-vault"]["config"]["address"]
-  vault_token = Vault.auth_token.lookup_self()
-  Vault.auth_token.renew_self()
-  vault_token = vault_token.data[:id]
-rescue
-  vault_token = nil
+ruby_block "renew_vault_token" do
+  block do
+    begin
+      Vault.address = node["hashicorp-vault"]["config"]["address"]
+      vault_token = Vault.auth_token.lookup_self()
+      Vault.auth_token.renew_self()
+      node.run_state["VAULT_TOKEN"] = vault_token.data[:id]
+    rescue
+      node.run_state["VAULT_TOKEN"] = nil
+    end
+  end
 end
 
 # Create new tokens if existing token is expired, or on first launch
-if node.attribute?(:ec2)
-  if !defined?(vault_token) or vault_token.nil?
-    begin
-      login_command = "VAULT_ADDR=\"#{node["hashicorp-vault"]["config"]["address"]}\" vault login -token-only -method=aws header_value=vault.jumbleberry.com role=#{node["environment"]}-#{node["role"]}"
-      vault_token = shell_out(login_command).stdout
-      Vault.token = vault_token
-      Vault.auth_token.lookup_self()
-    rescue
-      vault_token = nil
-    end
-  end
-else
-  if !defined?(vault_token) or vault_token.nil?
-    begin
-      vault_token = Vault.auth.github(node["etc_environment"]["GITHUB"])
-      vault_token = vault_token.auth.client_token
-    rescue
-      vault_token = nil
+ruby_block "get_vault_token" do
+  block do
+    if node.attribute?(:ec2)
+      if !defined?(node.run_state["VAULT_TOKEN"]) or node.run_state["VAULT_TOKEN"].nil?
+        begin
+          login_command = "VAULT_ADDR=\"#{node["hashicorp-vault"]["config"]["address"]}\" vault login -token-only -method=aws header_value=vault.jumbleberry.com role=#{node["environment"]}-#{node["role"]}"
+          node.run_state["VAULT_TOKEN"] = shell_out(login_command).stdout
+          Vault.token = node.run_state["VAULT_TOKEN"]
+          Vault.auth_token.lookup_self()
+        rescue
+          node.run_state["VAULT_TOKEN"] = nil
+        end
+      end
+    else
+      if !defined?(node.run_state["VAULT_TOKEN"]) or node.run_state["VAULT_TOKEN"].nil?
+        begin
+          vault_token = Vault.auth.github(node["etc_environment"]["GITHUB"])
+          node.run_state["VAULT_TOKEN"] = vault_token.auth.client_token
+        rescue
+          node.run_state["VAULT_TOKEN"] = nil
+        end
+      end
     end
   end
 end
-
-node.force_override["etc_environment"]["VAULT_TOKEN"] = vault_token
-ENV["VAULT_TOKEN"] = vault_token
 
 edit_resource(:chef_gem, "rubyzip") do
   compile_time false
@@ -56,7 +61,9 @@ edit_resource(:template, "/etc/environment") do
   group "root"
   variables(lazy {
     {
-      :environment => node["etc_environment"],
+      :environment => node["etc_environment"].merge(
+        {:VAULT_TOKEN => node.run_state["VAULT_TOKEN"]}
+      ),
     }
   })
 end
