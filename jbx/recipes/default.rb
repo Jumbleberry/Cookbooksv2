@@ -5,6 +5,22 @@ if !node.attribute?(:ec2)
   include_recipe "configure::redis"
 end
 
+edit_resource(:service, "php#{node["php"]["version"]}-fpm") do
+  action [:enable, :start]
+end
+
+edit_resource(:service, "redis@6379") do
+  action [:enable, :start]
+end
+
+edit_resource(:service, "consul-template") do
+  action [:enable, :start]
+end
+
+edit_resource(:service, "nginx") do
+  action [:enable, :start]
+end
+
 # SSL Keys
 cookbook_file "/etc/nginx/ssl/api.pem" do
   mode "0644"
