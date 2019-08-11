@@ -38,7 +38,7 @@ if node.attribute?(:ec2)
   ruby_block "wait for jumbleberry-github" do
     block do
       iter = 0
-      until ::File.exists?("#{user_home_dir}/.ssh/jumbleberry-github") || iter > 15
+      until ::File.exists?("#{node["openresty"]["user_home"]}/.ssh/jumbleberry-github") || iter > 15
         sleep 1
         iter += 1
       end

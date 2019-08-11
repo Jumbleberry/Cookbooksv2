@@ -6,6 +6,7 @@ chef_gem "vault" do
 end
 
 require "vault"
+Vault.address = node["hashicorp-vault"]["config"]["address"]
 
 # Attempt to renew an existing token
 ruby_block "renew_vault_token" do

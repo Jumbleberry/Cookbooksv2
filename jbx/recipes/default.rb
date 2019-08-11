@@ -34,6 +34,7 @@ consul_template_config "api.ssl.key.json" do
   notifies :enable, "service[consul-template]", :immediate
   notifies :start, "service[consul-template]", :immediate
   notifies :reload, "service[consul-template]", :immediate
+  notifies :run, "ruby_block[wait for api.jumble.dev]", :immediate
 end
 
 ruby_block "wait for api.jumble.dev" do
@@ -44,6 +45,7 @@ ruby_block "wait for api.jumble.dev" do
       iter += 1
     end
   end
+  action :nothing
 end
 
 # Creates the api virtual host
