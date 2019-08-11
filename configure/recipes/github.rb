@@ -15,8 +15,8 @@ cookbook_file "#{user_home_dir}/.ssh/config" do
 end
 
 if node.attribute?(:ec2)
-  cookbook_file "#{user_home_dir}/.ssh/jumbleberry-github.tpl" do
-    source "jumbleberry-github.tpl"
+  template "#{user_home_dir}/.ssh/jumbleberry-github.tpl" do
+    source "jumbleberry-github.tpl.erb"
     mode "0600"
     only_if { (keys = Vault.logical.read("secret/data/#{node["environment"]}/keys")) && !keys.data[:data][:jumblebot].nil? }
     notifies :create, "consul_template_config[jumbleberry-github]", :immediately
