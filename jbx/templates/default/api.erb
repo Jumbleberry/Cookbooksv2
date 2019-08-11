@@ -1,4 +1,4 @@
-<% ssl = File.file?("/etc/nginx/ssl/#{@hostname}.key.tpl") %>
+<% ssl = File.file?("/etc/nginx/ssl/#{@app}.key.tpl") %>
 server {
     listen 80;
     server_name <%= @hostname %> www.<%= @hostname %>;
@@ -23,8 +23,8 @@ server {
     ssl_session_cache           shared:SSL:10m;
     ssl_session_timeout         10m;
     
-    ssl_certificate     /etc/nginx/ssl/<%= @hostname %>.pem;
-    ssl_certificate_key /etc/nginx/ssl/<%= @hostname %>.key;
+    ssl_certificate     /etc/nginx/ssl/<%= @app %>.pem;
+    ssl_certificate_key /etc/nginx/ssl/<%= @app %>.key;
     
     <% end %>
     
@@ -47,7 +47,7 @@ server {
             add_header 'Access-Control-Allow-Origin' '*';
             add_header 'Access-Control-Allow-Credentials' 'true';
             add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
-            add_header 'Access-Control-Allow-Headers' 'Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Api-token';
+            add_header 'Access-Control-Allow-Headers' 'Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,<%= @app %>-token';
             add_header 'Access-Control-Max-Age' 1728000;
             add_header 'Content-Type' 'text/plain charset=UTF-8';
             add_header 'Content-Length' 0;

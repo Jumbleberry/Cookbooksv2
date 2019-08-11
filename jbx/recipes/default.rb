@@ -6,14 +6,14 @@ if !node.attribute?(:ec2)
 end
 
 # SSL Keys
-cookbook_file "/etc/nginx/ssl/api.jumble.dev.pem" do
+cookbook_file "/etc/nginx/ssl/api.pem" do
   mode "0644"
-  source "api.jumble.dev.pem"
+  source "api.pem"
   action :create
   notifies :reload, "service[nginx]", :delayed
 end
 
-template "/etc/nginx/ssl/api.jumble.dev.key.tpl" do
+template "/etc/nginx/ssl/api.key.tpl" do
   source "cert.erb"
   mode "0644"
   variables({
@@ -21,26 +21,26 @@ template "/etc/nginx/ssl/api.jumble.dev.key.tpl" do
     :domain => "api",
   })
   only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][:api].nil? }
-  notifies :create, "consul_template_config[api.ssl.key.json]", :immediately
+  notifies :create, "consul_template_config[api.key.json]", :immediately
 end
 
-consul_template_config "api.ssl.key.json" do
+consul_template_config "api.key.json" do
   templates [{
-    source: "/etc/nginx/ssl/api.jumble.dev.key.tpl",
-    destination: "/etc/nginx/ssl/api.jumble.dev.key",
+    source: "/etc/nginx/ssl/api.key.tpl",
+    destination: "/etc/nginx/ssl/api.key",
     command: "(service nginx reload 2>/dev/null || service nginx start)",
   }]
   action :nothing
   notifies :enable, "service[consul-template]", :immediate
   notifies :start, "service[consul-template]", :immediate
   notifies :reload, "service[consul-template]", :immediate
-  notifies :run, "ruby_block[wait for api.jumble.dev]", :immediate
+  notifies :run, "ruby_block[wait for api.key]", :immediate
 end
 
-ruby_block "wait for api.jumble.dev" do
+ruby_block "wait for api.key" do
   block do
     iter = 0
-    until ::File.exists?("/etc/nginx/ssl/api.jumble.dev.key") || iter > 15
+    until ::File.exists?("/etc/nginx/ssl/api.key") || iter > 15
       sleep 1
       iter += 1
     end
@@ -49,11 +49,12 @@ ruby_block "wait for api.jumble.dev" do
 end
 
 # Creates the api virtual host
-openresty_site "api.jumbleberry.com" do
-  template "api.jumbleberry.com.erb"
+openresty_site "api" do
+  template "api.erb"
   variables ({
-    hostname: "api.jumble.dev",
+    hostname: node["jbx"]["domains"]["api"],
     path: "/var/www/jbx/public",
+    app: "api",
   })
   timing :delayed
   action :enable
