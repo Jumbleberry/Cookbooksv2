@@ -1,5 +1,3 @@
-Chef::Log.level = :debug
-
 # Vault Ruby client: https://github.com/hashicorp/vault-ruby
 chef_gem "vault" do
   compile_time true
