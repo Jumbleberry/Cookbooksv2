@@ -110,9 +110,9 @@ end
 execute "/bin/bash deploy.sh" do
   cwd "/var/www/jbx"
   user node[:user]
-  notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :delayed
-  notifies :start, "service[php#{node["php"]["version"]}-fpm]", :delayed
-  notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :delayed
+  notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :before
+  notifies :start, "service[php#{node["php"]["version"]}-fpm]", :before
+  notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :before
   action :nothing
   only_if do
     iter = 0
