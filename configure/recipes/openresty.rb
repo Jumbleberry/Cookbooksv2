@@ -7,6 +7,6 @@ end
 
 openresty_site "default" do
   template "default.conf.erb"
-  timing :immediate
+  timing :immediately
   action :enable
 end
