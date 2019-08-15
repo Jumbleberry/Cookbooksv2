@@ -98,7 +98,7 @@ consul_template_config "jbx.credentials.json" do
   templates [{
     source: "/var/www/jbx/config/credentials.json.tpl",
     destination: "/var/www/jbx/config/credentials.json",
-    command: "service php#{node["php"]["version"]}-fpm reload",
+    command: "service php#{node["php"]["version"]}-fpm reload && (cd /var/www/jbx && /bin/bash deploy.sh)",
   }]
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
   notifies :enable, "service[consul-template]", :immediate
@@ -113,6 +113,7 @@ execute "/bin/bash deploy.sh" do
   notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :before
   notifies :start, "service[php#{node["php"]["version"]}-fpm]", :before
   notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :before
+  subscribes :reload, "service[php#{node["php"]["version"]}-fpm]", :delayed
   action :nothing
   only_if do
     iter = 0
