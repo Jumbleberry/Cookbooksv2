@@ -113,7 +113,7 @@ execute "/bin/bash deploy.sh" do
   notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :before
   notifies :start, "service[php#{node["php"]["version"]}-fpm]", :before
   notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :before
-  subscribes :reload, "service[php#{node["php"]["version"]}-fpm]", :delayed
+  subscribes :run, "service[php#{node["php"]["version"]}-fpm]", :delayed
   action :nothing
   only_if do
     iter = 0
