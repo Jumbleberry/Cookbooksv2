@@ -17,7 +17,7 @@ default["openresty"]["user_home"] = "/var/www"
 default["openresty"]["user_shell"] = "/bin/bash"
 
 default["php"]["fpm"]["display_errors"] = "Off"
-default["php"]["fpm"]["listen"] = "/var/run/php5-fpm.sock"
+default["php"]["fpm"]["listen"] = "/var/run/php7-fpm.sock"
 default["php"]["fpm"]["pm"] = "dynamic"
 default["php"]["fpm"]["max_children"] = "100"
 default["php"]["fpm"]["start_servers"] = "10"
