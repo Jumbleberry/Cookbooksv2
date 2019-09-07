@@ -67,6 +67,9 @@ default["openresty"]["source"]["default_configure_flags"] += [
 default["openresty"]["service"]["restart_on_update"] = false
 default["openresty"]["service"]["start_on_boot"] = false
 
+default["openresty"]["luarocks"]["version"] = "3.2.0"
+default["openresty"]["luarocks"]["url"] = "http://luarocks.org/releases/luarocks-#{node["openresty"]["luarocks"]["version"]}.tar.gz"
+default["openresty"]["luarocks"]["checksum"] = "66c1848a25924917ddc1901e865add8f19f2585360c44a001a03a8c234d3e796"
 default["php"]["version"] = php_version = "7.1"
 default["php"]["composer_download_path"] = "/tmp/composer-install.php"
 default["php"]["packages"] = {

@@ -1,4 +1,5 @@
 include_recipe "openresty::default"
+include_recipe "openresty::luarocks"
 
 delete_resource(:template, "#{node["openresty"]["dir"]}/conf.d/http_realip.conf")
 
