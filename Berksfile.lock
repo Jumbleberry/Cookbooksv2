@@ -9,6 +9,7 @@ DEPENDENCIES
   hashicorp-vault (~> 2.5)
   hostname (~> 0.4)
   logrotate (~> 2.2.0)
+  nodejs (~> 6.0.0)
   ntp (~> 3.6.0)
   ohai (~> 5.2)
   openresty (~> 0.6.2)
@@ -21,6 +22,9 @@ DEPENDENCIES
 
 GRAPH
   apt (7.1.0)
+  ark (4.0.0)
+    build-essential (>= 0.0.0)
+    seven_zip (>= 0.0.0)
   build-essential (8.2.1)
     mingw (>= 1.1)
     seven_zip (>= 0.0.0)
@@ -66,6 +70,9 @@ GRAPH
   logrotate (2.2.0)
   mingw (2.1.0)
     seven_zip (>= 0.0.0)
+  nodejs (6.0.0)
+    ark (>= 2.0.2)
+    build-essential (>= 5.0)
   nssm (4.0.1)
     windows (>= 0.0.0)
   ntp (3.6.0)
