@@ -1,11 +1,6 @@
 lua_shared_dict auto_ssl 5m;
 lua_shared_dict auto_ssl_settings 64k;
 
-map $http_host $directory {
-  ~*jumble(dev|berry)?    '';
-  default                 /$http_host;
-}
-
 init_by_lua_block {
   auto_ssl = (require "resty.auto-ssl").new()
 
@@ -49,6 +44,24 @@ server {
 
   access_log                /var/log/nginx/content.access.log main buffer=4k flush=1m;
   error_log                 /var/log/nginx/content.error.log warn;
+
+  set_by_lua_block $directory {
+    if ngx.var.http_host:match("([%w][%w%-]+[%w])%.([%a][%a]+)") ~= nil and ngx.var.http_host:match("jumble") == nil then
+      local ngx_re  = require "ngx.re"
+      local parts   = ngx_re.split(ngx.var.http_host or ngx.var.remote_ip, "[.]") or {}
+      local part    = #parts
+      local dir     = ""
+
+      while part >= 1 and dir:len() <= 6 do
+        dir  = parts[part] .. (dir:len() > 0 and ("." .. dir) or "")
+        part = part - 1
+      end
+
+      return "/" .. dir
+    end
+
+    return ""
+  }
 
   location / {
     root    /var/www/content$directory;
