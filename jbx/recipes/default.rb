@@ -21,6 +21,12 @@ edit_resource(:service, "nginx") do
   action [:enable, :start]
 end
 
+openresty_site "default" do
+  template "default.conf.erb"
+  timing :immediately
+  action :enable
+end
+
 # SSL Keys
 cookbook_file "/etc/nginx/ssl/api.pem" do
   mode "0644"
