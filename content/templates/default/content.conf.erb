@@ -64,8 +64,9 @@ server {
   }
 
   location / {
-    root    /var/www/content$directory;
+    root    /var/www/content;
     index   index.html index.htm;
+    try_files $directory$uri $directory$uri/index.html $directory/index.html index.html =404;
   }
 }
 
