@@ -3,13 +3,16 @@ include_recipe "configure::services"
 
 if !node.attribute?(:ec2)
   include_recipe "configure::redis"
+  edit_resource(:service, "redis@6379") do
+    action [:enable, :start]
+  end
 end
 
-edit_resource(:service, "php#{node["php"]["version"]}-fpm") do
+edit_resource(:service, "consul") do
   action [:enable, :start]
 end
 
-edit_resource(:service, "redis@6379") do
+edit_resource(:service, "php#{node["php"]["version"]}-fpm") do
   action [:enable, :start]
 end
 
@@ -20,6 +23,8 @@ end
 edit_resource(:service, "nginx") do
   action [:enable, :start]
 end
+
+include_recipe cookbook_name + "::gearman"
 
 openresty_site "default" do
   template "default.conf.erb"

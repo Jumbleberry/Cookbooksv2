@@ -8,7 +8,7 @@ edit_resource(:template, "/etc/systemd/system/consul-template.service") do
 end
 
 edit_resource(:service, "consul-template") do
-  action %i[enable stop]
+  action [:stop, :disable]
 end
 
 edit_resource(:user, "www-data") do
@@ -17,4 +17,15 @@ edit_resource(:user, "www-data") do
   uid node["openresty"]["user_id"]
   gid node["openresty"]["group_id"]
   action :create
+end
+
+# Clear delayed restart notification that will re-enable consul
+ruby_block "clearing delayed consul-template notifications" do
+  block do
+    run_context.delayed_notification_collection.each do |from, notification_array|
+      notification_array.each do |notification|
+        notification.action = :nothing
+      end
+    end
+  end
 end
