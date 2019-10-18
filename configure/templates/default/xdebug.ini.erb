@@ -1,0 +1,4 @@
+zend_extension=xdebug.so
+<%- @xdebug.each do |key, val| -%>
+  xdebug.<%= key %> = <%= val %>
+<%- end -%>

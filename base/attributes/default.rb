@@ -32,11 +32,15 @@ default["redisio"]["bypass_setup"] = false
 default["redisio"]["version"] = "3.2.4"
 
 default["hashicorp-vault"]["gems"] = {
-  "vault" => "0.12.0",
+  "vault" => "0.13.0",
 }
-default["hashicorp-vault"]["version"] = "1.0.0-beta1"
+default["hashicorp-vault"]["version"] = "1.2.3"
 default["hashicorp-vault"]["config"]["path"] = "/etc/vault/vault.json"
 default["hashicorp-vault"]["config"]["address"] = "https://vault.jumbleberry.com"
+
+default["consul"]["config"]["bind_addr"] = node["ipaddress"]
+default["consul"]["config"]["advertise_addr"] = node["ipaddress"]
+default["consul"]["config"]["advertise_addr_wan"] = node["ipaddress"]
 
 default["consul_template"]["service_user"] = "www-data"
 default["consul_template"]["service_group"] = "www-data"
@@ -90,6 +94,8 @@ default["php"]["packages"] = {
   "php#{php_version}-gettext" => "*",
   "php#{php_version}-gd" => "*",
   "php#{php_version}-soap" => "*",
+  "php#{php_version}-gearman" => "*",
+  "php#{php_version}-xdebug" => "*",
 }
 
 default["gearman"]["version"] = "1.1.*"

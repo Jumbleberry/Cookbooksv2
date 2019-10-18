@@ -10,24 +10,30 @@ apt_update "update-php" do
   action :periodic
 end
 
-# Installs php package and modules
+# Installs (non gearman) php package and modules
 node["php"]["packages"].each do |pkg, version|
-  package "#{pkg}" do
-    action :install
-    version version
+  if !pkg.include? "gearman"
+    package "#{pkg}" do
+      action :install
+      version version
+    end
   end
 end
 
 template "/lib/systemd/system/php#{node["php"]["version"]}-fpm.service" do
   source "php-fpm.service.erb"
-  notifies :run, "execute[systemctl-daemon-reload]", :immediately
-  notifies :restart, "service[php#{node["php"]["version"]}-fpm]", :delayed
+  notifies :run, "execute[systemctl-reload]", :immediately
+end
+
+execute "systemctl-reload" do
+  command "/bin/systemctl --system daemon-reload"
+  action :nothing
 end
 
 #Register Php service
 service "php#{node["php"]["version"]}-fpm" do
   supports :status => true, :restart => true, :reload => true, :stop => true
-  action [:enable, :stop]
+  action [:stop, :disable]
 end
 
 directory "/var/log/php/" do
@@ -39,7 +45,7 @@ file "/var/log/php/error.log" do
   mode "0644"
   owner "www-data"
   group "www-data"
-  action :create_if_missing
+  action :create
 end
 
 #Install composer
