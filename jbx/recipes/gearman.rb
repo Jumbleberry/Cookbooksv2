@@ -1,5 +1,4 @@
-include_recipe "configure::user"
-include_recipe "configure::ipaddress"
+include_recipe "configure"
 
 if node["jbx"]["gearman"]
   # Delete the config script if it isnt a symlink to processing
@@ -14,15 +13,8 @@ if node["jbx"]["gearman"]
     action :create
     owner node[:user]
     group node[:user]
-  end
-
-  service "jbx.gearman-job-server" do
-    service_name "gearman-job-server"
-    action [:enable, :start]
-  end
-  service "jbx.gearman-manager" do
-    service_name "gearman-manager"
-    action [:enable, :start]
+    notifies :restart, "service[gearman-manager.service]", :delayed
+    not_if { File.symlink?("/etc/gearman-manager/config.ini") }
   end
 
   consul_definition "gearman" do
@@ -39,17 +31,9 @@ if node["jbx"]["gearman"]
         ],
       },
     )
-    notifies :reload, "service[consul]", :delayed
+    notifies :reload, "service[consul.service]", :delayed
   end
 else
-  service "jbx.gearman-job-server" do
-    service_name "gearman-job-server"
-    action [:stop, :disable]
-  end
-  service "jbx.gearman-manager" do
-    service_name "gearman-manager"
-    action [:stop, :disable]
-  end
   consul_definition "gearman" do
     action :delete
   end

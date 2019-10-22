@@ -1,8 +1,3 @@
-# Vault Ruby client: https://github.com/hashicorp/vault-ruby
-chef_gem "vault" do
-  compile_time true
-end
-
 require "vault"
 Vault.address = node["hashicorp-vault"]["config"]["address"]
 
