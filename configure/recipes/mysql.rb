@@ -14,12 +14,14 @@ if !node.attribute?(:ec2)
   # Create jbx user
   query = "GRANT ALL ON *.* TO \'jbx\'@\'%\' IDENTIFIED BY \'#{node["mysql"]["root_password"]}\'"
   execute "create_jbx_user" do
-    command "echo \"#{query}\" | mysql -u root -p#{node["mysql"]["root_password"]}"
+    command "echo \"#{query}\" | mysql -uroot"
+    only_if "echo 'show databases'  | mysql -uroot -#{node["mysql"]["root_password"]} mysql;"
   end
 
   # Create 'root'@'%'
   query = "GRANT ALL ON *.* TO \'root\'@\'%\' IDENTIFIED BY \'#{node["mysql"]["root_password"]}\'"
   execute "create_root_user" do
-    command "echo \"#{query}\" | mysql -u root -p#{node["mysql"]["root_password"]}"
+    command "echo \"#{query}\" | mysql -uroot"
+    only_if "echo 'show databases'  | mysql -uroot -#{node["mysql"]["root_password"]} mysql;"
   end
 end
