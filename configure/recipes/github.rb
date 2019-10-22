@@ -30,9 +30,7 @@ if node.attribute?(:ec2)
       command: "chmod 600 #{user_home_dir}/.ssh/jumbleberry-github",
     }]
     action :nothing
-    notifies :enable, "service[consul-template]", :immediate
-    notifies :start, "service[consul-template]", :immediate
-    notifies :reload, "service[consul-template]", :immediate
+    notifies :reload, "service[consul-template.service]", :immediate
     notifies :run, "ruby_block[wait for jumbleberry-github]", :immediate
   end
   ruby_block "wait for jumbleberry-github" do

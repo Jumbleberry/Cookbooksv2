@@ -1,35 +1,11 @@
+include_recipe "configure"
+
 require "vault"
-include_recipe "configure::services"
-
-if !node.attribute?(:ec2)
-  include_recipe "configure::redis"
-  edit_resource(:service, "redis@6379") do
-    action [:enable, :start]
-  end
-end
-
-edit_resource(:service, "consul") do
-  action [:enable, :start]
-end
-
-edit_resource(:service, "php#{node["php"]["version"]}-fpm") do
-  action [:enable, :start]
-end
-
-edit_resource(:service, "consul-template") do
-  action [:enable, :start]
-end
-
-edit_resource(:service, "nginx") do
-  action [:enable, :start]
-end
-
-include_recipe cookbook_name + "::gearman"
 
 openresty_site "default" do
   template "default.conf.erb"
-  timing :immediately
   action :enable
+  timing :delayed
 end
 
 # SSL Keys
@@ -37,7 +13,7 @@ cookbook_file "/etc/nginx/ssl/api.pem" do
   mode "0644"
   source "api.pem"
   action :create
-  notifies :reload, "service[nginx]", :delayed
+  notifies :reload, "service[nginx.service]", :delayed
 end
 
 template "/etc/nginx/ssl/api.key.tpl" do
@@ -58,9 +34,7 @@ consul_template_config "api.key.json" do
     command: "(service nginx reload 2>/dev/null || service nginx start)",
   }]
   action :nothing
-  notifies :enable, "service[consul-template]", :immediate
-  notifies :start, "service[consul-template]", :immediate
-  notifies :reload, "service[consul-template]", :immediate
+  notifies :reload, "service[consul-template.service]", :immediate
   notifies :run, "ruby_block[wait for api.key]", :immediate
 end
 
@@ -85,9 +59,6 @@ openresty_site "api" do
   })
   timing :delayed
   action :enable
-  notifies :enable, "service[nginx]", :delayed
-  notifies :start, "service[nginx]", :delayed
-  notifies :reload, "service[nginx]", :delayed
 end
 {:checkout => true, :sync => node.attribute?(:ec2)}.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
@@ -112,19 +83,14 @@ consul_template_config "jbx.credentials.json" do
     command: "service php#{node["php"]["version"]}-fpm reload && (cd /var/www/jbx && /bin/bash deploy.sh)",
   }]
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
-  notifies :enable, "service[consul-template]", :immediate
-  notifies :start, "service[consul-template]", :immediate
-  notifies :reload, "service[consul-template]", :immediate
+  notifies :reload, "service[consul-template.service]", :immediate
 end
 
 # Run the deploy script
 execute "/bin/bash deploy.sh" do
   cwd "/var/www/jbx"
   user node[:user]
-  notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :before
-  notifies :start, "service[php#{node["php"]["version"]}-fpm]", :before
-  notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :before
-  subscribes :run, "service[php#{node["php"]["version"]}-fpm]", :delayed
+  notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
   action :nothing
   only_if do
     iter = 0
@@ -136,13 +102,13 @@ execute "/bin/bash deploy.sh" do
   end
 end
 
-if node.attribute?(:ec2)
-  # Run database migrations
-  execute "database-migrations" do
-    cwd "#{node["jbx"]["path"]}/application/cli"
-    command "php cli.php migrations:migrate --no-interaction"
-    timeout 86400
-    not_if { ::Dir.glob("#{node["jbx"]["path"]}/application/migrations/*.php").empty? }
-    action :nothing
-  end
+# Run database migrations
+execute "database-migrations" do
+  cwd "#{node["jbx"]["path"]}/application/cli"
+  command "php cli.php migrations:migrate --no-interaction"
+  timeout 86400
+  not_if { ::Dir.glob("#{node["jbx"]["path"]}/application/migrations/*.php").empty? }
+  action :nothing
 end
+
+include_recipe cookbook_name + "::gearman"

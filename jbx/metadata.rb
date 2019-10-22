@@ -7,6 +7,5 @@ long_description "Deploy JBX Application"
 version "0.1.0"
 
 depends "configure"
-depends "filebeat"
 depends "hashicorp-vault"
 depends "openresty"
