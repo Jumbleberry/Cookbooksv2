@@ -5,4 +5,10 @@ if !node.attribute?(:ec2)
     line "PermitRootLogin yes"
     notifies :restart, "service[sshd.service]"
   end
+
+  edit_resource(:service, "sshd.service") do
+    service_name "sshd"
+    supports :status => true, :restart => true, :reload => true
+    action node["configure"]["services"]["sshd"] || [:stop, :disable]
+  end
 end

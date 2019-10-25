@@ -58,9 +58,3 @@ edit_resource(:service, "mysql.service") do
   supports :status => true, :restart => true, :reload => true
   action node["configure"]["services"]["mysql"] || stop_disable
 end
-
-edit_resource(:service, "sshd.service") do
-  service_name "sshd"
-  supports :status => true, :restart => true, :reload => true
-  action node["configure"]["services"]["sshd"] || stop_disable
-end
