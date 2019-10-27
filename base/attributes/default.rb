@@ -29,7 +29,7 @@ default["dnsmasq"]["dns_options"] = [
 
 default["redisio"]["package_install"] = false
 default["redisio"]["bypass_setup"] = false
-default["redisio"]["version"] = "3.2.4"
+default["redisio"]["version"] = "5.0.5"
 
 default["hashicorp-vault"]["gems"] = {
   "vault" => "0.13.0",
