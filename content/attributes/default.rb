@@ -15,10 +15,15 @@ default["nodejs"]["npm_packages"] = [
 ]
 
 default["content"] = {
-  "git" => {
+  "content" => {
     "url" => "git@github.com:Jumbleberry/Content.git",
     "destination" => "/tmp/content",
     "revision" => "master",
+  },
+  "jumbleberry.com" => {
+    "url" => "git@github.com:Jumbleberry/Jumbleberry.com.git",
+    "destination" => "/tmp/jumbleberry",
+    "revision" => "v2",
   },
   "path" => "/var/www/content/",
 }
