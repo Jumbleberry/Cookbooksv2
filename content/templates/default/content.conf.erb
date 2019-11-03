@@ -46,7 +46,7 @@ server {
   error_log                 /var/log/nginx/content.error.log warn;
 
   set_by_lua_block $directory {
-    if ngx.var.http_host:match("([%w][%w%-]+[%w])%.([%a][%a]+)") ~= nil and ngx.var.http_host:match("jumble") == nil then
+    if ngx.var.http_host:match("([%w][%w%-]+[%w])%.([%a][%a]+)") ~= nil and ngx.var.http_host:match("content.jumble") == nil then
       local ngx_re  = require "ngx.re"
       local parts   = ngx_re.split(ngx.var.http_host or ngx.var.remote_ip, "[.]") or {}
       local part    = #parts
