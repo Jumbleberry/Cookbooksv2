@@ -96,6 +96,8 @@ server {
   open_file_cache_min_uses  2;
   open_file_cache_errors    on;
 
+  gzip                      off;
+
   location /.well-known/acme-challenge/ {
     content_by_lua_block {
       auto_ssl:challenge_server()
