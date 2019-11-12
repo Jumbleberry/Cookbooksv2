@@ -104,6 +104,14 @@ server {
     }
   }
 
+  location = /nginx {
+    allow                   127.0.0.1;
+    deny                    all;
+    
+    access_log              off;
+    stub_status             on;
+  }
+
   if ($real_scheme != "https") {
     return 301 https://$http_host$request_uri;
   }
