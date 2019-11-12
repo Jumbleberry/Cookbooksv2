@@ -6,6 +6,10 @@ default[cookbook_name]["trusted_roots"] = ["rootCA.crt", "betwixtCA.crt"]
 default[cookbook_name]["kernel"]["shmmax"] = "201326592"
 default[cookbook_name]["kernel"]["shmall"] = "268435456"
 default[cookbook_name]["kernel"]["shmmni"] = "8192"
+default[cookbook_name]["net"]["core.somaxconn"] = "4096"
+default[cookbook_name]["net"]["ipv4.tcp_max_syn_backlog"] = "4096"
+default[cookbook_name]["net"]["ipv4.tcp_tw_reuse"] = "1"
+default[cookbook_name]["net"]["ipv4.tcp_slow_start_after_idle"] = "0"
 
 default["apt"]["compile_time_update"] = true
 
