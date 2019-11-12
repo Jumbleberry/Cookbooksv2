@@ -112,10 +112,6 @@ server {
     stub_status             on;
   }
 
-  if ($real_scheme != "https") {
-    return 301 https://$http_host$request_uri;
-  }
-
   add_header                Strict-Transport-Security "max-age=63072000; preload";
   add_header                X-Content-Type-Options nosniff;
   add_header                X-XSS-Protection "1; mode=block";
@@ -142,6 +138,10 @@ server {
   }
 
   location / {
+    if ($real_scheme != "https") {
+        return 301 https://$http_host$request_uri;
+    }
+
     root    /var/www/content;
     index   index.html index.htm;
     try_files $directory$uri $directory$uri.html $directory$uri/index.html $directory/index.html /index.html =404;
