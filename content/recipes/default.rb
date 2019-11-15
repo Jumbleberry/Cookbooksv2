@@ -8,7 +8,7 @@ directory node["content"]["path"] do
   recursive true
 end
 
-{:checkout => true, :sync => true}.each do |action, should|
+{ checkout: true, sync: true }.each do |action, should|
   git "#{node["content"]["content"]["url"]}-#{action}" do
     repository node["content"]["content"]["url"]
     destination node["content"]["content"]["destination"]
@@ -20,7 +20,7 @@ end
   end
 end
 
-{:checkout => true, :sync => true}.each do |action, should|
+{ checkout: true, sync: true }.each do |action, should|
   git "#{node["content"]["jumbleberry.com"]["url"]}-#{action}" do
     repository node["content"]["jumbleberry.com"]["url"]
     destination node["content"]["jumbleberry.com"]["destination"]

@@ -12,7 +12,7 @@ end
 
 # Installs (non gearman) php package and modules
 node["php"]["packages"].each do |pkg, version|
-  if !pkg.include? "gearman"
+  unless pkg.include? "gearman"
     package "#{pkg}" do
       action :install
       version version
@@ -30,10 +30,10 @@ execute "systemctl-reload" do
   action :nothing
 end
 
-#Register Php service
+# Register Php service
 service "php#{node["php"]["version"]}-fpm" do
-  supports :status => true, :restart => true, :reload => true, :stop => true
-  action [:stop, :disable]
+  supports status: true, restart: true, reload: true, stop: true
+  action %i{stop disable}
 end
 
 directory "/var/log/php/" do
@@ -48,10 +48,10 @@ file "/var/log/php/error.log" do
   action :create
 end
 
-#Install composer
+# Install composer
 remote_file "/tmp/composer-install.php" do
   source "https://getcomposer.org/installer"
-  not_if { ::File.exists?("/usr/local/bin/composer") }
+  not_if { ::File.exist?("/usr/local/bin/composer") }
 end
 
 bash "install composer" do
@@ -61,5 +61,5 @@ bash "install composer" do
     mv composer.phar /usr/local/bin/composer
     chmod 0755 /usr/local/bin/composer
   EOL
-  not_if { ::File.exists?("/usr/local/bin/composer") }
+  not_if { ::File.exist?("/usr/local/bin/composer") }
 end

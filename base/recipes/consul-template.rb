@@ -8,7 +8,7 @@ edit_resource(:template, "/etc/systemd/system/consul-template.service") do
 end
 
 edit_resource(:service, "consul-template") do
-  action [:stop, :disable]
+  action %i{stop disable}
 end
 
 edit_resource(:user, "www-data") do

@@ -1,4 +1,4 @@
-#Fpm configurations
+# Fpm configurations
 include_recipe cookbook_name + "::services"
 node["php"]["fpm"]["conf_dirs"].each do |path|
   template path + "/php.ini" do
@@ -12,14 +12,14 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
     end
   end
 
-  if !node.attribute?(:ec2)
+  unless node.attribute?(:ec2)
     if path.include? "fpm"
       template path + "/conf.d/20-xdebug.ini" do
         source "xdebug.ini.erb"
         owner "root"
         group "root"
         mode 0644
-        variables({xdebug: node["php"]["xdebug"]})
+        variables({ xdebug: node["php"]["xdebug"] })
         notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
       end
     end

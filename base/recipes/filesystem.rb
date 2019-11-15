@@ -1,5 +1,5 @@
 # we're running on a vagrant machine - make it easier to manage /var/www/
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
 
   # Delete dir if its not a symlink
   directory "www-data-non-symlink" do

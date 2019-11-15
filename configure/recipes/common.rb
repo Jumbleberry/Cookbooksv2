@@ -4,7 +4,7 @@ include_recipe "opsworks_stack_state_sync"
 include_recipe "timezone_iii"
 include_recipe "ntp"
 
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
   include_recipe "root_ssh_agent::ppid"
 end
 

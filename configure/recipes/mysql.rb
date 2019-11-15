@@ -1,4 +1,4 @@
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
   edit_resource(:service, "mysql.service") do
     subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", :immediately
   end

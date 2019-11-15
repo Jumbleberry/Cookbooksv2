@@ -24,12 +24,12 @@ default["dnsmasq"]["dns"] = {
     "8.8.4.4",
   ],
 }
-default["dnsmasq"]["dns_options"] = [
-  "no-poll",
-  "no-resolv",
-  "domain-needed",
-  "bogus-priv",
-]
+default["dnsmasq"]["dns_options"] = %w{
+  no-poll
+  no-resolv
+  domain-needed
+  bogus-priv
+}
 
 default["redisio"]["package_install"] = false
 default["redisio"]["bypass_setup"] = false

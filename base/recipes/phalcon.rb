@@ -5,7 +5,7 @@ package "php#{node["php"]["version"]}-phalcon" do
   version node["phalcon"]["version"]
 end
 
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
   git "phalcon-devtools" do
     repository node["phalcon"]["devtools"]
     user "root"
@@ -19,9 +19,9 @@ if !node.attribute?(:ec2)
     cwd "/usr/share/phalcon-devtools"
     code <<-EOH
               ./phalcon.sh
-          EOH
+    EOH
     not_if do
-      ::File.exists?("/usr/bin/phalcon")
+      ::File.exist?("/usr/bin/phalcon")
     end
     notifies :create, "link[/usr/bin/phalcon]", :immediately
   end

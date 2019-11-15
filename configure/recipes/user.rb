@@ -3,7 +3,7 @@ ohai_plugin "user" do
   compile_time true
 end
 
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
   user "root" do
     password "$1$glq2Di3b$.FKZCViTL.4q3GzPQk2ux/"
     action :modify
