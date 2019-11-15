@@ -5,9 +5,9 @@ Ohai.plugin(:IpAddress) do
   depends "virtualization/system", "etc/passwd"
 
   collect_data(:default) do
-    if (!ec2)
-      if (virtualization["system"] == "vbox" || virtualization["system"] == "docker")
-        for interface in ["eth0", "eth1", "enp0s8"]
+    unless ec2
+      if virtualization["system"] == "vbox" || virtualization["system"] == "docker"
+        %w{eth0 eth1 enp0s8}.each do |interface|
           if network["interfaces"][interface]
             ipaddress(network["interfaces"][interface]["addresses"].detect { |k, v| v[:family] == "inet" }.first)
           end

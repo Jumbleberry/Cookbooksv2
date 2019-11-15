@@ -11,10 +11,10 @@ template "/etc/default/gearman-job-server" do
   owner "root"
   group "root"
   mode "0644"
-  variables({:gearman => node["gearman"]})
+  variables({ gearman: node["gearman"] })
 end
 
 # Add an extra reboot for vagrant instances since the filesystem may not be ready on boot
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
   execute "service gearman-manager restart"
 end

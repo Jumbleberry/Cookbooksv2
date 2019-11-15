@@ -32,8 +32,8 @@ node["php"]["packages"].each do |pkg, version|
 end
 
 service "gearman-job-server" do
-  supports :status => true, :restart => true, :reload => true, :stop => true
-  action [:stop, :disable]
+  supports status: true, restart: true, reload: true, stop: true
+  action %i{stop disable}
 end
 
 # Un-symlink our config script to prevent install file from overwriting our good version
@@ -75,14 +75,14 @@ file "/usr/local/bin/gearman-manager" do
 end
 
 service "gearman-manager" do
-  supports :status => true, :restart => true, :reload => true, :stop => true
-  action [:stop, :disable]
+  supports status: true, restart: true, reload: true, stop: true
+  action %i{stop disable}
 end
 
 # Memcached seems to be sideloaded by gearrman; disable it
 service "memcached" do
-  supports :status => true, :restart => true, :reload => true, :stop => true
-  action [:stop, :disable]
+  supports status: true, restart: true, reload: true, stop: true
+  action %i{stop disable}
 end
 
 # Add the cron helper libraries to the consul config folder

@@ -16,5 +16,5 @@ end
 
 service "mysql" do
   supports status: true, restart: true, reload: true
-  action [:stop, :disable]
+  action %i{stop disable}
 end

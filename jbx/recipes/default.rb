@@ -20,8 +20,8 @@ template "/etc/nginx/ssl/api.key.tpl" do
   source "cert.erb"
   mode "0644"
   variables({
-    :app => "jbx",
-    :domain => "api",
+    app: "jbx",
+    domain: "api",
   })
   only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][:api].nil? }
   notifies :create, "consul_template_config[api.key.json]", :immediately
@@ -41,7 +41,7 @@ end
 ruby_block "wait for api.key" do
   block do
     iter = 0
-    until ::File.exists?("/etc/nginx/ssl/api.key") || iter > 15
+    until ::File.exist?("/etc/nginx/ssl/api.key") || iter > 15
       sleep 1
       iter += 1
     end
@@ -60,7 +60,7 @@ openresty_site "api" do
   timing :delayed
   action :enable
 end
-{:checkout => true, :sync => node.attribute?(:ec2)}.each do |action, should|
+{ checkout: true, sync: node.attribute?(:ec2) }.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
     repository node["jbx"]["git-url"]
@@ -94,11 +94,11 @@ execute "/bin/bash deploy.sh" do
   action :nothing
   only_if do
     iter = 0
-    until ::File.exists?("/var/www/jbx/config/credentials.json") || iter > 15
+    until ::File.exist?("/var/www/jbx/config/credentials.json") || iter > 15
       sleep 1
       iter += 1
     end
-    ::File.exists?("/var/www/jbx/config/credentials.json")
+    ::File.exist?("/var/www/jbx/config/credentials.json")
   end
 end
 

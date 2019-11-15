@@ -7,6 +7,6 @@ directory node["consul"]["service"]["config_dir"] do
 end
 
 edit_resource(:service, "consul") do
-  supports :status => true, :restart => true, :reload => true, :stop => true
-  action [:stop, :disable]
+  supports status: true, restart: true, reload: true, stop: true
+  action %i{stop disable}
 end

@@ -29,7 +29,7 @@ if node["jbx"]["gearman"]
           node["consul"]["service"]["config_dir"] + "/gearman_check.php",
           node["ipaddress"],
         ],
-      },
+      }
     )
     notifies :reload, "service[consul.service]", :delayed
   end

@@ -1,4 +1,4 @@
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
   replace_or_add "sshd_config" do
     path "/etc/ssh/sshd_config"
     pattern "PermitRootLogin*"
@@ -8,7 +8,7 @@ if !node.attribute?(:ec2)
 
   edit_resource(:service, "sshd.service") do
     service_name "sshd"
-    supports :status => true, :restart => true, :reload => true
-    action node["configure"]["services"]["sshd"] || [:stop, :disable]
+    supports status: true, restart: true, reload: true
+    action node["configure"]["services"]["sshd"] || %i{stop disable}
   end
 end
