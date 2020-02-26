@@ -112,3 +112,4 @@ execute "database-migrations" do
 end
 
 include_recipe cookbook_name + "::gearman"
+include_recipe cookbook_name + "::crons"
