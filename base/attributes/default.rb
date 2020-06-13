@@ -1,6 +1,5 @@
 cookbook_name = "base"
 
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "mysql-client-5.7", "redis-tools", "libpcre3-dev"]
 default[cookbook_name]["trusted_roots"] = ["rootCA.crt", "betwixtCA.crt"]
 
 default[cookbook_name]["kernel"]["shmmax"] = "201326592"
