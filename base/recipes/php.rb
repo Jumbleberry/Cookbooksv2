@@ -22,7 +22,7 @@ end
 
 template "/lib/systemd/system/php#{node["php"]["version"]}-fpm.service" do
   source "php-fpm.service.erb"
-  notifies :run, "execute[systemctl-reload]", :immediately
+  notifies :run, "execute[systemctl-reload]", :immediately if node["virtualization"]["system"] != "docker"
 end
 
 execute "systemctl-reload" do
