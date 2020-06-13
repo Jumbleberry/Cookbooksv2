@@ -1,8 +1,16 @@
-# postgresql cookbook
+# PostgreSQL cookbook
 
-[![Build Status](https://travis-ci.org/sous-chefs/postgresql.svg?branch=master)](https://travis-ci.org/sous-chefs/postgresql) [![Cookbook Version](https://img.shields.io/cookbook/v/postgresql.svg)](https://supermarket.chef.io/cookbooks/postgresql)
+[![Cookbook Version](https://img.shields.io/cookbook/v/postgresql.svg)](https://supermarket.chef.io/cookbooks/postgresql)
+[![Build Status](https://img.shields.io/circleci/project/github/sous-chefs/postgresql/master.svg)](https://circleci.com/gh/sous-chefs/postgresql)
+[![OpenCollective](https://opencollective.com/sous-chefs/backers/badge.svg)](#backers)
+[![OpenCollective](https://opencollective.com/sous-chefs/sponsors/badge.svg)](#sponsors)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Installs and configures PostgreSQL as a client or a server.
+
+## Maintainers
+
+This cookbook is maintained by the Sous Chefs. The Sous Chefs are a community of Chef cookbook maintainers working together to maintain important cookbooks. If you’d like to know more please visit [sous-chefs.org](https://sous-chefs.org/) or come chat with us on the Chef Community Slack in [#sous-chefs](https://chefcommunity.slack.com/messages/C2V7B88SF).
 
 ## Upgrading
 
@@ -16,21 +24,18 @@ If you are wondering where all the recipes went in v7.0+, or how on earth I use 
 - Debian 7+
 - Ubuntu 14.04+
 - Red Hat/CentOS/Scientific 6+
-- Fedora
 
-## PostgreSQL version
+### PostgreSQL version
 
 We follow the currently supported versions listed on <https://www.postgresql.org/support/versioning/>
-
-The earliest supported version is currently:
-
-- 9.3 (9.3.23)
 
 ### Chef
 
 - Chef 13.8+
 
 ### Cookbook Dependencies
+
+None.
 
 ## Resources
 
@@ -51,15 +56,14 @@ Name                | Types             | Description                           
 `hba_file`          | String            |                                                               | `#{conf_dir}/main/pg_hba.conf`            | no
 `ident_file`        | String            |                                                               | `#{conf_dir}/main/pg_ident.conf`          | no
 `external_pid_file` | String            |                                                               | `/var/run/postgresql/#{version}-main.pid` | no
-`password`          | String, nil       | Pass in a password, or have the cookbook generate one for you | 'generate'                                | no
-`initdb_locale`     | String            | Locale to initialise the database with                        | 'C'                                       | no
+`password`          | String, nil       | Pass in a password, or have the cookbook generate one for you | random string                             | no
 
 #### Examples
 
-To install '9.5' version:
+To install version 9.5:
 
-```
-postgresql_client_install 'My Postgresql Client install' do
+```ruby
+postgresql_client_install 'My PostgreSQL Client install' do
   version '9.5'
 end
 ```
@@ -82,24 +86,30 @@ Name                | Types           | Description                             
 `hba_file`          | String          | Path of pg_hba.conf file                      | `<default_os_path>/pg_hba.conf'`                   | no
 `ident_file`        | String          | Path of pg_ident.conf file                    | `<default_os_path>/pg_ident.conf`                  | no
 `external_pid_file` | String          | Path of PID file                              | `/var/run/postgresql/<version>-main.pid</version>` | no
-`password`          | String, nil     | Set postgresql user password                  | 'generate'                                         | no
-`port`              | Integer         | Set listen port of postgresql service         | 5432                                               | no
+`password`          | String, nil     | Set PostgreSQL user password                  | 'generate'                                         | no
+`port`              | Integer         | Set listen port of PostgreSQL service         | 5432                                               | no
+`initdb_locale`     | String          | Locale to initialise the database with        | 'C'                                                | no
 
 #### Examples
 
-To install PostgreSQL server, set you own postgres password using non-default service port.
+To install PostgreSQL server, set your own postgres password using non-default service port.
 
-```
-postgresql_server_install 'My Postgresql Server install' do
+```ruby
+postgresql_server_install 'My PostgreSQL Server install' do
   action :install
 end
 
-postgresql_server_install 'Setup my postgresql 9.5 server' do
-  password 'MyP4ssw0d'
+postgresql_server_install 'Setup my PostgreSQL 9.6 server' do
+  password 'MyP4ssw0rd'
   port 5433
   action :create
 end
 ```
+
+#### Known issues
+
+On some platforms (e.g. Ubuntu 18.04), your `initdb_locale` should be set to the
+same as the template database [GH-555](https://github.com/sous-chefs/postgresql/issues/555).
 
 ### postgresql_server_conf
 
@@ -114,29 +124,29 @@ This resource manages postgresql.conf configuration file.
 Name                   | Types   | Description                             | Default                                             | Required?
 ---------------------- | ------- | --------------------------------------- | --------------------------------------------------- | ---------
 `version`              | String  | Version of PostgreSQL to install        | '9.6'                                               | no
-`data_directory`       | String  | Path of postgresql data directory       | `<default_os_data_path>`                            | no
+`data_directory`       | String  | Path of PostgreSQL data directory       | `<default_os_data_path>`                            | no
 `hba_file`             | String  | Path of pg_hba.conf file                | `<default_os_conf_path>/pg_hba.conf`                | no
 `ident_file`           | String  | Path of pg_ident.conf file              | `<default_os_conf_path>/pg_ident.conf`              | no
 `external_pid_file`    | String  | Path of PID file                        | `/var/run/postgresql/<postgresql_version>-main.pid` | no
 `stats_temp_directory` | String  | Path of stats file                      | `/var/run/postgresql/version>-main.pg_stat_tmp`     | no
-`port`                 | Integer | Set listen port of postgresql service   | 5432                                                | no
+`port`                 | Integer | Set listen port of PostgreSQL service   | 5432                                                | no
 `additional_config`    | Hash    | Extra configuration for the config file | {}                                                  | no
 
 #### Examples
 
 To setup your PostgreSQL configuration with a specific data directory. If you have installed a specific version of PostgreSQL (different from 9.6), you must specify version in this resource too.
 
-```
+```ruby
 postgresql_server_conf 'My PostgreSQL Config' do
   version '9.5'
   data_directory '/data/postgresql/9.5/main'
-  notification :reload
+  notifies :reload, 'service[postgresql]'
 end
 ```
 
 ### postgresql_extension
 
-This resource manages postgresql extensions for a given database.
+This resource manages PostgreSQL extensions for a given database.
 
 #### Actions
 
@@ -188,11 +198,10 @@ Name            | Types  | Description                                          
 `access_user`   | String | The user accessing the database. Can use 'all' for any user                               | 'all'             | yes
 `access_addr`   | String | The address(es) allowed access. Can be nil if method ident is used since it is local then | nil               | no
 `access_method` | String | Authentication method to use                                                              | 'ident'           | yes
-`notification`  | Symbol | How to notify Postgres of the access change.                                              | :reload           | yes
 
 #### Examples
 
-To grant access to the postgresql user with ident authentication:
+To grant access to the PostgreSQL user with ident authentication:
 
 ```ruby
 postgresql_access 'local_postgres_superuser' do
@@ -207,14 +216,14 @@ end
 
 This generates the following line in the `pg_hba.conf`:
 
-```
+```config
 # Local postgres superuser access
 local   all             postgres                                ident
 ```
 
 **Note**: The template by default generates a local access for Unix domain sockets only to support running the SQL execute resources. In Postgres version 9.1 and higher, the method is 'peer' instead of 'ident' which is identical. It looks like this:
 
-```
+```config
 # "local" is for Unix domain socket connections only
 local   all             all                                     peer
 ```
@@ -237,7 +246,6 @@ Name           | Types       | Description                                      
 `comment`      | String, nil | A comment to leave above the entry in `pg_ident`                           | nil                 | no
 `system_user`  | String      | System user or regexp used for the mapping                                 | None                | yes
 `pg_user`      | String      | Pg user or regexp used for the mapping                                     | None                | yes
-`notification` | Symbol      | How to notify Postgres of the access change.                               | :reload             | no
 
 #### Examples
 
@@ -254,7 +262,7 @@ end
 
 This generates the following line in the `pg_ident.conf`:
 
-```
+```config
 # MAPNAME       SYSTEM-USERNAME         PG-USERNAME
 
 # John Mapping
@@ -276,7 +284,7 @@ end
 
 This generates the following line in the `pg_hba.conf`:
 
-```
+```config
 # Local postgres superuser access
 host   all             foo               127.0.0.1/32           ident
 ```
@@ -298,7 +306,7 @@ Name       | Types   | Description                                              
 `user`     | String  | User which run psql command                                         | 'postgres'          | no
 `template` | String  | Template used to create the new database                            | 'template1'         | no
 `host`     | String  | Define the host server where the database creation will be executed | Not set (localhost) | no
-`port`     | Integer | Define the port of Postgresql server                                | 5432                | no
+`port`     | Integer | Define the port of PostgreSQL server                                | 5432                | no
 `encoding` | String  | Define database encoding                                            | 'UTF-8'             | no
 `locale`   | String  | Define database locale                                              | 'en_US.UTF-8'       | no
 `owner`    | String  | Define the owner of the database                                    | Not set             | no
@@ -313,34 +321,54 @@ postgresql_database 'my_app' do
 end
 ```
 
+#### Known issues
+
+On some platforms (e.g. Ubuntu 18.04), your `initdb_locale` should be set to the
+same as the template database [GH-555](https://github.com/sous-chefs/postgresql/issues/555).
+
 ### postgresql_user
 
 This resource manage PostgreSQL users.
 
 #### Actions
 
-- `create_user` - (default) Creates the given user with default or given privileges.
+- `create` - (default) Creates the given user with default or given privileges.
 - `update` - Update user privilieges.
 - `drop` - Deletes the given user.
 
 #### Properties
 
-Name                 | Types   | Description                                     | Default | Required?
--------------------- | ------- | ----------------------------------------------- | ------- | ---------
-`user`               | String  | User to create                                  |         | Yes
-`superuser`          | Boolean | Define if user needs superuser role             | false   | no
-`createdb`           | Boolean | Define if user needs createdb role              | false   | no
-`createrole`         | Boolean | Define if user needs createrole role            | false   | no
-`inherit`            | Boolean | Define if user inherits the privileges of roles | true    | no
-`replication`        | Boolean | Define if user needs replication role           | false   | no
-`login`              | Boolean | Define if user can login                        | true    | no
-`password`           | String  | Set user's password                             |         | no
-`encrypted_password` | String  | Set user's password with an hashed password     |         | no
-`valid_until`        | String  | Define an account expiration date               |         | no
+Name                 | Types   | Description                                     | Default  | Required?
+-------------------- | ------- | ----------------------------------------------- | -------- | ---------
+`create_user`        | String  | User to create (defaults to the resource name)  |          | Yes
+`superuser`          | Boolean | Define if user needs superuser role             | false    | no
+`createdb`           | Boolean | Define if user needs createdb role              | false    | no
+`createrole`         | Boolean | Define if user needs createrole role            | false    | no
+`inherit`            | Boolean | Define if user inherits the privileges of roles | true     | no
+`replication`        | Boolean | Define if user needs replication role           | false    | no
+`login`              | Boolean | Define if user can login                        | true     | no
+`password`           | String  | Set user's password                             |          | no
+`encrypted_password` | String  | Set user's password with an hashed password     |          | no
+`valid_until`        | String  | Define an account expiration date               |          | no
+`attributes`         | Hash    | Additional attributes for :update action        | {}       | no
+`user`               | String  | User for command                                | postgres | no
+`database`           | String  | Database for command                            |          | no
+`host`               | String  | Hostname for command                            |          | no
+`port`               | Integer | Port number to connect to postgres              | 5432     | no
 
 #### Examples
 
-Create an user `user1` with a password, with `createdb` role and set an expiration date to 2018, Dec 21.
+Create a user `user1` with a password, with `createdb` role and set an expiration date to 2018, Dec 21.
+
+```ruby
+postgresql_user 'user1' do
+  password 'UserP4ssword'
+  createdb true
+  valid_until '2018-12-31'
+end
+```
+
+Create a user `user1` with a password, with `createdb` role and set an expiration date to 2018, Dec 21.
 
 ```ruby
 postgresql_user 'user1' do
@@ -356,55 +384,48 @@ To install and configure your PostgreSQL instance you need to create your own co
 
 More examples can be found in `test/cookbooks/test/recipes`
 
-## Example Useage
-
-Example: cookbooks/my_postgresql/recipes/default.rb
+## Example Usage
 
 ```ruby
-postgresql_client_install 'Postgresql Client' do
+# cookbooks/my_postgresql/recipes/default.rb
+
+postgresql_client_install 'PostgreSQL Client' do
   setup_repo false
-  version '9.5'
+  version '10.6'
 end
 
-postgresql_server_install 'Postgresql Server' do
-  version '9.5'
+postgresql_server_install 'PostgreSQL Server' do
+  version '10.6'
   setup_repo false
-  password 'P0sgresP4ssword'
+  password 'P0stgresP4ssword'
 end
 
 postgresql_server_conf 'PostgreSQL Config' do
-  notification :reload
+  notifies :reload, 'service[postgresql]'
 end
 ```
 
-## Contributing
+## Contributors
 
-Please refer to each project's style guidelines and guidelines for submitting patches and additions. In general, we follow the "fork-and-pull" Git workflow.
+This project exists thanks to all the people who [contribute.](https://opencollective.com/sous-chefs/contributors.svg?width=890&button=false)
 
-1. **Fork** the repo on GitHub
-2. **Clone** the project to your own machine
-3. **Commit** changes to your own branch
-4. **Push** your work back up to your fork
-5. Submit a **Pull request** so that we can review your changes
+### Backers
 
-NOTE: Be sure to merge the latest from "upstream" before making a pull request!
+Thank you to all our backers!
 
-[Contribution informations for this project] (CONTRIBUTING.md)
+![https://opencollective.com/sous-chefs#backers](https://opencollective.com/sous-chefs/backers.svg?width=600&avatarHeight=40)
 
-## License
+### Sponsors
 
-Copyright 2010-2017, Chef Software, Inc.
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website.
 
-```text
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
+![https://opencollective.com/sous-chefs/sponsor/0/website](https://opencollective.com/sous-chefs/sponsor/0/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/1/website](https://opencollective.com/sous-chefs/sponsor/1/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/2/website](https://opencollective.com/sous-chefs/sponsor/2/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/3/website](https://opencollective.com/sous-chefs/sponsor/3/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/4/website](https://opencollective.com/sous-chefs/sponsor/4/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/5/website](https://opencollective.com/sous-chefs/sponsor/5/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/6/website](https://opencollective.com/sous-chefs/sponsor/6/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/7/website](https://opencollective.com/sous-chefs/sponsor/7/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/8/website](https://opencollective.com/sous-chefs/sponsor/8/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/9/website](https://opencollective.com/sous-chefs/sponsor/9/avatar.svg?avatarHeight=100)

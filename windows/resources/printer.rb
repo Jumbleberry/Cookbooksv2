@@ -22,9 +22,6 @@
 
 require 'resolv'
 
-chef_version_for_provides '< 14.0' if respond_to?(:chef_version_for_provides)
-resource_name :windows_printer
-
 property :device_id, String, name_property: true
 property :comment, String
 property :default, [true, false], default: false

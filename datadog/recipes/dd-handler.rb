@@ -19,25 +19,26 @@
 require 'uri'
 
 if Chef::Config[:why_run]
-  # chef_handler 1.1 needs us to require datadog handler's file,
-  # which makes why-run runs fail when chef-handler-datadog is not installed,
-  # so skip the recipe when in why-run mode until we can use chef_handler 1.2
+  # chef_handler 1.4 doesn't support why-run mode
+  # see https://github.com/chef-cookbooks/chef_handler/issues/41
   Chef::Log.warn('Running in why-run mode, skipping dd-handler')
   return
 end
 
-include_recipe 'chef_handler'
-ENV['DATADOG_HOST'] = node['datadog']['url']
+if node['datadog']['chef_handler_version'] &&
+   Gem::Version.new(node['datadog']['chef_handler_version']) < Gem::Version.new('0.10.0')
+  Chef::Log.error('We do not support chef_handler_version < v0.10.0 anymore, please use a more recent version.')
+  return
+end
 
 chef_gem 'chef-handler-datadog' do # ~FC009
   action :install
   version node['datadog']['chef_handler_version']
-  # Chef 12 introduced `compile_time` - remove when Chef 11 is EOL.
+  # Chef 12 introduced `compile_time` - remove respond_to? when Chef 11 is EOL.
   compile_time true if respond_to?(:compile_time)
   clear_sources true if node['datadog']['gem_server']
   source node['datadog']['gem_server'] if node['datadog']['gem_server']
 end
-require 'chef/handler/datadog'
 
 # add web proxy from config support
 web_proxy = node['datadog']['web_proxy']
@@ -49,7 +50,7 @@ unless web_proxy['host'].nil?
 end
 
 # Create the handler to run at the end of the Chef execution
-chef_handler 'Chef::Handler::Datadog' do # rubocop:disable Metrics/BlockLength
+chef_handler 'Chef::Handler::Datadog' do
   def extra_endpoints
     extra_endpoints = []
     node['datadog']['extra_endpoints'].each do |_, endpoint|
@@ -61,14 +62,20 @@ chef_handler 'Chef::Handler::Datadog' do # rubocop:disable Metrics/BlockLength
     extra_endpoints
   end
 
-  def handler_config # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+  def handler_config
     extra_config = node['datadog']['handler_extra_config'].reject { |_, v| v.nil? }
+
+    # Since Agent 6 supports node['datadog']['url'] = nil, we need to fallback
+    # on a default value here.
+    dd_url = 'https://app.datadoghq.com'
+    dd_url = node['datadog']['url'] unless node['datadog']['url'].nil?
+
     config = extra_config.merge(
       :api_key => Chef::Datadog.api_key(node),
       :application_key => Chef::Datadog.application_key(node),
       :use_ec2_instance_id => node['datadog']['use_ec2_instance_id'],
       :tag_prefix => node['datadog']['tag_prefix'],
-      :url => node['datadog']['url'],
+      :url => dd_url,
       :extra_endpoints => extra_endpoints,
       :tags_blacklist_regex => node['datadog']['tags_blacklist_regex'],
       :send_policy_tags => node['datadog']['send_policy_tags'],

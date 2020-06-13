@@ -2,7 +2,7 @@
 # Cookbook: consul
 # License: Apache 2.0
 #
-# Copyright 2014-2016, Bloomberg Finance L.P.
+# Copyright:: 2014-2016, Bloomberg Finance L.P.
 #
 require 'poise'
 
@@ -12,7 +12,6 @@ module ConsulCookbook
     class ConsulAcl < Chef::Resource
       include Poise
       provides(:consul_acl)
-      actions(:create, :delete)
       default_action(:create)
 
       # @!attribute url
@@ -79,8 +78,8 @@ module ConsulCookbook
         begin
           require 'diplomat'
         rescue LoadError
-          raise RunTimeError, 'The diplomat gem is required; ' \
-                              'include recipe[consul::client_gem] to install.'
+          raise 'The diplomat gem is required; ' \
+                'include recipe[consul::client_gem] to install.'
         end
         Diplomat.configure do |config|
           config.url = new_resource.url
@@ -90,10 +89,35 @@ module ConsulCookbook
       end
 
       def up_to_date?
-        old_acl = Diplomat::Acl.info(new_resource.to_acl['ID'], nil, :return)
-        return false if old_acl.nil? || old_acl.empty?
-        old_acl.first.select! { |k, _v| %w(ID Type Name Rules).include?(k) }
-        old_acl.first == new_resource.to_acl
+        retry_block(max_tries: 3, sleep: 0.5) do
+          old_acl = Diplomat::Acl.info(new_resource.to_acl['ID'], {}, :return)
+          return false if old_acl.nil? || old_acl.empty?
+          old_acl.first.select! { |k, _v| %w(ID Type Name Rules).include?(k) }
+          old_acl.first == new_resource.to_acl
+        end
+      end
+
+      def retry_block(opts = {}, &_block)
+        opts = {
+          max_tries: 3, # Number of tries
+          sleep: 0, # Seconds to sleep between tries
+        }.merge(opts)
+
+        try_count = 1
+
+        begin
+          return yield try_count
+        rescue Diplomat::UnknownStatus
+          try_count += 1
+
+          # If we've maxed out our attempts, raise the exception to the calling code
+          raise if try_count > opts[:max_tries]
+
+          # Sleep before the next retry if the option was given
+          sleep opts[:sleep]
+
+          retry
+        end
       end
     end
   end
