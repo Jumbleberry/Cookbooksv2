@@ -26,7 +26,6 @@ property :password,           String
 property :encrypted_password, String
 property :valid_until,        String
 property :attributes,         Hash, default: {}
-property :sensitive,          [true, false], default: true
 
 # Connection prefernces
 property :user,     String, default: 'postgres'
@@ -37,11 +36,12 @@ property :port,     Integer, default: 5432
 action :create do
   Chef::Log.warn('You cannot use "attributes" property with create action.') unless new_resource.attributes.empty?
 
-  execute "create postgresql user #{new_resource.create_user}" do # ~FC009
+  execute "create postgresql user #{new_resource.create_user}" do
     user 'postgres'
     command create_user_sql(new_resource)
     sensitive new_resource.sensitive
-    not_if { slave? || user_exists?(new_resource) }
+    environment(psql_environment)
+    not_if { follower? || user_exists?(new_resource) }
   end
 end
 
@@ -50,8 +50,9 @@ action :update do
     execute "update postgresql user #{new_resource.create_user}" do
       user 'postgres'
       command update_user_sql(new_resource)
+      environment(psql_environment)
       sensitive true
-      not_if { slave? }
+      not_if { follower? }
       only_if { user_exists?(new_resource) }
     end
   else
@@ -65,8 +66,9 @@ action :update do
       execute "Update postgresql user #{new_resource.create_user} to set #{attr}" do
         user 'postgres'
         command update_user_with_attributes_sql(new_resource, v)
+        environment(psql_environment)
         sensitive true
-        not_if { slave? }
+        not_if { follower? }
         only_if { user_exists?(new_resource) }
       end
     end
@@ -77,8 +79,9 @@ action :drop do
   execute "drop postgresql user #{new_resource.create_user}" do
     user 'postgres'
     command drop_user_sql(new_resource)
+    environment(psql_environment)
     sensitive true
-    not_if { slave? }
+    not_if { follower? }
     only_if { user_exists?(new_resource) }
   end
 end

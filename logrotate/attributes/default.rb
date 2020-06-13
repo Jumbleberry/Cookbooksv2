@@ -2,9 +2,9 @@
 # Cookbook:: logrotate
 # Attribute:: default
 #
-# Copyright:: 2013-2017, Chef Software, Inc
-# Copyright:: 2015-2017, Steven Danna
-# Copyright:: 2016-2017, Bloomberg Finance L.P.
+# Copyright:: 2013-2019, Chef Software, Inc
+# Copyright:: 2015-2019, Steven Danna
+# Copyright:: 2016-2019, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ default['logrotate']['package'] = {
   'name' => 'logrotate',
   'source' => nil,
   'version' => nil,
+  # TODO: remove provider option in next major release
   'provider' => nil,
   'action' => :upgrade,
 }
@@ -49,7 +50,7 @@ default['logrotate']['global'] = {
   '/var/log/btmp' => {
     'missingok' => true,
     'monthly' => true,
-    'create' => '0660 root utmp',
+    'create' => '0600 root utmp',
     'rotate' => 1,
   },
 }

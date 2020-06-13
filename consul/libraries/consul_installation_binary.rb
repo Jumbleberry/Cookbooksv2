@@ -2,7 +2,7 @@
 # Cookbook: consul
 # License: Apache 2.0
 #
-# Copyright 2014-2016, Bloomberg Finance L.P.
+# Copyright:: 2014-2016, Bloomberg Finance L.P.
 #
 require 'poise'
 require_relative './helpers'
@@ -48,7 +48,7 @@ module ConsulCookbook
           end
 
           url = format(options[:archive_url], version: options[:version], basename: options[:archive_basename])
-          poise_archive url do
+          poise_archive url do # cookstyle: disable ChefDeprecations/PoiseArchiveUsage
             destination join_path(options[:extract_to], new_resource.version)
             source_properties checksum: options[:archive_checksum]
             strip_components 0
@@ -58,6 +58,15 @@ module ConsulCookbook
           link '/usr/local/bin/consul' do
             to ::File.join(options[:extract_to], new_resource.version, 'consul')
             not_if { windows? }
+          end
+
+          link "#{node.config_prefix_path}\\consul.exe" do
+            to ::File.join(options[:extract_to], new_resource.version, 'consul.exe')
+            only_if { windows? }
+          end
+          windows_path node.config_prefix_path do
+            action :add
+            only_if { windows? }
           end
         end
       end

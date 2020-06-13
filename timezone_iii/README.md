@@ -1,3 +1,5 @@
+This cookbook is deprectated and as of chef 14.6 is now apart of chef resources https://docs.chef.io/resource_timezone.html
+
 [![Chef cookbook](https://img.shields.io/cookbook/v/timezone_iii.svg)]()
 [![Code Climate](https://codeclimate.com/github/Stromweld/timezone_iii/badges/gpa.svg)](https://codeclimate.com/github/Stromweld/timezone_iii)
 [![Issue Count](https://codeclimate.com/github/Stromweld/timezone_iii/badges/issue_count.svg)](https://codeclimate.com/github/Stromweld/timezone_iii)
@@ -27,7 +29,7 @@ It _should_ work with any OS that uses the IANA/Olson timezone database and stor
 
 | Attribute | Default | Comment |
 | -------------  | -------------  | -------------  |
-| ['timezone_iii']['timezone'] | 'value_for_platform_family(debian: 'Etc/UTC', default: 'UTC')' | String, timezone to set OS to |
+| ['timezone_iii']['timezone'] | 'value_for_platform_family(debian: 'Etc/UTC', default: 'UTC')' | String, timezone to set OS to; See `timezone_iii::windows` below for windows |
 | ['timezone_iii']['clock_utc'] | `nil` | String(true,false), UTC setting in /etc/sysconfig/clock (RHEL family only) |
 | ['timezone_iii']['tzdata_dir'] | '/usr/share/zoneinfo' | String, the path to the root of the tzdata files; the default value is for most known distributions of Linux |
 | ['timezone_iii']['localtime_path'] | '/etc/localtime' | String, the path to the file used by the kernel to read the local timezone's settings; the default works for Linux and other *ix variants |
