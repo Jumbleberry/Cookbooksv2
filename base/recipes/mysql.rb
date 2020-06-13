@@ -10,7 +10,7 @@ end
 
 # Install mysql server
 execute "mysql-install" do
-  command "(export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -y -q mysql-server-5.7)"
+  command "(export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -y -q mysql-server)"
   user "root"
 end
 
