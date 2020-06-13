@@ -78,13 +78,12 @@ default["openresty"]["service"]["start_on_boot"] = false
 default["openresty"]["luarocks"]["version"] = "3.2.0"
 default["openresty"]["luarocks"]["url"] = "http://luarocks.org/releases/luarocks-#{node["openresty"]["luarocks"]["version"]}.tar.gz"
 default["openresty"]["luarocks"]["checksum"] = "66c1848a25924917ddc1901e865add8f19f2585360c44a001a03a8c234d3e796"
-default["php"]["version"] = php_version = "7.1"
+default["php"]["version"] = php_version = "7.3"
 default["php"]["composer_download_path"] = "/tmp/composer-install.php"
 default["php"]["packages"] = {
   "php#{php_version}-fpm" => "*",
   "php#{php_version}-common" => "*",
   "php#{php_version}-mysql" => "*",
-  "php#{php_version}-mcrypt" => "*",
   "php#{php_version}-zip" => "*",
   "php#{php_version}-memcache" => "*",
   "php#{php_version}-cli" => "*",
@@ -107,7 +106,7 @@ default["gearman"]["manager"]["repository"] = "https://github.com/brianlmoon/Gea
 default["gearman"]["manager"]["revision"] = "ffc828dac2547aff76cb4962bb3fcc4f454ec8a2"
 
 default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
-default["phalcon"]["version"] = "3.4.1-1+php#{php_version}"
+default["phalcon"]["version"] = "3.4.5-1+php#{php_version}"
 default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.git"
 
 default["nodejs"]["install_method"] = "binary"
