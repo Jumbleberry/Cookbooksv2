@@ -1,5 +1,9 @@
 #!/usr/bin/php
 <?php
+
+if (function_exists('xdebug_disable'))
+    xdebug_disable();
+
 require dirname(__FILE__) . '/GearmanAdmin/GearmanAdmin.php';
 $code = 2;
 
