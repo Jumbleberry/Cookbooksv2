@@ -92,14 +92,6 @@ execute "/bin/bash deploy.sh" do
   user node[:user]
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
   action :nothing
-  only_if do
-    iter = 0
-    until ::File.exist?("/var/www/jbx/config/credentials.json") || iter > 15
-      sleep 1
-      iter += 1
-    end
-    ::File.exist?("/var/www/jbx/config/credentials.json")
-  end
 end
 
 # Run database migrations
