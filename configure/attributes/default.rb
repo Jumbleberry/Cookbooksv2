@@ -1,7 +1,7 @@
 cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "mysql-client-5.7", "redis-tools", "libpcre3-dev", "tzdata"]
+default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "mysql-client-5.7", "redis-tools", "libpcre3-dev", "tzdata", "default-jre"]
 
 default["timezone_iii"]["timezone"] = node["tz"]
 
@@ -46,4 +46,5 @@ default["etc_environment"] = {
   "VAULT_TOKEN" => ENV["VAULT_TOKEN"] || "",
   "ENV" => node["environment"],
   "GITHUB" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
+  "PHP_IDE_CONFIG" => "serverName=#{node["environment"]}",
 }
