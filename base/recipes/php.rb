@@ -20,6 +20,33 @@ node["php"]["packages"].each do |pkg, version|
   end
 end
 
+# Install SPX extension
+bash "php-spx" do
+  user "root"
+  cwd "/tmp"
+  code <<-EOH
+    git clone https://github.com/NoiseByNorthwest/php-spx.git
+    cd php-spx
+    phpize
+    ./configure
+    make
+    sudo make install
+    cd /tmp
+    rm -rf /tmmp/php-spx
+  EOH
+  not_if "/usr/bin/php -m | grep SPX"
+  notifies :create, "template[spx.ini]", :immediately
+end
+
+template "spx.ini" do
+  path "/etc/php/#{node["php"]["version"]}/mods-available/spx.ini"
+  source "spx.ini.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  action :nothing
+end
+
 template "/lib/systemd/system/php#{node["php"]["version"]}-fpm.service" do
   source "php-fpm.service.erb"
   notifies :run, "execute[systemctl-reload]", :immediately if node["virtualization"]["system"] != "docker"
