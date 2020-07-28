@@ -22,6 +22,15 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
         variables({ xdebug: node["php"]["xdebug"] })
         notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
       end
+
+      link path + "/conf.d/10-spx.ini" do
+        to path + "/../mods-available/spx.ini"
+        owner "root"
+        group "root"
+        only_if { ::File.exist? "#{path}/../mods-available/spx.ini" }
+        action :create
+        notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
+      end
     end
   end
 end
