@@ -34,7 +34,7 @@ bash "php-spx" do
     cd /tmp
     rm -rf /tmmp/php-spx
   EOH
-  not_if "/usr/bin/php -m | grep SPX"
+  not_if { ::File.exist?("/etc/php/#{node["php"]["version"]}/mods-available/spx.ini") }
   notifies :create, "template[spx.ini]", :immediately
 end
 
