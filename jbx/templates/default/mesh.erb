@@ -1,0 +1,1026 @@
+# Optimize loading process
+init_by_lua_block {
+    local resty_dogstatsd = require "resty_dogstatsd"
+
+    -- Flatten table of arguments into a 2d map
+    local function safe_url_args(args)
+        if type(args) == "table" then
+            for k,v in pairs(args) do
+                -- Grab the last value from any table
+                if type(v) == "table" then
+                    args[k] = tostring(safe_url_args(v)[#v] or nil)
+                -- Force to empty string if it's boolean
+                elseif type(v) ~= "string" then
+                    args[k] = ""
+                end
+            end
+        end
+        
+        return args
+    end
+    
+    -- Get a delimited list of table keys as a string
+    local function table_keys(table, sep)
+        local n     = 0
+        local str   = ""
+        sep         = sep or "!"
+        
+        for k,v in pairs(table) do
+            str = str .. (str:len() > 0 and sep or "") .. k
+        end
+        
+        return str
+    end
+    
+    -- Turn empty strings to nil
+    local function empty_to_nil(arg)
+        if type(arg) == "string" then
+            return (arg ~= "" and arg) or nil
+        end
+
+        return arg
+    end
+    
+    -- Turn POST to GET
+    local function post_to_get()
+        if ngx.var.request_method == "POST" then
+            ngx.req.read_body()
+            
+            -- Get both GET and POST args
+            local args      = safe_url_args(ngx.req.get_uri_args() or {})
+            local post_args = safe_url_args(ngx.req.get_post_args() or {})
+            local post_count=0
+            
+            -- Merge POST into GET, but GET takes precedence
+            for k,v in pairs(post_args) do
+                args[k]     = args[k] or v
+                post_count  = post_count + 1
+            end
+            
+            -- Record the fact that this conversion took place
+            if post_count > 0 then
+                args["post_to_get"] = table_keys(post_args) or ""
+            end
+            
+            -- Place args back
+            ngx.req.set_uri_args(args)
+            
+            -- Discard request body - only GET to upstream!
+            ngx.req.set_body_data("")
+        end
+    end
+
+    -- Convert an existing cookie into set-cookie format
+    local function cookie_to_headers(cookie)
+        local name = "cookie_" .. cookie
+        return (ngx.var[name] ~= nil and { ["set-cookie"] = { cookie .. "=" .. ngx.var[name] .. ";" } }) or {}
+    end
+
+    -- Parse tracking cookie
+    local function parse_tracking_cookie(cookie)
+        local header = cookie or ngx.resp.get_headers()
+        
+        if header["set-cookie"] ~= nil then
+            -- Always work with cookies as a table
+            header["set-cookie"] = (type(header["set-cookie"]) == "string" and { header["set-cookie"] }) or header["set-cookie"]
+
+            -- Search for tracking cookie and return its values if found
+            for k, cookie in ipairs(header["set-cookie"]) do
+                if cookie:match("^uid(%d+)=(%d+)-.*-(%d*);") ~= nil then
+                    return { 
+                        ["sid"]  = cookie:match("^uid(%d+)=%d+-.*-%d*;"),
+                        ["hid"]  = cookie:match("^uid%d+=(%d+)-.*-%d*;"), 
+                        ["lpid"] = cookie:match("^uid%d+=%d+-.*-(%d*);") 
+                    }
+                end
+            end
+        end
+
+        return {}
+    end
+
+    -- Async processing function
+    local function post_process(premature, key, tags, response_time)
+        -- Initialize
+        local dogstatsd = resty_dogstatsd.new({
+            statsd = {
+                host        = "127.0.0.1",
+                port        = 8125,
+                namespace   = "ngx"
+            },
+            tags = {}
+        })
+        
+        -- Send metrics
+        dogstatsd:increment(key .. ".count", 1, 1, tags)
+        
+        if response_time then
+            dogstatsd:timer(key .. ".time", math.floor((tonumber(response_time) or 0) * 1000), tags)
+        end
+    end
+    
+    _G.safe_url_args         = safe_url_args
+    _G.table_keys            = table_keys
+    _G.empty_to_nil          = empty_to_nil
+    _G.post_to_get           = post_to_get
+    _G.cookie_to_headers     = cookie_to_headers
+    _G.parse_tracking_cookie = parse_tracking_cookie
+    _G.post_process          = post_process
+}
+
+server {
+    listen 80 reuseport;
+    listen [::]:80 reuseport;
+    
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    default_type text/html;
+    ssl_certificate     /etc/nginx/ssl/api.pem;
+    ssl_certificate_key /etc/nginx/ssl/api.key;
+    ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    server_name                     ~^(?<subdomain>)(?<domain>[^\.]+(\.:)[^\.:]+)$
+                                    ~^(?<subdomain>.*?(\.|:))(?<domain>[^\.]+(\.|:)[^\.:]+)$
+                                    ~^(?<subdomain>)(?<domain>.*)$;
+    
+    tcp_nopush                      off;
+    merge_slashes                   off;
+    access_log                      /var/log/nginx/router.log main buffer=64k flush=30s if=$loggable;
+    
+    # Default upstream server
+    set                             $upstream hydra-hp;
+    set                             $upstream_name "";
+    set                             $upstream_server "";
+    set                             $unencrypted_request "";
+
+    # Whether or not request is encrypted
+    set                             $encrypted_uri "";
+    set                             $original_args "";
+    set                             $decrypted_args "";
+
+    # Args that may undergo some conversion
+    set                             $hid "";
+    set                             $sid "";
+    set                             $lpid "";
+    
+    # Keep track of how long we slept nginx for
+    set                             $sleep_time "0";
+
+    # Keep track of the original user IP (including v6 address)
+    set_by_lua_block $real_ip {
+        if ngx.var.realip_remote_addr == nil or ngx.var.realip_remote_addr == ngx.var.remote_addr then
+            return ngx.var.remote_addr
+        end
+
+        return ngx.var.http_cf_connecting_ipv6 or ngx.var.remote_addr
+    }
+
+    # Fix X-Forwarded-For to strip out the proxy addresses
+    set_by_lua_block $real_x_forwarded_for { 
+        local ip            = ngx.var.remote_addr
+        local x_forwarded   = ngx.var.http_x_forwarded_for or ""
+        
+        -- Find the LAST occurrence of the true IP inside the x-forwarded header
+        local regex         = "^(.*)" .. ip:gsub("%W","%%%0") .. ".-$"
+        local x_forwarded   = x_forwarded:gsub(regex, "%1"):gsub(",?%s*$", "") or ""
+        
+        -- No x-forwarded-for header, nothing to do
+        if x_forwarded:len() == 0 then
+            return ip
+        end
+        
+        -- Set real_x_forwarded_for header
+        return x_forwarded .. "," .. ip
+    }
+    
+    # Ensure domain is set
+    set_by_lua_block $domain {
+        -- Ensure the domain ends with an alpha string (ruling out ipv4 or v6 addresses), and that it's not a regex
+        local valid_domain  = ngx.var.domain ~= nil and ngx.var.domain:match("%p%a+$") and ngx.var.domain:match("?") == nil
+        
+        -- Modify domain & subdomain to acceptable values if they're direct IPs
+        ngx.var.subdomain   = valid_domain and ngx.var.subdomain or "www."
+        return valid_domain and ngx.var.domain or "mediaclicktrker.com"
+    }
+    
+    # Show server host name as header
+    more_set_headers                'Server: Hydra';
+    more_set_headers                'X-Robots-Tag: none';
+    more_set_headers                'X-XSS-Protection: 0';
+    more_set_headers                'Referrer-Policy: never, no-referrer';
+    more_set_headers                'Content-Security-Policy: upgrade-insecure-requests';
+    more_set_headers                'Cache-Control: no-cache, no-store, must-revalidate';
+    more_set_headers                'Pragma: no-cache';
+    expires                         epoch;
+    
+    # Debugging headers
+    more_set_headers                "X-Backend-Connect-Time: $upstream_connect_time";
+    more_set_headers                "X-Backend-Response-Time: $upstream_header_time";
+    more_set_headers                "X-Backend-Status: $upstream_status";
+    more_set_headers                "X-Backend-Uri: $uri";
+    more_set_headers                "X-Backend-Args: $args";
+    
+    location = /favicon.ico { 
+        return                      204;
+    }
+    
+    location = /robots.txt {
+        add_header                  Content-Type text/plain;
+        return                      200 "User-agent: *\nDisallow: /\n";
+    }
+    
+    location = /hsts {
+        add_header                  Content-Type application/javascript;
+        return                      204;
+    }
+    
+    location = / {
+        return                      204;
+    }
+    
+    # Explicity define this route or it gets picked up as an encrypted link
+    location = /thisthingisnotathing {
+        rewrite                     ^/.* /nginx break;
+        try_files                   @proxy @proxy;
+    }
+    
+    # HP Status Endpoint
+    location = /status.php {
+        set                         $upstream hp;
+        try_files                   @proxy @proxy;
+    }
+    
+    location = /status {
+        allow                       127.0.0.1;
+        deny                        all;
+        
+        check_status;
+    }
+    
+    location = /nginx {
+        allow                       127.0.0.1;
+        deny                        all;
+        
+        stub_status                 on;
+    }
+    
+    location ~ /fpm(-ping)?$ {
+        allow                       127.0.0.1;
+        deny                        all;
+        
+        fastcgi_pass                unix:/var/run/php5-fpm.sock;
+        fastcgi_param               SCRIPT_FILENAME $uri;
+        include                     fastcgi_params;
+    }
+    
+    location ^~ /v1/ {
+        allow                       10.0.0.0/8;
+        allow                       127.0.0.1/32;
+        allow                       172.16.0.0/12;
+        allow                       192.168.0.0/16;
+        allow                       fd00::/8;
+        deny                        all;
+        
+        proxy_pass                  http://127.0.0.1:8500;
+    }
+    
+    # Rotator routes - HP does not know how to handle these
+    location ~* ^/(campaign|affiliate|script)/ {
+        set                         $upstream hydra;
+        
+        try_files                   @proxy @proxy;
+    }
+    
+    # Catch errors caused by stripping ~ characters from special-base64 encoded urls
+    rewrite "^(/(?:[A-Za-z0-9-_]{4}){4,}(?:[A-Za-z0-9-_]{2}))(/.*)?$"  $1~~$2  last;
+    rewrite "^(/(?:[A-Za-z0-9-_]{4}){4,}(?:[A-Za-z0-9-_]{3}))(/.*)?$"  $1~$2   last;
+    rewrite "^(/(?:[A-Za-z0-9-_]{4}){4,}(?:[A-Za-z0-9-_]{2}~))(/.*)?$" $1~$2   last;
+    
+    # Decrypt redirect URLs
+    location ~ "^/([A-Za-z0-9-_]{4}){4,}([A-Za-z0-9-_]{2}~~|[A-Za-z0-9-_]{3}~)?~*(/|$)" {
+        
+        # Keep the original encrypted URL in case we need to 3xx - we dont want to leak the real one
+        set $encrypted_uri $uri;
+        set $original_args $args;
+        
+        rewrite_by_lua_block {
+            post_to_get()
+            
+            local aes       = require "resty.aes"
+            local str       = require "resty.string"
+            local cjson     = require "cjson.safe"
+            
+            local rd        = "/rd/r.php"
+            local uri       = ngx.var.uri
+            local args      = safe_url_args(ngx.req.get_uri_args() or {})
+            
+            -- Split the request uri /<encrypted_string>[/<c1>/<c2>/<c3>[/...]]
+            local vars      = {}
+            local index     = 2
+            local len       = uri:len() + 1
+            
+            while index < len do
+                local next      = uri:find("/", index) or len
+                vars[#vars + 1] = uri:sub(index, next - 1)
+                index           = next + 1
+            end
+            
+            -- Encryption key, md5 of HitPaths key
+            local encryption_key = "f3a51b6c2d80757485b82fed8b7e69de"
+            
+            -- HitPath's specified IV a base64 encoded binary value
+            local iv = {iv = ngx.decode_base64("/6X1qWqcchVbzFy7EEQQ8Q==")}
+            
+            -- Encryption service
+            local aes_256_cbc = aes:new(encryption_key, nil, aes.cipher(256, "cbc"), iv)
+            
+            -- Swap unsafe URL characters for their correct version, and decode
+            uri = vars[1]:gsub(".", {["-"] = "+", ["_"] = "/", ["~"] = "="}) or "";
+            uri = ngx.decode_base64(uri) or ""
+            
+            -- Decrypt and decode the JSON payload if possible
+            local decrypted = aes_256_cbc:decrypt(uri) or "{}"
+            local decoded   = cjson.decode(decrypted) or {}
+            
+            -- save decoded args for later user
+            ngx.var.decrypted_args = ngx.encode_args(decoded)
+            
+            -- Merge encrypted args into passed ones
+            local mapping = { ["agentid"] = "pub", ["progid"] = "sid", ["ctype"] = nil, ["cid"] = nil, ["lpid"] = nil }
+            for k,v in pairs(decoded) do
+                -- HP encrypted links include hardcoded values of 0 for ctype, cid, lpid
+                --  We dont use ctype in our links internally, so if ctype is encrypted in the URL it should have originated on HP
+                if decoded["ctype"] == nil or (v ~= "0" and v ~= 0) then
+                    args[mapping[k] or k] = v or args[mapping[k] or k]
+                end
+            end
+            
+            -- Add c vars
+            args["c1"]    = args["c1"] or vars[2]
+            args["c2"]    = args["c2"] or vars[3]
+            args["c3"]    = args["c3"] or vars[4]
+            
+            -- If _url is encrypted as a param, restore it as the path & delete from args
+            if args["_url"] ~= nil then
+                rd              = args["_url"]
+                args["_url"]    = nil
+            end
+            
+            -- Update request to _url or /rd/r.php (default) format and rewrite
+            ngx.req.set_uri_args(args)
+            ngx.req.set_uri(rd, true)
+        }
+    }
+    
+    # Salvage poorly configured requests
+    location ~* ^(/rd/[^/]+)/ {
+        set                         $subdomain "re.";
+        rewrite                     ^(/rd/[^/]+)(.+) $1?path=$2;
+    }
+    
+    # Rate limit redirects to 1 per ip, 1 per 5sec
+    location ~* ^/rd/(r|o|getsid) {
+        rewrite_by_lua_block {
+            post_to_get()
+            
+            -- Dont allow unencrypted routes on non-hp links
+            if ngx.var.domain:match("mediaclick") == nil and ngx.var.encrypted_uri:len() == 0 then
+                --ngx.exec("@redirect_encrypted_only")
+            end
+            
+            -- Create a MD5 hash of affiliate vars
+            local args          = safe_url_args(ngx.req.get_uri_args() or {})
+            args["md5"]         = ngx.md5(
+                (args["pub"] or "") ..
+                (args["progid"] or "") ..
+                (args["c1"] or "") .. 
+                (args["c2"] or "") .. 
+                (args["c3"] or "") .. 
+                (args["bps"] or "") ..
+                (args["step"] or "")
+            )
+            
+            ngx.req.set_uri_args(args)
+        }
+        
+        error_page                  404 =403 @redirect_encrypted_only;
+        error_page                  503 @redirect_exponential_backoff;
+        
+        # Only allow 1 concurrent request
+        limit_conn                  conn_limit_per_ip 1;
+        limit_conn_status           503;
+            
+        # 5 seconds between duplicate requests
+        limit_req                   zone=force_cookie_reuse nodelay;
+        limit_req_status            503;
+        
+        # Continue normal processing
+        try_files                   @proxy @proxy;
+    }
+    
+    # Restrict simultaneous pixel fires
+    location ~* ^/rd/(px|ipx|hs|csp|sml) {
+        rewrite_by_lua_block {
+            post_to_get()
+            
+            -- Dont allow unencrypted routes on non-hp links
+            if ngx.var.domain:match("mediaclick") == nil and ngx.var.encrypted_uri:len() == 0 then
+                --ngx.exec("@redirect_encrypted_only")
+            end
+        }
+        
+        error_page                  404 =403 @redirect_encrypted_only;
+        error_page                  503 @redirect_exponential_backoff;
+        
+        # Only allow 1 concurrent request
+        limit_conn                  conn_limit_per_ip 1;
+        limit_conn_status           503;
+        
+        # Continue normal processing
+        try_files                   @proxy @proxy;
+    }
+    
+    # Audit endpoint for analyzing dead requests
+    location ~* ^/rd/audit {
+        content_by_lua_block {
+            ngx.header['Content-Type'] = "image/gif"
+            ngx.say(ngx.decode_base64("R0lGODdhAQABAIAAAPxqbAAAACwAAAAAAQABAAACAkQBADs="))
+            ngx.exit(200)
+        }
+    }
+    
+    # All other Redirect / Pixel types have no guard
+    location ~* ^/rd/ {
+        try_files                   @proxy @proxy;
+    }
+    
+    # Error reporting when unencrypted redirect urls are detected
+    location @redirect_encrypted_only {
+        add_header                  Content-Type text/plain;
+        return                      403 "Sorry, this server only accepts encrypted URLs.\nPlease find updated links.\n";
+    }
+    
+    # 302 base rate limiting to force the re-use of cookies under race conditions
+    location @redirect_exponential_backoff {
+        content_by_lua_block {
+            local uri   = ngx.var.uri
+            local args  = safe_url_args(ngx.req.get_uri_args() or {})
+            
+            -- Remove md5 arg
+            args["md5"]            = nil
+            args["post_to_get"]    = nil
+            
+            -- Default back to the original encrypted URL & query string if one exists
+            if ngx.var.encrypted_uri ~= nil and ngx.var.encrypted_uri:len() > 0 then
+                uri     = ngx.var.encrypted_uri
+                args    = safe_url_args(ngx.decode_args(ngx.var.original_args) or {})
+                ngx.req.set_uri_args(args)
+            end
+            
+            -- function to validate whether a parameter is a natural number
+            local not_natural = function(n)
+                return (n == nil) or (math.floor(n) ~= n) or (n < 0)
+            end
+            
+            -- validate initial value
+            if args.retries == nil or not_natural(tonumber(args.retries)) then
+                args.retries = 0
+            end
+            
+            local retries = tonumber(args.retries)
+            args.retries  = retries + 1
+            
+            -- don't allow endless retries
+            if args.retries > 5 then
+                ngx.status = 409
+                ngx.say("Sorry, you've exceeded the simultaneous request limit.\nPlease try again shortly.\n")
+                ngx.exit(409)
+            end
+            
+            -- exponential backoff & then try again
+            ngx.var.sleep_time = (retries * (retries + 1)) / 2
+            ngx.sleep((retries * (retries + 1)) / 2)
+            ngx.status = 302
+            ngx.redirect(uri .. "?" .. ngx.encode_args(args), 302)
+            ngx.exit(302)
+        }
+    }
+    
+    # Catch all
+    location / {
+        try_files                   @proxy @proxy;
+    }
+    
+    location @proxy {
+        if ($block_ua) {
+            return 444;
+        }
+        
+        # A few final tasks before proxying
+        rewrite_by_lua_block {
+            post_to_get()
+            
+            local args              = safe_url_args(ngx.req.get_uri_args() or {})
+            
+            -- Further processing on encrypted/decrypted arguments for safety
+            local encrypted         = ngx.decode_args(ngx.var.decrypted_args or "") or {}
+            local restricted        = { "_url", "md5", "rhid", "rsid", "origin", "referer", "cookie", "accept" }
+
+            local event             = (encrypted["event"] or args["event"] or "purchase"):lower()
+            
+            -- If rhid/event is set it's not safe to forward on to HP or we could get duplicates
+            if ngx.var.upstream:match("hp") ~= nil and (args["rhid"] ~= nil or encrypted["rhid"] ~= nil or event ~= "purchase") then
+                ngx.var.upstream = "hydra"
+            end
+            
+            -- Force restricted arguments back to their value from the encrypted URL, or delete them
+            for k,v in pairs(restricted) do
+                if args[v] ~= nil then
+                    args[v] = encrypted[v] or nil
+                end
+            end
+
+            -- Set overloaded values
+            args["pub"]   = args["agentid"] or args["pub"]
+            args["sid"]   = args["progid"] or args["sid"]
+            
+            -- persist the safe arguments back to args
+            ngx.req.set_uri_args(args)
+
+            -- Block potentially harmful retry/redirect loops
+            if (args.retries ~= nil and (tonumber(args.retries) or 0) > 5) or
+                    (args.redirects ~= nil and (tonumber(args.redirects) or 0) > 3) then
+                ngx.status = 409
+                ngx.say("Sorry, it seems like you're stuck in a redirect loop.\nPlease try again shortly.\n")
+                ngx.exit(409)
+            end
+        }
+        
+        # Connection limits to prevent abuse
+        limit_conn                  conn_limit_per_ip 25;
+        limit_conn                  conn_limit_per_upstream 1000;
+
+        proxy_http_version          1.1;
+        proxy_set_header            Connection "";
+        
+        proxy_set_header            X-Real-IP $real_ip;
+        proxy_set_header            X-Forwarded-For $real_x_forwarded_for;
+        proxy_set_header            X-Forwarded-Proto $real_scheme;
+        proxy_set_header            Accept-Encoding "";
+        proxy_set_header            Content-Type "";
+        
+        # Mask CFs involvement in upstream
+        proxy_set_header            Cf-Connecting-Ip "";
+        proxy_set_header            Cf-Visitor "";
+        proxy_set_header            CF-RAY "";
+        proxy_set_header            Server "";
+        
+        # Hide CF Headers from response
+        proxy_hide_header           CF-RAY;
+        proxy_hide_header           Server;
+        proxy_hide_header           Connection;
+        
+        proxy_connect_timeout       1;
+        proxy_read_timeout          15;
+        proxy_send_timeout          15;
+        proxy_buffering             off;
+        proxy_request_buffering     on;
+        proxy_ignore_client_abort   on;
+
+        proxy_buffers               16 4k;
+        proxy_buffer_size           32k;
+        proxy_busy_buffers_size     32k;
+        
+        # Safe to upstream all requests, as all requests are forced to be GET
+        proxy_intercept_errors      on;
+        proxy_next_upstream         non_idempotent error timeout invalid_header http_500 http_502 http_503 http_504 http_404;
+        proxy_next_upstream_timeout 30;
+        proxy_next_upstream_tries   2;
+        
+        proxy_method                GET;
+        proxy_set_header            Host $subdomain$domain;
+        proxy_pass                  http://$upstream;
+        
+        proxy_cookie_domain         ~^.*?$ .$domain;
+        proxy_redirect              ~^((?:[^:]*:)?//[^:]+\.mediaclick[^.]+\.com)(?::\d+)?(/.+)$ https://$subdomain$domain$2;
+
+        # Get around an issue where chrome downloads pages if a 204 code is paired with a nosniff header
+        header_filter_by_lua_block {
+            if ngx.status ~= 204 then
+                ngx.header["X-Content-Type-Options"] = "nosniff"
+            end
+        }
+    }
+    
+    # Log stats to datadog
+    log_by_lua_block {
+        -- Log health check status (only report for local health checks)
+        if (ngx.var.request_uri == "/thisthingisnotathing" or ngx.var.request_uri == "/status.php") and ngx.var.remote_addr == "127.0.0.1" then
+            return ngx.timer.at(0, post_process, "hydra.healthcheck", { "upstream:router", "response_code:" .. (ngx.var.status or "502") }, ngx.var.request_time)
+        -- Methods are not required for logging (no errors, didn't go upstream)
+        elseif (ngx.status < 300 or (ngx.status - 400) < 100) and ngx.var.loggable == "0" then
+            return
+        end
+        
+        local ngx_re            = require "ngx.re"
+        local headers           = ngx.resp.get_headers()
+
+        -- Key reporting variables
+        local args              = safe_url_args(ngx.req.get_uri_args() or {})
+        local upstreams         = ngx_re.split(ngx.var.upstream_addr or ngx.var.server_addr, ", ") or {}
+        local response_times    = ngx_re.split(ngx.var.upstream_header_time or ngx.var.request_time, ", ") or {}
+        local upstream_statuses = ngx_re.split(ngx.var.upstream_status or ngx.status, ", ") or {}
+        
+        -- Shave/Scrub detection
+        local scrub             = ngx.re.match(ngx.var.arg_referer or ngx.var.http_referer or "", "(?|&)y[0-9]=000([a-zA-Z])(&|$)") or nil
+        -- Referer Host
+        local referer_host      = ngx.re.match(ngx.var.arg_referer or ngx.var.http_referer or "", "^(?:[^:]*:)?(?://)?([^:/]+)") or nil
+        
+        local upstream_names    = { ["127.0.0.1:8001"] = "hydra", ["127.0.0.1:8002"] = "hp", ["127.0.0.1:8003"] = "ndp" }
+        local safe_args         = { "sid", "rsid", "pub", "lpid", "retries", "redirects", "rel" }
+        local na                = "N/A"
+
+        local host              = (ngx.var.domain and ((ngx.var.subdomain or "").. ngx.var.domain)) or nil
+
+        for k,v in pairs(upstreams) do
+            local tags              = {
+                "upstream:"         .. (upstream_names[v] or "router"),
+                "upstream_hops:"    .. (k or "1"),
+                "response_code:"    .. (upstream_statuses[k] and upstream_statuses[k]:gsub("-", "499") or na),
+                "vanity_domain:"    .. (ngx.var.domain or ngx.var.host or na),
+                "subdomain:"        .. ((ngx.var.subdomain ~= nil and ngx.var.subdomain:len() > 1 and ngx.var.subdomain) or na),
+                "origin:"           .. (ngx.var.arg_origin or host or na),
+                "referer:"          .. (referer_host and referer_host[1] or na),
+                "uri:"              .. (ngx.var.uri or na),
+                "http_accept:"      .. (headers["Accept"] or headers["accept"] or na),
+                "scrub:"            .. (scrub and (scrub[1]:lower():match("y") and "active" or "inactive") or na)
+            }
+            
+            -- pull arguments from the query string
+            for k,v in pairs(safe_args) do
+                table.insert(tags, v .. ':' .. (args[v] or na))
+            end
+            
+            -- don't include sleep time in total request time
+            ngx.timer.at(0, post_process, "hydra.request", tags, (tonumber(response_times[k]) or 0) - (tonumber(ngx.var.sleep_time) or 0))
+        end
+
+        ngx.var.unencrypted_request = "GET " .. (ngx.var.uri or "") .. ngx.var.is_args .. (ngx.var.args or "") .. " " .. (ngx.var.server_protocol or "HTTP/1.1")
+        ngx.var.upstream_name       = upstream_names[upstreams[#upstreams]] or "router"
+        ngx.var.upstream_server     = upstreams[#upstreams] or ngx.var.server_addr
+
+        -- Parse tracking cookie to fetch real var values from upstream
+        local hit                   = parse_tracking_cookie()
+        ngx.var.sid                 = hit["sid"] or args["sid"] or nil
+        ngx.var.hid                 = hit["hid"] or args["hid"] or nil
+        ngx.var.lpid                = hit["lpid"] or args["lpid"] or nil
+    }
+}
+
+upstream router {
+    zone                                router 64k;
+
+    server                              127.0.0.1:80 max_fails=0;
+
+    check                               interval=7500 rise=1 fall=2 timeout=5000 default_down=false type=http;
+    check_http_send                     "GET /thisthingisnotathing HTTP/1.1\r\nHOST:www.mediaclicktrker.com\r\n\r\n";
+    check_http_expect_alive             http_2xx;
+}
+
+upstream hydra-hp {
+    zone                                hydra-hp 64k;
+    keepalive                           60;
+    
+    server                              127.0.0.1:8001 weight=999999999999 max_fails=0;
+    server                              127.0.0.1:8002 backup max_fails=0;
+    
+    check                               interval=15000 rise=2 fall=3 timeout=12500 default_down=false type=http;
+    check_http_send                     "GET /thisthingisnotathing HTTP/1.1\r\nHOST:www.mediaclicktrker.com\r\n\r\n";
+    check_http_expect_alive             http_2xx;
+}
+
+upstream tp {
+    zone                                tp 64k;
+
+    server                              127.0.0.1:80 max_fails=0;
+
+    check                               interval=7500 rise=1 fall=2 timeout=5000 default_down=false type=http;
+    check_http_send                     "GET /thisthingisnotathing HTTP/1.1\r\nHOST:www.mediaclicktp.com\r\n\r\n";
+    check_http_expect_alive             http_2xx;
+}
+
+upstream hp-ndp {
+    zone                                hp-ndp 64k;
+    keepalive                           60;
+    
+    server                              127.0.0.1:8002 weight=999999999999 max_fails=0;
+    server                              127.0.0.1:8003 backup max_fails=0;
+    
+    check                               interval=15000 rise=2 fall=3 timeout=12500 default_down=false type=http;
+    check_http_send                     "GET /thisthingisnotathing HTTP/1.1\r\nHOST:www.mediaclicktp.com\r\n\r\n";
+    check_http_expect_alive             http_2xx;
+}
+
+upstream hydra {
+    zone                                hydra 64k;
+    keepalive                           60;
+    
+    server                              127.0.0.1:8001 max_fails=0;
+}
+
+upstream hp {
+    zone                                hp 64k;
+    keepalive                           40;
+    
+    server                              127.0.0.1:8002 max_fails=0;
+}
+
+upstream ndp {
+    zone                                ndp 64k;
+    keepalive                           60;
+    
+    server                              127.0.0.1:8003 max_fails=0;
+}
+
+server {
+    listen                              8001 default_server reuseport;
+    tcp_nopush                          off;
+    
+    more_set_headers                    "X-Backend-Server: hydra-$hostname";
+    set                                 $upstream unix:/var/run/php5-fpm.sock;
+    
+    access_log                          /var/log/nginx/hydra.log main buffer=64k flush=30s if=$loggable;
+    
+    root                                /var/www/jbx/public/;
+    try_files                           $uri/ /index.php?_url=$uri&$args;
+    
+    location = /nginx {
+        access_log                      off;
+        stub_status                     on;
+    }
+    
+    location = /index.php {
+        fastcgi_keep_conn               on;
+        fastcgi_hide_header             Server;
+        fastcgi_hide_header             Connection;
+
+        fastcgi_connect_timeout         10;
+        fastcgi_read_timeout            15;
+        fastcgi_send_timeout            15;
+        fastcgi_buffering               off;
+        fastcgi_request_buffering       on;
+        fastcgi_ignore_client_abort     on;
+
+        fastcgi_buffers                 16 4k;
+        
+        include                         fastcgi_params;
+        fastcgi_index                   index.php;
+        fastcgi_split_path_info         ^(.+\.php)(.*)$;
+        fastcgi_param HTTP_HOST         $host;
+        fastcgi_param PATH_INFO         $fastcgi_path_info;
+        fastcgi_param PATH_TRANSLATED   $document_root$fastcgi_path_info;
+        fastcgi_param SCRIPT_FILENAME   $document_root$fastcgi_script_name;
+        fastcgi_param REQUEST_SCHEME    $real_scheme;
+        fastcgi_param HTTPS             $is_https if_not_empty;
+        
+        fastcgi_pass_request_headers    on;
+        fastcgi_param REQUEST_METHOD    GET;
+        fastcgi_pass                    $upstream;
+    }
+
+    log_by_lua_block {
+        -- Log health check status
+        if ngx.var.request_uri == "/thisthingisnotathing" then
+            return ngx.timer.at(0, post_process, "hydra.healthcheck", { "upstream:hydra", "response_code:" .. (ngx.var.status or "502") }, ngx.var.request_time)
+        end
+    }
+}
+
+server {
+    listen                              8002 default_server reuseport;
+    tcp_nopush                          off;
+
+    more_set_headers                    "X-Backend-Server: hitpath";
+    set                                 $upstream mediaclicklb.com;
+    set                                 $domain www.mediaclicktrker.com;
+
+    access_log                          /var/log/nginx/hp.log main buffer=64k flush=30s if=$loggable;
+    
+    location = /nginx {
+        access_log                      off;
+        stub_status                     on;
+    }
+
+    location ~* ^/rd/f {
+        set                             $domain mediaclicklb.com;
+        rewrite                         ^/rd/f(.*) /rd/r$1;
+    }
+    
+    location / {
+        proxy_http_version              1.1;
+        proxy_set_header                Connection "";
+        proxy_hide_header               Server;
+        proxy_hide_header               Connection;
+        
+        proxy_connect_timeout           10;
+        proxy_read_timeout              15;
+        proxy_send_timeout              15;
+        proxy_buffering                 off;
+        proxy_request_buffering         on;
+
+        proxy_buffers                   16 4k;
+        proxy_buffer_size               32k;
+        proxy_busy_buffers_size         32k;
+        
+        # HP cant be trusted to wrap-up aborted connections
+        proxy_ignore_client_abort       on;
+        
+        proxy_pass_request_headers      on;
+        proxy_method                    GET;
+        proxy_set_header                Host $domain;
+        proxy_pass                      http://$upstream;
+    }
+
+    log_by_lua_block {
+        -- Log health check status
+        if ngx.var.request_uri == "/thisthingisnotathing" then
+            local origin = (ngx.var.host ~= nil and ngx.var.host:match("mediaclicktp") and "tp-") or ""
+            return ngx.timer.at(0, post_process, "hydra.healthcheck", { "upstream:" .. origin .. "hp", "response_code:" .. (ngx.var.status or "502") }, ngx.var.request_time)
+        end
+    }
+}
+
+server {
+    listen                              8003 default_server reuseport;
+    tcp_nopush                          off;
+    
+    more_set_headers                    "X-Backend-Server: ndp-$hostname";
+    set                                 $upstream unix:/var/run/php5-fpm.sock;
+    
+    access_log                          /var/log/nginx/ndp.log main buffer=64k flush=30s if=$loggable;
+    
+    root                                /var/www/jbx/public/;
+    try_files                           $uri/ /index.php?_url=$uri&$args;
+    
+    location = /nginx {
+        access_log                      off;
+        stub_status                     on;
+    }
+    
+    location = /index.php {
+        fastcgi_keep_conn               on;
+        fastcgi_hide_header             Server;
+        fastcgi_hide_header             Connection;
+        
+        fastcgi_connect_timeout         10;
+        fastcgi_read_timeout            15;
+        fastcgi_send_timeout            15;
+        fastcgi_buffering               off;
+        fastcgi_request_buffering       on;
+        fastcgi_ignore_client_abort     on;
+
+        fastcgi_buffers                 16 4k;
+        
+        include                         fastcgi_params;
+        fastcgi_index                   index.php;
+        fastcgi_split_path_info         ^(.+\.php)(.*)$;
+        fastcgi_param HTTP_HOST         www.mediaclicktp.com;
+        fastcgi_param PATH_INFO         $fastcgi_path_info;
+        fastcgi_param PATH_TRANSLATED   $document_root$fastcgi_path_info;
+        fastcgi_param SCRIPT_FILENAME   $document_root$fastcgi_script_name;
+        fastcgi_param REQUEST_SCHEME    $real_scheme;
+        fastcgi_param HTTPS             $is_https if_not_empty;
+        
+        fastcgi_pass_request_headers    on;
+        fastcgi_param REQUEST_METHOD    GET;
+        fastcgi_pass                    $upstream;
+    }
+
+    log_by_lua_block {
+        -- Log health check status
+        if ngx.var.request_uri == "/thisthingisnotathing" then
+            return ngx.timer.at(0, post_process, "hydra.healthcheck", { "upstream:ndp", "response_code:" .. (ngx.var.status or "502") }, ngx.var.request_time)
+        end
+    }
+}
+
+server {
+    listen                              80;
+    listen                              [::]:80;
+    tcp_nopush                          off;
+
+    server_name                         mediaclicktp.com www.mediaclicktp.com *.mediaclicktp.com
+                                        mediaclicklb.com www.mediaclicklb.com *.mediaclicklb.com
+                                        mediaclickndp.com www.mediaclickndp.com *.mediaclickndp.com;
+    
+    set                                 $upstream hp-ndp;
+    set_by_lua_block $upstream {
+        local args  = safe_url_args(ngx.req.get_uri_args() or {})
+        local event = (args["event"] or "purchase"):lower()
+        local hit   = parse_tracking_cookie(cookie_to_headers("uid" .. (tonumber(args["sid"]) or "")))
+        args["hid"] = empty_to_nil(args["hid"]) or hit["hid"]
+
+        -- if hit id is below the range of hp upstream, handle via ndp
+        if (tonumber(args["hid"]) ~= nil and tonumber(args["hid"]) < 820000000) or (event ~= "purchase") or ngx.var.host:match("mediaclickndp") then
+            return "ndp"
+        elseif ngx.var.host:match("mediaclicklb") then
+            return "hp"
+        else
+            return "hp-ndp"
+        end
+    }
+    
+    access_log                          /var/log/nginx/tp.log main buffer=64k flush=30s if=$loggable;
+
+    more_set_headers                    'Server: TP';
+
+    location = /thisthingisnotathing {
+        rewrite                         ^/.* /nginx break;
+        try_files                       @proxy @proxy;
+    }
+
+    location = /nginx {
+        allow                           127.0.0.1;
+        deny                            all;
+        
+        access_log                      off;
+        stub_status                     on;
+    }
+
+    location / {
+        try_files                       @proxy @proxy;
+    }
+    
+    location @proxy {
+        proxy_http_version              1.1;
+        proxy_set_header                Connection "";
+        proxy_hide_header               Server;
+        proxy_hide_header               Connection;
+
+        proxy_connect_timeout           1;
+        proxy_read_timeout              15;
+        proxy_send_timeout              15;
+        proxy_buffering                 off;
+        proxy_request_buffering         on;
+        proxy_ignore_client_abort       on;
+
+        proxy_buffers                   16 4k;
+        proxy_buffer_size               32k;
+        proxy_busy_buffers_size         32k;
+
+        proxy_intercept_errors          on;
+        proxy_next_upstream             non_idempotent error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_next_upstream_timeout     30;
+        proxy_next_upstream_tries       2;
+
+        proxy_pass_request_headers      on;
+        proxy_method                    GET;
+        proxy_pass                      http://$upstream;
+
+        proxy_cookie_domain             ~^.*?$ .mediaclicktp.com;
+        proxy_redirect                  ~^((?:[^:]*:)?//[^:]+\.mediaclick[^.]+\.com)(?::\d+)?(/.+)$ $2;
+    }
+
+    log_by_lua_block {
+        -- Log health check status
+        if ngx.var.request_uri == "/thisthingisnotathing" then
+            return ngx.timer.at(0, post_process, "hydra.healthcheck", { "upstream:tp", "response_code:" .. (ngx.var.status or "502") }, ngx.var.request_time)
+        -- Methods are not required for logging (no errors, didn't go upstream)
+        elseif (ngx.status < 300 or (ngx.status - 400) < 100) and ngx.var.loggable == "0" then
+            return
+        end
+        
+        local ngx_re            = require "ngx.re"
+
+        -- Key reporting variables
+        local args              = safe_url_args(ngx.req.get_uri_args() or {})
+        local upstreams         = ngx_re.split(ngx.var.upstream_addr or ngx.var.server_addr, ", ") or {}
+        local response_times    = ngx_re.split(ngx.var.upstream_header_time or ngx.var.request_time, ", ") or {}
+        local upstream_statuses = ngx_re.split(ngx.var.upstream_status or ngx.status, ", ") or {}
+        
+        local upstream_names    = { ["127.0.0.1:8001"] = "hydra", ["127.0.0.1:8002"] = "hp", ["127.0.0.1:8003"] = "ndp" }
+        local safe_args         = { "sid", "pub", "lpid" }
+        local na                = "N/A"
+
+        local host              = (ngx.var.domain and ((ngx.var.subdomain or "").. ngx.var.domain)) or nil
+
+        for k,v in pairs(upstreams) do
+            local tags              = {
+                "upstream:"         .. (upstream_names[v] or "router"),
+                "upstream_hops:"    .. (k or "1"),
+                "response_code:"    .. (upstream_statuses[k] and upstream_statuses[k]:gsub("-", "499") or na),
+                "vanity_domain:"    .. (ngx.var.domain or ngx.var.host or na),
+                "uri:"              .. (ngx.var.uri or na)
+            }
+            
+            -- pull arguments from the query string
+            for k,v in pairs(safe_args) do
+                table.insert(tags, v .. ':' .. (args[v] or na))
+            end
+            
+            ngx.timer.at(0, post_process, "tp.request", tags, response_times[k])
+        end
+    }
+}

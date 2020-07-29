@@ -60,6 +60,16 @@ openresty_site "api" do
   timing :delayed
   action :enable
 end
+openresty_site "mesh" do
+  template "api.erb"
+  variables ({
+    hostname: node["jbx"]["domains"]["mesh"],
+    path: "/var/www/jbx/public",
+    app: "mesh",
+  })
+  timing :delayed
+  action :enable
+end
 { checkout: true, sync: node.attribute?(:ec2) }.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
