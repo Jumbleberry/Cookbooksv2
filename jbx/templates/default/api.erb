@@ -1,0 +1,67 @@
+<% ssl = File.file?("/etc/nginx/ssl/#{@app}.key.tpl") %>
+server {
+    listen 80;
+    server_name <%= @hostname %> www.<%= @hostname %>;
+    root <%= @path %>;
+    
+    set $upstream jbx;
+
+    # Show server host name as header
+    add_header X-Backend-Server $hostname;
+    
+    <% if (ssl) %>
+    listen 443 ssl;
+    
+    # Redirect non ELB traffic to https
+    if ($real_scheme != "https") {
+        return 301 https://$server_name$request_uri;
+    }
+    
+    ssl_protocols               TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers                 EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:EECDH+RC4:RSA+RC4:!MD5;
+    ssl_prefer_server_ciphers   on;
+    ssl_session_cache           shared:SSL:10m;
+    ssl_session_timeout         10m;
+    
+    ssl_certificate     /etc/nginx/ssl/<%= @app %>.pem;
+    ssl_certificate_key /etc/nginx/ssl/<%= @app %>.key;
+    
+    <% end %>
+    
+    if ($http_host = "www.<%= @hostname %>") {
+        return 301 $real_scheme://<%= @hostname %>$request_uri;
+    }
+    
+    index index.php;
+    try_files $uri $uri/ /index.php?_url=$uri&$args;
+    
+    location = /robots.txt  { access_log off; log_not_found off; try_files $uri =404; }
+    location = /favicon.ico { access_log off; log_not_found off; try_files $uri =404; }	
+    
+    access_log  /var/log/nginx/<%= @hostname %>.access.log  main buffer=4k flush=1m;
+    error_log  /var/log/nginx/<%= @hostname %>.error.log  warn;
+
+    location ~ \.php$ {
+        if ($request_method = 'OPTIONS') {
+
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Credentials' 'true';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
+            add_header 'Access-Control-Allow-Headers' 'Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Api-Token,X-Client,X-Database,Jbx-Db';
+            add_header 'Access-Control-Max-Age' 259200;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+        
+            return 204;
+        }
+        
+        try_files $uri index.php =404;
+        fastcgi_pass unix:/var/run/php7-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_split_path_info       ^(.+\.php)(/.+)$;
+        fastcgi_param PATH_INFO       $fastcgi_path_info;
+        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}

@@ -1,5 +1,5 @@
 # we're running on a vagrant machine - make it easier to manage /var/www/
-if !node.attribute?(:ec2)
+unless node.attribute?(:ec2)
 
   # Delete dir if its not a symlink
   directory "www-data-non-symlink" do
@@ -11,16 +11,16 @@ if !node.attribute?(:ec2)
 
   # Makes sure that the www directory exists
   directory "/vagrant/www" do
-    owner node["user"]
-    group node["user"]
+    owner node[:user]
+    group node[:user]
     action :create
   end
 
   # Symlink the folder
   link "/var/www" do
     to "/vagrant/www/"
-    owner node["user"]
-    group node["user"]
+    owner node[:user]
+    group node[:user]
     action :create
     not_if { File.symlink?("/var/www") }
   end

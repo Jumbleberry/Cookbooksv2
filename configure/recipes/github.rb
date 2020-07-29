@@ -1,9 +1,12 @@
-directory "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh" do
+#
+user_home_dir = node["openresty"]["user_home"]
+
+directory "#{user_home_dir}/.ssh" do
   owner node[:user]
   group node[:user]
   recursive true
 end
-cookbook_file "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/config" do
+cookbook_file "#{user_home_dir}/.ssh/config" do
   source "config"
   owner node[:user]
   group node[:user]
@@ -12,23 +15,33 @@ cookbook_file "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/config" do
 end
 
 if node.attribute?(:ec2)
-  template "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github.tpl" do
-    source "jumbleberry-github.tpl"
-    mode "0644"
-    only_if { (keys = Vault.logical.read("secret/data/#{node["environment"]}/keys")) && !keys.data[:data][:deploybot].nil? }
+  template "#{user_home_dir}/.ssh/jumbleberry-github.tpl" do
+    source "jumbleberry-github.tpl.erb"
+    mode "0600"
+    only_if { (keys = Vault.logical.read("secret/data/#{node["environment"]}/keys")) && !keys.data[:data][:jumblebot].nil? }
     notifies :create, "consul_template_config[jumbleberry-github]", :immediately
     owner node[:user]
     group node[:user]
   end
   consul_template_config "jumbleberry-github" do
     templates [{
-      source: "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github.tpl",
-      destination: "#{node["etc"]["passwd"][node[:user]]["dir"]}/.ssh/jumbleberry-github",
+      source: "#{user_home_dir}/.ssh/jumbleberry-github.tpl",
+      destination: "#{user_home_dir}/.ssh/jumbleberry-github",
+      command: "chmod 600 #{user_home_dir}/.ssh/jumbleberry-github",
     }]
     action :nothing
-    notifies :enable, "service[consul-template]", :immediate
-    notifies :start, "service[consul-template]", :immediate
-    notifies :reload, "service[consul-template]", :immediate
+    notifies :reload, "service[consul-template.service]", :immediate
+    notifies :run, "ruby_block[wait for jumbleberry-github]", :immediate
+  end
+  ruby_block "wait for jumbleberry-github" do
+    block do
+      iter = 0
+      until ::File.exist?("#{node["openresty"]["user_home"]}/.ssh/jumbleberry-github") || iter > 15
+        sleep 1
+        iter += 1
+      end
+    end
+    action :nothing
   end
 end
 

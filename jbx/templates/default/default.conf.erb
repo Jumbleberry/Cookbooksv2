@@ -1,0 +1,63 @@
+server {
+    listen              80 default_server;
+    server_name         _ default;
+    
+    access_log          off;
+    error_log           off;
+    
+    location = / {
+        return          204;
+    }
+
+    location /nginx {
+        stub_status     on;
+    }
+
+    location /fpm {
+        fastcgi_pass    unix:/var/run/php7-fpm.sock;
+        fastcgi_param   SCRIPT_FILENAME /fpm;
+        include         fastcgi_params;
+    }
+    
+    location /fpm-ping {
+        fastcgi_pass    unix:/var/run/php7-fpm.sock;
+        fastcgi_param   SCRIPT_FILENAME /fpm-ping;
+        include         fastcgi_params;
+    }
+
+    location ^~ /v1/ {
+  	    allow           10.0.0.0/8;
+        allow           127.0.0.1/32;
+        allow           172.16.0.0/12;
+        allow           192.168.0.0/16;
+        allow           fd00::/8;
+	      deny            all;
+        proxy_pass      http://127.0.0.1:8500/v1/;
+    }
+
+    root                /var/www/gearman-ui/web;
+
+    location = /gearman {
+        rewrite         ^([^.]*[^/])$ $1/ permanent;
+    }
+    
+    location ^~ /gearman/ {
+        try_files       $uri $uri/ @site;
+    }
+
+    location ~* /vendor.*/([^/]+)$ {
+        root            /var/www/gearman-ui/public;
+        try_files       /$1 =404;
+    }
+
+    if ($request_uri ~ ^/gearman(.*)$ ) {
+        set             $request_url $1;
+    }
+
+    location @site {
+        fastcgi_pass   unix:/var/run/php7-fpm.sock;
+        include        fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME /var/www/gearman-ui/web/index.php;
+        fastcgi_param  REQUEST_URI $request_url;
+    }
+}

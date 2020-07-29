@@ -4,7 +4,6 @@
 # Resource:: certificate_binding
 #
 # Copyright:: 2015-2017, Calastone Ltd.
-# Copyright:: 2018, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

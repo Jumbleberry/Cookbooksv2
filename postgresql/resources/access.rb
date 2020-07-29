@@ -16,18 +16,18 @@
 # limitations under the License.
 #
 
-property :access_type,   String, required: true, default: 'local'
-property :access_db,     String, required: true, default: 'all'
-property :access_user,   String, required: true, default: 'postgres'
-property :access_method, String, required: true, default: 'ident'
-property :cookbook,      String,                 default: 'postgresql'
-property :source,        String,                 default: 'pg_hba.conf.erb'
+property :access_type,   String, default: 'local'
+property :access_db,     String, default: 'all'
+property :access_user,   String, default: 'postgres'
+property :access_method, String, default: 'ident'
+property :cookbook,      String, default: 'postgresql'
+property :source,        String, default: 'pg_hba.conf.erb'
 property :access_addr,   String
 property :comment,       String
 
 action :grant do
   config_resource = new_resource
-  with_run_context :root do # ~FC037
+  with_run_context :root do
     edit_resource(:template, "#{conf_dir}/pg_hba.conf") do |new_resource|
       source new_resource.source
       cookbook new_resource.cookbook
@@ -51,7 +51,7 @@ action :grant do
 end
 
 action :trigger do
-  new_resource.updated_by_last_action(true) # ~FC085
+  new_resource.updated_by_last_action(true)
 end
 
 action_class do

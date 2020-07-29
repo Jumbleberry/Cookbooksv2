@@ -1,7 +1,7 @@
 include_recipe "trusted_certificate::default"
 
 # Add all trusted roots to the certificate store
-for certificate in node[cookbook_name]["trusted_roots"]
+node[cookbook_name]["trusted_roots"].each do |certificate|
   certificate_path = "#{Chef::Config[:file_cache_path]}/cookbooks/#{cookbook_name}/files/trust/#{certificate}"
   trusted_certificate certificate do
     certificate_name File.basename(certificate, File.extname(certificate))

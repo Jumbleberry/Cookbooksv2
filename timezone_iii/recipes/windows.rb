@@ -1,6 +1,6 @@
 #
 # Cookbook:: timezone_iii
-# Recipe:: amazon
+# Recipe:: windows
 #
 # Copyright:: 2017, Corey Hemminger
 #

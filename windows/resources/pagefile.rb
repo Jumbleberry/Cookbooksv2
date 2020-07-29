@@ -4,7 +4,7 @@
 # Resource:: pagefile
 #
 # Copyright:: 2012-2018, Nordstrom, Inc.
-# Copyright:: 2017-2018, Chef Software Inc.
+# Copyright:: 2017-2018, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-chef_version_for_provides '< 14.0' if respond_to?(:chef_version_for_provides)
-resource_name :windows_pagefile
 
 property :path, String, coerce: proc { |x| x.tr('/', '\\') }, name_property: true
 property :system_managed, [true, false]
@@ -60,7 +57,8 @@ end
 
 action :delete do
   validate_name
-  delete(new_resource.path) if exists?(new_resource.path)
+  pagefile = new_resource.path
+  delete(pagefile) if exists?(pagefile)
 end
 
 action_class do
@@ -103,8 +101,8 @@ action_class do
   # @param [String] pagefile path to the pagefile
   def create(pagefile)
     converge_by("create pagefile #{pagefile}") do
-      Chef::Log.debug("Running #{wmic} pagefileset create name=\"#{pagefile}\"")
-      cmd = shell_out("#{wmic} pagefileset create name=\"#{pagefile}\"")
+      Chef::Log.debug("Running #{wmic} pagefileset create name=\"#{win_friendly_path(pagefile)}\"")
+      cmd = shell_out("#{wmic} pagefileset create name=\"#{win_friendly_path(pagefile)}\"")
       check_for_errors(cmd.stderr)
     end
   end
@@ -165,7 +163,7 @@ action_class do
   # set a pagefile size to be system managed
   #
   # @param [String] pagefile path to the pagefile
-  def set_system_managed(pagefile) # rubocop: disable Naming/AccessorMethodName
+  def set_system_managed(pagefile) # rubocop: disable Style/AccessorMethodName
     converge_by("set #{pagefile} to System Managed") do
       Chef::Log.debug("Running #{wmic} pagefileset where SettingID=\"#{get_setting_id(pagefile)}\" set InitialSize=0,MaximumSize=0")
       cmd = shell_out("#{wmic} pagefileset where SettingID=\"#{get_setting_id(pagefile)}\" set InitialSize=0,MaximumSize=0", returns: [0])
@@ -174,8 +172,9 @@ action_class do
   end
 
   def get_setting_id(pagefile)
-    split_path = pagefile.split('\\')
-    "#{split_path[1]} @ #{split_path[0]}"
+    pagefile = win_friendly_path(pagefile)
+    pagefile = pagefile.split('\\')
+    "#{pagefile[1]} @ #{pagefile[0]}"
   end
 
   # raise if there's an error on stderr on a shellout

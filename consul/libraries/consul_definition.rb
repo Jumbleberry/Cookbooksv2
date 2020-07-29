@@ -2,7 +2,7 @@
 # Cookbook: consul
 # License: Apache 2.0
 #
-# Copyright 2014-2016, Bloomberg Finance L.P.
+# Copyright:: 2014-2016, Bloomberg Finance L.P.
 #
 require 'poise'
 
@@ -27,6 +27,10 @@ module ConsulCookbook
       # @return [String]
       attribute(:group, kind_of: String, default: lazy { node['consul']['service_group'] })
 
+      # @!attribute mode
+      # @return [String]
+      attribute(:mode, kind_of: String, default: '0640')
+
       # @!attribute type
       # @return [String]
       attribute(:type, equal_to: %w(check service checks services))
@@ -35,7 +39,7 @@ module ConsulCookbook
       # @return [Hash]
       attribute(:parameters, option_collector: true, default: {})
 
-      def to_json
+      def params_to_json
         final_parameters = parameters
         final_parameters = final_parameters.merge(name: name) if final_parameters[:name].nil?
         JSON.pretty_generate(type => final_parameters)
@@ -56,11 +60,11 @@ module ConsulCookbook
           end
 
           file new_resource.path do
-            content new_resource.to_json
+            content new_resource.params_to_json
             unless platform?('windows')
               owner new_resource.user
               group new_resource.group
-              mode '0644'
+              mode new_resource.mode
             end
           end
         end

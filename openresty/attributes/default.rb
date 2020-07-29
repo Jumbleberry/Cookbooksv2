@@ -136,8 +136,8 @@ default['openresty']['keepalive_timeout']             = 5
 default['openresty']['keepalive_requests']            = 100
 default['openresty']['worker_processes']              = node['cpu'] && node['cpu']['total'] ? node['cpu']['total'] : 1
 default['openresty']['worker_auto_affinity']          = true
-default['openresty']['worker_connections']            = 4096
-default['openresty']['worker_rlimit_nofile']          = nil
+default['openresty']['worker_connections']            = 16384
+default['openresty']['worker_rlimit_nofile']          = 262144
 default['openresty']['multi_accept']                  = false
 
 default['openresty']['try_aio']                       = true

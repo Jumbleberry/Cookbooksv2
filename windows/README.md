@@ -16,17 +16,15 @@ Provides a set of Windows-specific resources to aid in the creation of cookbooks
 
 ### Chef
 
-- Chef 13.4+
+- Chef 12.7+
 
 ## Resources
 
 ### Deprecated Resources Note
 
-As of Chef Client 14+ the auto_run, feature, feature_dism, feature_powershell, font, pagefile, printer_port, printer, and shortcut resources are now included in the Chef Client. If you are running Chef 14+ the resources in Chef client will take precedence over the resources in this cookbook. In April 2019 we will release a new major version of this cookbook that removes these resources.
+As of chef-client 13.0+ and 13.4+ windows_task and windows_path are now included in the Chef client. windows_task underwent a full rewrite that greatly improved the functionality and idempotency of the resource. We highly recommend using these new resources by upgrading to Chef 13.4 or later. If you are running these more recent Chef releases the windows_task and windows_path resources within chef-client will take precedence over those in this cookbook. In September 2018 we will release a new major version of this cookbook that removes windows_task and windows_path.
 
 ### windows_auto_run
-
-`Note`: This resource is now included in Chef 14 and later. There is no need to depend on the Windows cookbook for this resource.
 
 #### Actions
 
@@ -35,7 +33,7 @@ As of Chef Client 14+ the auto_run, feature, feature_dism, feature_powershell, f
 
 #### Properties
 
-- `program_name` - Name property. The name of the value to be stored in the registry
+- `program_name` - Name attribute. The name of the value to be stored in the registry
 - `path` - The program to be run at login. This property was previous named `program`. Cookbooks using the `program` property will continue to function, but should be updated.
 - `args` - The arguments for the program
 - `root` - The registry root key to put the entry under--`:machine` (default) or `:user`
@@ -204,8 +202,6 @@ end
 
 ### windows_feature
 
-`Note`: This resource is now included in Chef 14 and later. There is no need to depend on the Windows cookbook for this resource.
-
 **BREAKING CHANGE - Version 3.0.0**
 
 This resource has been moved from using LWRPs and multiple providers to using Custom Resources. To maintain functionality, you'll need to change `provider` to `install_method`.
@@ -214,7 +210,7 @@ Windows Roles and Features can be thought of as built-in operating system packag
 
 This resource allows you to manage these 'features' in an unattended, idempotent way.
 
-There are two underlying resources that power `windows_feature` which map to the available installation systems on supported releases of Windows: [Deployment Image Servicing and Management (DISM)](http://msdn.microsoft.com/en-us/library/dd371719%28v=vs.85%29.aspx) and [PowerShell](https://technet.microsoft.com/en-us/library/cc731774(v=ws.11).aspx). Chef will set the default method to `:windows_feature_dism` if `dism.exe` is present on the system being configured and otherwise use `:windows_feature_powershell`.
+There are three methods for the `windows_feature` which map into Microsoft's three major tools for managing roles/features: [Deployment Image Servicing and Management (DISM)](http://msdn.microsoft.com/en-us/library/dd371719%28v=vs.85%29.aspx), [Servermanagercmd](http://technet.microsoft.com/en-us/library/ee344834%28WS.10%29.aspx) (The CLI for Server Manager), and [PowerShell](https://technet.microsoft.com/en-us/library/cc731774(v=ws.11).aspx). As Servermanagercmd is deprecated, Chef will set the default method to `:windows_feature_dism` if `dism.exe` is present on the system being configured. The default method will fall back to `:windows_feature_servermanagercmd`, and then `:windows_feature_powershell`.
 
 For more information on Roles, Role Services and Features see the [Microsoft TechNet article on the topic](http://technet.microsoft.com/en-us/library/cc754923.aspx). For a complete list of all features that are available on a node type either of the following commands at a command prompt:
 
@@ -222,6 +218,12 @@ For Dism:
 
 ```text
 dism /online /Get-Features
+```
+
+For ServerManagerCmd:
+
+```text
+servermanagercmd -query
 ```
 
 For PowerShell:
@@ -234,15 +236,15 @@ get-windowsfeature
 
 - `:install` - install a Windows role/feature
 - `:remove` - remove a Windows role/feature
-- `:delete` - remove a Windows role/feature from the image
+- `:delete` - remove a Windows role/feature from the image (not supported by ServerManagerCmd)
 
 #### Properties
 
-- `feature_name` - name of the feature/role(s) to install. The same feature may have different names depending on the underlying resource being used (ie DHCPServer vs DHCP; DNS-Server-Full-Role vs DNS).
-- `all` - Boolean. Optional. Default: false. For DISM this is the equivalent of specifying the /All switch to dism.exe, forcing all parent dependencies to be installed. With the PowerShell install method, the `-InstallAllSubFeatures` switch is applied. Note that these two methods may not produce identical results.
-- `management_tools` - Boolean. Optional. Default: false. PowerShell only. Includes the `-IncludeManagementTools` switch. Installs all applicable management tools of the roles, role services, or features specified by the feature name.
-- `source` - String. Optional. Uses local repository for feature install.
-- `timeout` - Integer. Optional. Default: 600\. Specifies a timeout (in seconds) for feature install.
+- `feature_name` - name of the feature/role(s) to install. The same feature may have different names depending on the provider used (ie DHCPServer vs DHCP; DNS-Server-Full-Role vs DNS).
+- `all` - Boolean. Optional. Default: false. DISM and PowerShell providers only. For DISM this is the equivalent of specifying the /All switch to dism.exe, forcing all parent dependencies to be installed. With the PowerShell install method, the `-InstallAllSubFeatures` switch is applied. Note that these two methods may not produce identical results.
+- `management_tools` - Boolean. Optional. Default: false. PowerShell provider only. Includes the `-IncludeManagementTools` switch. Installs all applicable management tools of the roles, role services, or features specified by the feature name.
+- `source` - String. Optional. DISM and PowerShell providers only. Uses local repository for feature install.
+- `timeout` - Integer. Optional. Default: 600. Specifies a timeout (in seconds) for feature install.
 - `install_method` - Symbol. Optional. If not supplied, Chef will determine which method to use (in the order of `:windows_feature_dism`, `:windows_feature_servercmd`, `:windows_feature_powershell`)
 
 #### Examples
@@ -305,8 +307,6 @@ end
 
 ### windows_font
 
-`Note`: This resource is now included in Chef 14 and later. There is no need to depend on the Windows cookbook for this resource.
-
 Installs font files. Sources the font by default from the cookbook, but a URI source can be specified as well.
 
 #### Actions
@@ -366,8 +366,6 @@ end
 
 ### windows_pagefile
 
-`Note`: This resource is now included in Chef 14 and later. There is no need to depend on the Windows cookbook for this resource.
-
 Configures the file that provides virtual memory for applications requiring more memory than available RAM or that are paged out to free up memory in use.
 
 #### Actions
@@ -380,12 +378,10 @@ Configures the file that provides virtual memory for applications requiring more
 - `path` - the path to the pagefile, String, name_property: true
 - `system_managed` - configures whether the system manages the pagefile size. [true, false]
 - `automatic_managed` - all of the settings are managed by the system. If this is set to true, other settings will be ignored. [true, false], default: false
-- `initial_size` - initial size of the pagefile in megbytes. Integer
-- `maximum_size` - maximum size of the pagefile in megbytes. Integer
+- `initial_size` - initial size of the pagefile in bytes. Integer
+- `maximum_size` - maximum size of the pagefile in bytes. Integer
 
 ### windows_printer_port
-
-`Note`: This resource is now included in Chef 14 and later. There is no need to depend on the Windows cookbook for this resource.
 
 Create and delete TCP/IPv4 printer ports.
 
@@ -442,8 +438,6 @@ end
 
 ### windows_printer
 
-`Note`: This resource is now included in Chef 14 and later. There is no need to depend on the Windows cookbook for this resource.
-
 Create Windows printer. Note that this doesn't currently install a printer driver. You must already have the driver installed on the system.
 
 The Windows Printer resource will automatically create a TCP/IP printer port for you using the `ipv4_address` property. If you want more granular control over the printer port, just create it using the `windows_printer_port` resource before creating the printer.
@@ -489,29 +483,19 @@ end
 
 Creates, modifies and removes Windows shares. All properties are idempotent.
 
-`Note`: This resource uses PowerShell cmdlets introduced in Windows 2012/8.
-
 #### Actions
 
-- `:create`: creates/modifies a share
-- `:delete`: deletes a share
+- :create: creates/modifies a share
+- :delete: deletes a share
 
 #### Properties
 
-property                 | type       | default       | description
------------------------- | ---------- | ------------- | -----------------------------------------------------------------------------------------------------------------------------------------------------------
-`share_name`             | String     | resource name | the share to assign to the share
-`path`                   | String     |               | The path of the location of the folder to share. Required when creating. If the share already exists on a different path then it is deleted and re-created.
-`description`            | String     |               | description to be applied to the share
-`full_users`             | Array      | []            | users which should have "Full control" permissions
-`change_users`           | Array      | []            | Users are granted modify permission to access the share.
-`read_users`             | Array      | []            | users which should have "Read" permissions
-`temporary`              | True/False | false         | The lifetime of the new SMB share. A temporary share does not persist beyond the next restart of the computer
-`scope_name`             | String     | '*'           | The scope name of the share.
-`ca_timeout`             | Integer    | 0             | The continuous availability time-out for the share.
-`continuously_available` | True/False | false         | Indicates that the share is continuously available.
-`concurrent_user_limit`  | Integer    | 0 (unlimited) | The maximum number of concurrently connected users the share can accommodate
-`encrypt_data`           | True/False | false         | Indicates that the share is encrypted.
+- share_name: name attribute, the share name.
+- path: path to the directory to be shared. Required when creating. If the share already exists on a different path then it is deleted and re-created.
+- description: description to be applied to the share
+- full_users: array of users which should have "Full control" permissions
+- change_users: array of users which should have "Change" permissions
+- read_users: array of users which should have "Read" permissions
 
 #### Examples
 
@@ -531,8 +515,6 @@ end
 ```
 
 ### windows_shortcut
-
-`Note`: This resource is now included in Chef 14 and later. There is no need to depend on the Windows cookbook for this resource.
 
 Creates and modifies Windows shortcuts.
 
@@ -594,8 +576,6 @@ end
 ```
 
 ### windows_task
-
-`Note`: This resource is now included in Chef 13 and later. There is no need to depend on the Windows cookbook for this resource.
 
 Creates, deletes or runs a Windows scheduled task. Requires Windows Server 2008 due to API usage.
 
@@ -677,89 +657,6 @@ Disable a task named `ProgramDataUpdater` with TaskPath `\Microsoft\Windows\Appl
 windows_task '\Microsoft\Windows\Application Experience\ProgramDataUpdater' do
   action :disable
 end
-```
-
-### windows_user_privilege
-
-Adds the `principal` (User/Group) to the specified privileges (such as `Logon as a batch job` or `Logon as a Service`).
-
-#### Actions
-
-- `:add` - add the specified privileges to the `principal`
-- `:remove` - remove the specified privilege of the `principal`
-
-#### Properties
-
-- `principal` - Name attribute, Required, String. The user or group to be granted privileges.
-- `privilege` - Required, String/Array. The privilege(s) to be granted.
-
-#### Examples
-
-Grant the Administrator user the `Logon as a batch job` and `Logon as a service` privilege.
-
-```ruby
-windows_user_privilege 'Administrator' do
-  privilege %w(SeBatchLogonRight SeServiceLogonRight)
-end
-```
-
-Remove `Logon as a batch job` privilege of Administrator.
-
-```ruby
-windows_user_privilege 'Administrator' do
-  privilege %w(SeBatchLogonRight)
-  action :remove
-end
-```
-
-#### Available Privileges
-
-```
-SeTrustedCredManAccessPrivilege      Access Credential Manager as a trusted caller
-SeNetworkLogonRight                  Access this computer from the network
-SeTcbPrivilege                       Act as part of the operating system
-SeMachineAccountPrivilege            Add workstations to domain
-SeIncreaseQuotaPrivilege             Adjust memory quotas for a process
-SeInteractiveLogonRight              Allow log on locally
-SeRemoteInteractiveLogonRight        Allow log on through Remote Desktop Services
-SeBackupPrivilege                    Back up files and directories
-SeChangeNotifyPrivilege              Bypass traverse checking
-SeSystemtimePrivilege                Change the system time
-SeTimeZonePrivilege                  Change the time zone
-SeCreatePagefilePrivilege            Create a pagefile
-SeCreateTokenPrivilege               Create a token object
-SeCreateGlobalPrivilege              Create global objects
-SeCreatePermanentPrivilege           Create permanent shared objects
-SeCreateSymbolicLinkPrivilege        Create symbolic links
-SeDebugPrivilege                     Debug programs
-SeDenyNetworkLogonRight              Deny access this computer from the network
-SeDenyBatchLogonRight                Deny log on as a batch job
-SeDenyServiceLogonRight              Deny log on as a service
-SeDenyInteractiveLogonRight          Deny log on locally
-SeDenyRemoteInteractiveLogonRight    Deny log on through Remote Desktop Services
-SeEnableDelegationPrivilege          Enable computer and user accounts to be trusted for delegation
-SeRemoteShutdownPrivilege            Force shutdown from a remote system
-SeAuditPrivilege                     Generate security audits
-SeImpersonatePrivilege               Impersonate a client after authentication
-SeIncreaseWorkingSetPrivilege        Increase a process working set
-SeIncreaseBasePriorityPrivilege      Increase scheduling priority
-SeLoadDriverPrivilege                Load and unload device drivers
-SeLockMemoryPrivilege                Lock pages in memory
-SeBatchLogonRight                    Log on as a batch job
-SeServiceLogonRight                  Log on as a service
-SeSecurityPrivilege                  Manage auditing and security log
-SeRelabelPrivilege                   Modify an object label
-SeSystemEnvironmentPrivilege         Modify firmware environment values
-SeManageVolumePrivilege              Perform volume maintenance tasks
-SeProfileSingleProcessPrivilege      Profile single process
-SeSystemProfilePrivilege             Profile system performance
-SeUnsolicitedInputPrivilege          "Read unsolicited input from a terminal device"
-SeUndockPrivilege                    Remove computer from docking station
-SeAssignPrimaryTokenPrivilege        Replace a process level token
-SeRestorePrivilege                   Restore files and directories
-SeShutdownPrivilege                  Shut down the system
-SeSyncAgentPrivilege                 Synchronize directory service data
-SeTakeOwnershipPrivilege             Take ownership of files or other objects
 ```
 
 ### windows_zipfile

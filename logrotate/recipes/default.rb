@@ -2,9 +2,9 @@
 # Cookbook:: logrotate
 # Recipe:: default
 #
-# Copyright:: 2009-2017, Chef Software, Inc.
-# Copyright:: 2015-2017, Steven Danna
-# Copyright:: 2016-2017, Bloomberg Finance L.P.
+# Copyright:: 2009-2019, Chef Software, Inc.
+# Copyright:: 2015-2019, Steven Danna
+# Copyright:: 2016-2019, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 return if platform?('windows')
 
 package node['logrotate']['package']['name'] do
+  # TODO: remove provider option in next major release
   provider node['logrotate']['package']['provider'] if node['logrotate']['package']['provider']
   source node['logrotate']['package']['source'] if node['logrotate']['package']['source']
   version node['logrotate']['package']['version'] if node['logrotate']['package']['version']
@@ -33,7 +34,7 @@ directory node['logrotate']['directory'] do
   mode '0755'
 end
 
-if node['logrotate']['cron']['install'] # ~FC023
+if node['logrotate']['cron']['install']
   cron node['logrotate']['cron']['name'] do
     minute node['logrotate']['cron']['minute']
     hour node['logrotate']['cron']['hour']

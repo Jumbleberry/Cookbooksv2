@@ -1,1 +1,1 @@
-{{ with secret (print "secret/data/" (env "ENV") "/<%= @app %>/cert") }}{{ index .Data.data "<%= @domain %>" }}{{ end }}
+{{ with secret (print "secret/data/<%=node[:etc_environment][:ENV]%>/<%= @app %>/cert") }}{{ index .Data.data "<%= @domain %>" }}{{ end }}

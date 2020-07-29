@@ -57,7 +57,7 @@ class Chef
       unless OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, token)
         raise get_last_error
       end
-      token = token.unpack1('L')
+      token = token.unpack('L')[0]
 
       privileges.each do |name|
         unless adjust_privilege(token, name, SE_PRIVILEGE_ENABLED)
