@@ -2,7 +2,7 @@
 # Cookbook: consul
 # License: Apache 2.0
 #
-# Copyright 2014-2016, Bloomberg Finance L.P.
+# Copyright:: 2014-2016, Bloomberg Finance L.P.
 #
 require 'poise'
 
@@ -35,7 +35,7 @@ module ConsulCookbook
       # @return [Hash]
       attribute(:parameters, option_collector: true, default: {})
 
-      def to_json
+      def params_to_json
         JSON.pretty_generate(watches: [{ type: type }.merge(parameters)])
       end
 
@@ -51,7 +51,7 @@ module ConsulCookbook
           end
 
           file new_resource.path do
-            content new_resource.to_json
+            content new_resource.params_to_json
             unless platform?('windows')
               owner new_resource.user
               group new_resource.group

@@ -25,5 +25,6 @@ PARAMS='<% if @gearman.key?("mysql") %>\
     --mysql-table="<%= @gearman['mysql']['table'] %>" \
     --mysql-port=<%= @gearman['mysql']['port'] %> \
 <% end %>
-    -L 127.0.0.1 \
-    --job-retries=<%= @gearman['retries'] %>'
+    -L <%= @gearman['host'] %> \
+    --job-retries=<%= @gearman['retries'] %> \
+    -d'

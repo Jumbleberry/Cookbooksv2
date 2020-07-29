@@ -1,5 +1,5 @@
 #
-# Copyright:: 2016-2017, Steven Danna
+# Copyright:: 2016-2019, Steven Danna
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-resource_name :logrotate_app
-
 property :path, [String, Array], required: true
 property :frequency, String, default: 'weekly'
 property :cookbook, default: 'logrotate'
@@ -27,10 +25,8 @@ property :base_dir, String, default: '/etc/logrotate.d'
 
 property :options, [Array, String], default: %w(missingok compress delaycompress copytruncate notifempty)
 
-default_action :enable
-
 CookbookLogrotate::SCRIPTS.each do |script_name|
-  property script_name.to_sym, coerce: proc { |val| Array(val).join("\n") }
+  property script_name.to_sym, coerce: proc { |val| Array(val).join("\n    ") }
 end
 
 CookbookLogrotate::VALUES.each do |configurable_name|
@@ -38,8 +34,8 @@ CookbookLogrotate::VALUES.each do |configurable_name|
 end
 
 # Deprecated options
-property :sharedscripts, [TrueClass, FalseClass], default: false
-property :enable, [TrueClass, FalseClass], default: true
+property :sharedscripts, [true, false], default: false
+property :enable, [true, false], default: true
 
 action :enable do
   unless new_resource.enable

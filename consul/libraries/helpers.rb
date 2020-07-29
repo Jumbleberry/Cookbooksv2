@@ -2,7 +2,7 @@
 # Cookbook: consul
 # License: Apache 2.0
 #
-# Copyright 2014-2016, Bloomberg Finance L.P.
+# Copyright:: 2014-2016, Bloomberg Finance L.P.
 #
 
 module ConsulCookbook
@@ -53,5 +53,3 @@ module ConsulCookbook
     end
   end
 end
-
-Chef::Node.send(:include, ConsulCookbook::Helpers)

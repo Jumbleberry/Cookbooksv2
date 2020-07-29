@@ -1,61 +1,72 @@
-require "vault"
-include_recipe "configure::services"
+include_recipe "configure"
 
-if !node.attribute?(:ec2)
-  include_recipe "configure::redis"
+require "vault"
+
+openresty_site "default" do
+  template "default.conf.erb"
+  action :enable
+  timing :delayed
 end
 
 # SSL Keys
-cookbook_file "/etc/nginx/ssl/api.jumble.dev.pem" do
+cookbook_file "/etc/nginx/ssl/api.pem" do
   mode "0644"
-  source "api.jumble.dev.pem"
+  source "api.pem"
   action :create
-  notifies :reload, "service[nginx]", :delayed
+  notifies :reload, "service[nginx.service]", :delayed
 end
-template "/etc/nginx/ssl/api.jumble.dev.key.tpl" do
+
+template "/etc/nginx/ssl/api.key.tpl" do
   source "cert.erb"
   mode "0644"
   variables({
-    :app => "jbx",
-    :domain => "api",
+    app: "jbx",
+    domain: "api",
   })
   only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][:api].nil? }
-  notifies :create, "consul_template_config[api.ssl.key.json]", :immediately
+  notifies :create, "consul_template_config[api.key.json]", :immediately
 end
-consul_template_config "api.ssl.key.json" do
+
+consul_template_config "api.key.json" do
   templates [{
-    source: "/etc/nginx/ssl/api.jumble.dev.key.tpl",
-    destination: "/etc/nginx/ssl/api.jumble.dev.key",
-    command: "service nginx reload",
+    source: "/etc/nginx/ssl/api.key.tpl",
+    destination: "/etc/nginx/ssl/api.key",
+    command: "(service nginx reload 2>/dev/null || service nginx start)",
   }]
   action :nothing
-  notifies :enable, "service[consul-template]", :immediate
-  notifies :start, "service[consul-template]", :immediate
-  notifies :reload, "service[consul-template]", :immediate
+  notifies :reload, "service[consul-template.service]", :immediate
+  notifies :run, "ruby_block[wait for api.key]", :immediate
+end
+
+ruby_block "wait for api.key" do
+  block do
+    iter = 0
+    until ::File.exist?("/etc/nginx/ssl/api.key") || iter > 15
+      sleep 1
+      iter += 1
+    end
+  end
+  action :nothing
 end
 
 # Creates the api virtual host
-openresty_site "api.jumbleberry.com" do
-  template "api.jumbleberry.com.erb"
+openresty_site "api" do
+  template "api.erb"
   variables ({
-    hostname: "api.jumble.dev",
+    hostname: node["jbx"]["domains"]["api"],
     path: "/var/www/jbx/public",
+    app: "api",
   })
   timing :delayed
   action :enable
-  notifies :enable, "service[nginx]", :delayed
-  notifies :start, "service[nginx]", :delayed
-  notifies :reload, "service[nginx]", :delayed
 end
-
-{:checkout => true, :sync => node[:user] != "vagrant"}.each do |action, should|
+{ checkout: true, sync: node.attribute?(:ec2) }.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
     repository node["jbx"]["git-url"]
-    checkout_branch node["jbx"]["branch"]
     revision node["jbx"]["branch"]
     user node[:user]
-    group "www-data"
+    group node[:user]
     action action
     only_if { should }
     notifies :create, "consul_template_config[jbx.credentials.json]", :immediately
@@ -65,36 +76,32 @@ end
     end
   end
 end
-
 consul_template_config "jbx.credentials.json" do
   templates [{
     source: "/var/www/jbx/config/credentials.json.tpl",
     destination: "/var/www/jbx/config/credentials.json",
-    command: "service php#{node["php"]["version"]}-fpm reload",
+    command: "service php#{node["php"]["version"]}-fpm reload && (cd /var/www/jbx && /bin/bash deploy.sh)",
   }]
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
-  notifies :enable, "service[consul-template]", :immediate
-  notifies :start, "service[consul-template]", :immediate
-  notifies :reload, "service[consul-template]", :immediate
+  notifies :reload, "service[consul-template.service]", :immediate
 end
 
 # Run the deploy script
 execute "/bin/bash deploy.sh" do
   cwd "/var/www/jbx"
-  user "root"
-  notifies :enable, "service[php#{node["php"]["version"]}-fpm]", :delayed
-  notifies :start, "service[php#{node["php"]["version"]}-fpm]", :delayed
-  notifies :reload, "service[php#{node["php"]["version"]}-fpm]", :delayed
+  user node[:user]
+  notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
   action :nothing
 end
 
-if node.attribute?(:ec2)
-  # Run database migrations
-  execute "database-migrations" do
-    cwd "#{node["jbx"]["path"]}/application/cli"
-    command "php cli.php migrations:migrate --no-interaction"
-    timeout 86400
-    not_if { ::Dir.glob("#{node["jbx"]["path"]}/application/migrations/*.php").empty? }
-    action :nothing
-  end
+# Run database migrations
+execute "database-migrations" do
+  cwd "#{node["jbx"]["path"]}/application/cli"
+  command "php cli.php migrations:migrate --no-interaction"
+  timeout 86400
+  not_if { ::Dir.glob("#{node["jbx"]["path"]}/application/migrations/*.php").empty? }
+  action :nothing
 end
+
+include_recipe cookbook_name + "::gearman"
+include_recipe cookbook_name + "::crons"

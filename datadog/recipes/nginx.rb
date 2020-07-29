@@ -16,11 +16,17 @@ include_recipe 'datadog::dd-agent'
 #   {
 #     'nginx_status_url' => "https://localhost:82/nginx_status/",
 #     'name' => ['test'],
-#     'ssl_validation' => false
+#     'ssl_validation' => false,
+#     'skip_proxy' => false,
+#     'use_plus_api' => false,
+#     'plus_api_version' => 2,
+#     'use_vts' => false
 #   }
 # ]
 
 datadog_monitor 'nginx' do
   instances node['datadog']['nginx']['instances']
   logs node['datadog']['nginx']['logs']
+  action :add
+  notifies :restart, 'service[datadog-agent]' if node['datadog']['agent_start']
 end

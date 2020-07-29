@@ -22,7 +22,7 @@ module PostgresqlCookbook
     require 'securerandom'
 
     def psql_command_string(new_resource, query, grep_for: nil, value_only: false)
-      cmd = "/usr/bin/psql -c \"#{query}\""
+      cmd = %(/usr/bin/psql -c "#{query}")
       cmd << " -d #{new_resource.database}" if new_resource.database
       cmd << " -U #{new_resource.user}"     if new_resource.user
       cmd << " --host #{new_resource.host}" if new_resource.host
@@ -35,12 +35,12 @@ module PostgresqlCookbook
     def execute_sql(new_resource, query)
       # If we don't pass in a user to the resource
       # default to the postgres user
-      user = new_resource.user ? new_resource.user : 'postgres'
+      user = new_resource.user || 'postgres'
 
       # Query could be a String or an Array of Strings
       statement = query.is_a?(String) ? query : query.join("\n")
 
-      cmd = shell_out(statement, user: user)
+      cmd = shell_out(statement, user: user, environment: psql_environment)
 
       # Pass back cmd so we can decide what to do with it in the calling method.
       cmd
@@ -71,7 +71,7 @@ module PostgresqlCookbook
       if new_resource.version
         version_result.stdout == new_resource.version
       else
-        !version_result.stdout.nil?
+        !version_result.stdout.chomp.empty?
       end
     end
 
@@ -81,7 +81,7 @@ module PostgresqlCookbook
     end
 
     def create_extension_sql(new_resource)
-      sql = "CREATE EXTENSION IF NOT EXISTS #{new_resource.extension}"
+      sql = %(CREATE EXTENSION IF NOT EXISTS #{new_resource.extension})
       sql << " FROM \"#{new_resource.old_version}\"" if new_resource.old_version
 
       psql_command_string(new_resource, sql)
@@ -96,7 +96,7 @@ module PostgresqlCookbook
     end
 
     def role_sql(new_resource)
-      sql = %(#{new_resource.create_user} WITH )
+      sql = %(\\"#{new_resource.create_user}\\" WITH )
 
       %w(superuser createdb createrole inherit replication login).each do |perm|
         sql << "#{'NO' unless new_resource.send(perm)}#{perm.upcase} "
@@ -183,7 +183,7 @@ module PostgresqlCookbook
       end
     end
 
-    def slave?
+    def follower?
       ::File.exist? "#{data_dir}/recovery.conf"
     end
 
@@ -213,6 +213,7 @@ module PostgresqlCookbook
               "/usr/pgsql-#{new_resource.version}/bin/initdb"
             end
       cmd << " --locale '#{new_resource.initdb_locale}'" if new_resource.initdb_locale
+      cmd << " -E '#{new_resource.initdb_encoding}'" if new_resource.initdb_encoding
       cmd << " -D '#{data_dir(new_resource.version)}'"
     end
 
@@ -237,6 +238,12 @@ module PostgresqlCookbook
     # On Amazon use the RHEL 6 packages. Otherwise use the releasever yum variable
     def yum_releasever
       platform?('amazon') ? '6' : '$releasever'
+    end
+
+    # Fedora doesn't seem to know the right symbols for psql
+    def psql_environment
+      return {} unless platform?('fedora')
+      { LD_LIBRARY_PATH: '/usr/lib64' }
     end
 
     # Generate a password if the value is set to generate.
