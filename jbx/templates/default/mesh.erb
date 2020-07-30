@@ -270,7 +270,7 @@ server {
         allow                       127.0.0.1;
         deny                        all;
         
-        fastcgi_pass                unix:/var/run/php5-fpm.sock;
+        fastcgi_pass                unix:/var/run/php7-fpm.sock;
         fastcgi_param               SCRIPT_FILENAME $uri;
         include                     fastcgi_params;
     }
@@ -748,7 +748,7 @@ server {
     tcp_nopush                          off;
     
     more_set_headers                    "X-Backend-Server: hydra-$hostname";
-    set                                 $upstream unix:/var/run/php5-fpm.sock;
+    set                                 $upstream unix:/var/run/php7-fpm.sock;
     
     access_log                          /var/log/nginx/hydra.log main buffer=64k flush=30s if=$loggable;
     
@@ -856,7 +856,7 @@ server {
     tcp_nopush                          off;
     
     more_set_headers                    "X-Backend-Server: ndp-$hostname";
-    set                                 $upstream unix:/var/run/php5-fpm.sock;
+    set                                 $upstream unix:/var/run/php7-fpm.sock;
     
     access_log                          /var/log/nginx/ndp.log main buffer=64k flush=30s if=$loggable;
     

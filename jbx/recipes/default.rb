@@ -61,7 +61,7 @@ openresty_site "api" do
   action :enable
 end
 openresty_site "mesh" do
-  template "api.erb"
+  template "mesh.erb"
   variables ({
     hostname: node["jbx"]["domains"]["mesh"],
     path: "/var/www/jbx/public",
