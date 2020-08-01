@@ -37,11 +37,12 @@ service "gearman-job-server" do
 end
 
 # Un-symlink our config script to prevent install file from overwriting our good version
-link "/etc/gearman-manager/config.ini" do
-  to "#{node["jbx"]["path"]}/application/modules/processing/config/config.ini"
-  action :delete
-  only_if { File.symlink?("/etc/gearman-manager/config.ini") }
-  only_if { node.attribute?("jbx") }
+if node.attribute?("jbx")
+  link "/etc/gearman-manager/config.ini" do
+    to "#{node["jbx"]["path"]}/application/modules/processing/config/config.ini"
+    action :delete
+    only_if { File.symlink?("/etc/gearman-manager/config.ini") }
+  end
 end
 
 git "gearman-manager" do
