@@ -41,6 +41,7 @@ link "/etc/gearman-manager/config.ini" do
   to "#{node["jbx"]["path"]}/application/modules/processing/config/config.ini"
   action :delete
   only_if { File.symlink?("/etc/gearman-manager/config.ini") }
+  only_if { node.attribute?("jbx") }
 end
 
 git "gearman-manager" do
