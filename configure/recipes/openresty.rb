@@ -16,3 +16,8 @@ edit_resource(:template, "nginx.conf") do
   source "nginx.conf.erb"
   cookbook "configure"
 end
+
+edit_resource(:cookbook_file, "#{node['openresty']['dir']}/mime.types") do
+  source "mime.types"
+  cookbook "configure"
+end
