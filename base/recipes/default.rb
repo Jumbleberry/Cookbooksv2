@@ -4,7 +4,10 @@ if node["environment"] != "prod"
   include_recipe cookbook_name + "::trust"
 end
 
-include_recipe cookbook_name + "::berks"
+unless node.attribute?(:ec2)
+  include_recipe cookbook_name + "::berks"
+end
+
 include_recipe cookbook_name + "::dnsmasq"
 include_recipe cookbook_name + "::kernel"
 include_recipe cookbook_name + "::filesystem"
