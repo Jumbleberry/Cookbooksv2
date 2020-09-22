@@ -152,6 +152,14 @@ http {
   
   real_ip_header          X-Forwarded-For;
   real_ip_recursive       on;
+      
+  ##
+  # Zones
+  ##
+  limit_conn_zone         $binary_remote_addr$http_x_forwarded_for$host$uri$arg_sid$arg_hid$arg_transid$arg_event$arg_md5
+                              zone=conn_limit_per_ip:50m;
+  limit_req_zone          $binary_remote_addr$http_x_forwarded_for$host$uri$arg_sid$arg_hid$arg_transid$arg_md5$arg_redirects$arg_retries 
+                            zone=force_cookie_reuse:50m rate=12r/m;
   
   ##
   # Scheme Detection

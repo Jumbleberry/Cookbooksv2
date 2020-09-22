@@ -66,10 +66,10 @@ default["openresty"]["source"]["version"] = "1.11.2.5"
 default["openresty"]["source"]["file_prefix"] = "openresty"
 default["openresty"]["source"]["checksum"] = "f8cc203e8c0fcd69676f65506a3417097fc445f57820aa8e92d7888d8ad657b9"
 default["openresty"]["max_subrequests"] = 250
-# default["openresty"]["extra_modules"] += ["base::openresty_modules"]
-default["openresty"]["source"]["default_configure_flags"] += [
- # "--with-openssl=#{Chef::Config["file_cache_path"]}/openssl-#{default["openssl_source"]["openssl"]["version"]}",
-  ]
+default["openresty"]["extra_modules"] += ["base::openresty_modules"]
+default["openresty"]["configure_flags"] = [
+  "--add-module=/tmp/nginx_upstream_check_module-master",
+]
 
 default["openresty"]["service"]["restart_on_update"] = false
 default["openresty"]["service"]["start_on_boot"] = false
@@ -77,6 +77,12 @@ default["openresty"]["service"]["start_on_boot"] = false
 default["openresty"]["luarocks"]["version"] = "3.2.0"
 default["openresty"]["luarocks"]["url"] = "http://luarocks.org/releases/luarocks-#{node["openresty"]["luarocks"]["version"]}.tar.gz"
 default["openresty"]["luarocks"]["checksum"] = "66c1848a25924917ddc1901e865add8f19f2585360c44a001a03a8c234d3e796"
+
+default["openresty"]["luarocks"]["default_rocks"] = {
+  "lua-resty-auto-ssl" => "0.13.1",
+  "jumbleberry-dogstatsd" => "1.0.1-1"
+}
+
 default["php"]["version"] = php_version = "7.3"
 default["php"]["composer_download_path"] = "/tmp/composer-install.php"
 default["php"]["packages"] = {
@@ -98,6 +104,7 @@ default["php"]["packages"] = {
   "php#{php_version}-soap" => "*",
   "php#{php_version}-gearman" => "*",
   "php#{php_version}-xdebug" => "*",
+  "php#{php_version}-pgsql" => "*",
 }
 
 default["gearman"]["version"] = "1.1.*"
