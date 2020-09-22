@@ -2,7 +2,7 @@ include_recipe "configure"
 
 require "vault"
 
-openresty_site "default" do
+edit_resource(:openresty_site, "default") do
   template "default.conf.erb"
   action :enable
   timing :delayed
@@ -49,27 +49,20 @@ ruby_block "wait for api.key" do
   action :nothing
 end
 
-# Creates the api virtual host
-openresty_site "api" do
-  template "api.erb"
-  variables ({
-    hostname: node["jbx"]["domains"]["api"],
-    path: "/var/www/jbx/public",
-    app: "api",
-  })
-  timing :delayed
-  action :enable
+# Create the service hosts
+node["jbx"]["services"].each do |service|
+  openresty_site service do
+    template service + ".erb"
+    variables ({
+      hostname: node["jbx"]["domains"][service],
+      path: "/var/www/jbx/public",
+      app: service,
+    })
+    timing :delayed
+    action :enable
+  end
 end
-openresty_site "mesh" do
-  template "mesh.erb"
-  variables ({
-    hostname: node["jbx"]["domains"]["mesh"],
-    path: "/var/www/jbx/public",
-    app: "mesh",
-  })
-  timing :delayed
-  action :enable
-end
+
 { checkout: true, sync: node.attribute?(:ec2) }.each do |action, should|
   git "#{node["jbx"]["git-url"]}-#{action}" do
     destination node["jbx"]["path"]
