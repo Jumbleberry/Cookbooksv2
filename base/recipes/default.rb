@@ -6,6 +6,7 @@ end
 
 unless node.attribute?(:ec2)
   include_recipe cookbook_name + "::berks"
+  include_recipe cookbook_name + "::timescale"
 end
 
 include_recipe cookbook_name + "::dnsmasq"
