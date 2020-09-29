@@ -17,7 +17,7 @@ unless node.attribute?(:ec2)
   execute "tune-and-restart-pgsql" do
     command "sudo timescaledb-tune -yes -quiet"
     user "root"
-    notifies :restart, "service[postgresql]", :immediate
+    notifies :restart, "service[postgresql.service]", :immediate
     only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
   end
 
