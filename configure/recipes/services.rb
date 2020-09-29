@@ -58,3 +58,9 @@ edit_resource(:service, "mysql.service") do
   supports status: true, restart: true, reload: true
   action node["configure"]["services"]["mysql"] || stop_disable
 end
+
+edit_resource(:service, "postgresql.service") do
+  service_name "postgresql"
+  supports status: true, restart: true, reload: true
+  action node["configure"]["services"]["postgresql"] || stop_disable
+end

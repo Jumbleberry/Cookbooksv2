@@ -15,14 +15,10 @@ unless node.attribute?(:ec2)
 
   # Tune pgsql for timescale
   execute "tune-and-restart-pgsql" do
-    command "sudo timescaledb-tune -yes -quiet; sudo service postgresql restart"
+    command "sudo timescaledb-tune -yes -quiet"
     user "root"
-  end
-
-  # restart pgsql
-  service "pgsql" do
-    supports status: true, restart: true, reload: true
-    action %i{stop disable}
+    notifies :restart, "service[postgresql]", :immediate
+    only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
   end
 
   # Create pgsql user 'root' if it doesn't exist
