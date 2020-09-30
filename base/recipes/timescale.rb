@@ -19,6 +19,7 @@ package "timescaledb-postgresql-12" do
 end
 
 # define postgresql service
-service "postgresql" do
+service "postgresql.service" do
+  service_name "postgresql"
   action %i{stop disable}
 end
