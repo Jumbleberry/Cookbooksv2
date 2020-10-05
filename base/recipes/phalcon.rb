@@ -9,7 +9,7 @@ unless node.attribute?(:ec2)
   git "phalcon-devtools" do
     repository node["phalcon"]["devtools"]
     user "root"
-    branch "master"
+    branch "v3.4.11"
     destination "/usr/share/phalcon-devtools"
     action :sync
   end
