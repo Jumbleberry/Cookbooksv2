@@ -108,3 +108,4 @@ end
 
 include_recipe cookbook_name + "::gearman"
 include_recipe cookbook_name + "::crons"
+include_recipe cookbook_name + "::kinesis"
