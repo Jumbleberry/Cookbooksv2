@@ -5,12 +5,15 @@ default["openresty"]["luarocks"]["default_rocks"] = {
 default["nodejs"]["npm_packages"] = [
   {
     "name" => "uglify-js",
+    "options" => ["--prefix /usr"]
   },
   {
     "name" => "uglifycss",
+    "options" => ["--prefix /usr"]
   },
   {
     "name" => "html-minifier",
+    "options" => ["--prefix /usr"]
   },
 ]
 
