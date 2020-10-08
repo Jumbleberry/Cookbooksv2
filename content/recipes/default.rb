@@ -8,31 +8,6 @@ directory node["content"]["path"] do
   recursive true
 end
 
-{ checkout: true, sync: true }.each do |action, should|
-  git "#{node["content"]["content"]["url"]}-#{action}" do
-    repository node["content"]["content"]["url"]
-    destination node["content"]["content"]["destination"]
-    revision node["content"]["content"]["revision"]
-    user node[:user]
-    action action
-    notifies :run, "execute[minify]", :delayed
-    only_if { should }
-  end
-end
-
-{ checkout: true, sync: true }.each do |action, should|
-  git "#{node["content"]["jumbleberry.com"]["url"]}-#{action}" do
-    repository node["content"]["jumbleberry.com"]["url"]
-    destination node["content"]["jumbleberry.com"]["destination"]
-    revision node["content"]["jumbleberry.com"]["revision"]
-    user node[:user]
-    action action
-    notifies :run, "execute[cp]", :immediately
-    notifies :run, "execute[minify]", :delayed
-    only_if { should }
-  end
-end
-
 execute "cp" do
   command <<-EOH
     mkdir #{node["content"]["content"]["destination"]}/jumbleberry.com
@@ -77,6 +52,26 @@ execute "minify" do
   cwd "/tmp"
   action :nothing
   notifies :reload, "service[nginx.service]", :delayed
+end
+
+
+git node["content"]["content"]["url"] do
+  repository node["content"]["content"]["url"]
+  destination node["content"]["content"]["destination"]
+  revision node["content"]["content"]["revision"]
+  user node[:user]
+  action :sync
+  notifies :run, "execute[minify]", :delayed
+end
+
+git node["content"]["jumbleberry.com"]["url"] do
+  repository node["content"]["jumbleberry.com"]["url"]
+  destination node["content"]["jumbleberry.com"]["destination"]
+  revision node["content"]["jumbleberry.com"]["revision"]
+  user node[:user]
+  action :sync
+  notifies :run, "execute[cp]", :immediately
+  notifies :run, "execute[minify]", :delayed
 end
 
 directory "#{node["openresty"]["dir"]}/ssl" do
