@@ -4,8 +4,24 @@ lua_shared_dict auto_ssl_settings 64k;
 init_by_lua_block {
   auto_ssl = (require "resty.auto-ssl").new()
 
+<% if node["content"].key?("redis") %>
+  auto_ssl:set("storage_adapter", "resty.auto-ssl.storage_adapters.redis")
+
+  auto_ssl:set("redis", {
+    host = "<%= node["content"]["redis"]["host"] %>",
+    port = <%= node["content"]["redis"]["port"] || 6379 %>,
+    db   = <%= node["content"]["redis"]["db"] || 1 %>
+  })
+<% end %>
+
   auto_ssl:set("allow_domain", function(domain)
-    return domain:match("([%w][%w%-]+[%w])%.([%a][%a]+)")
+    local p = io.popen('find "/var/www/content" -maxdepth 1 -type d -printf "%f\n"')
+    for file in p:lines() do
+      if file == domain or domain:sub(-(file:len() + 1)) == "." .. file then
+        return true
+      end
+    end
+    return false
   end)
 
   auto_ssl:set("dir", "/etc/nginx/ssl")
@@ -57,7 +73,7 @@ server {
   error_log                 /var/log/nginx/content.error.log warn;
 
   set_by_lua_block $directory {
-    if ngx.var.http_host:match("([%w][%w%-]+[%w])%.([%a][%a]+)") ~= nil and ngx.var.http_host:match("content.jumble") == nil then
+    if ngx.var.http_host ~= nil and ngx.var.http_host:match("([%w][%w%-]+[%w])%.([%a][%a]+)") ~= nil and ngx.var.http_host:match("content.jumble") == nil then
       local ngx_re  = require "ngx.re"
       local parts   = ngx_re.split(ngx.var.http_host or ngx.var.remote_ip, "[.]") or {}
       local part    = #parts
@@ -120,7 +136,7 @@ server {
   error_log                 /var/log/nginx/content.error.log warn;
 
   set_by_lua_block $directory {
-    if ngx.var.http_host:match("([%w][%w%-]+[%w])%.([%a][%a]+)") ~= nil and ngx.var.http_host:match("content.jumble") == nil then
+    if ngx.var.http_host ~= nil and ngx.var.http_host:match("([%w][%w%-]+[%w])%.([%a][%a]+)") ~= nil and ngx.var.http_host:match("content.jumble") == nil then
       local ngx_re  = require "ngx.re"
       local parts   = ngx_re.split(ngx.var.http_host or ngx.var.remote_ip, "[.]") or {}
       local part    = #parts
