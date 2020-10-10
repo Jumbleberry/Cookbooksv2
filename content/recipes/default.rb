@@ -8,17 +8,32 @@ directory node["content"]["path"] do
   recursive true
 end
 
-execute "cp" do
+git node["content"]["content"]["url"] do
+  repository node["content"]["content"]["url"]
+  destination node["content"]["content"]["destination"]
+  revision node["content"]["content"]["revision"]
+  user node[:user]
+  action :sync
+end
+
+git node["content"]["jumbleberry.com"]["url"] do
+  repository node["content"]["jumbleberry.com"]["url"]
+  destination node["content"]["jumbleberry.com"]["destination"]
+  revision node["content"]["jumbleberry.com"]["revision"]
+  user node[:user]
+  action :sync
+end
+
+execute "cp-content" do
   command <<-EOH
     mkdir #{node["content"]["content"]["destination"]}/jumbleberry.com
     cp -R . #{node["content"]["content"]["destination"]}/jumbleberry.com
   EOH
   cwd "#{node["content"]["jumbleberry.com"]["destination"]}/src"
   user node[:user]
-  action :nothing
 end
 
-execute "minify" do
+execute "minify-content" do
   command <<-EOH
     #minification of JS files
     find #{node["content"]["content"]["destination"]} -type f \
@@ -50,29 +65,9 @@ execute "minify" do
     rm -rf #{node["content"]["jumbleberry.com"]["destination"]}
   EOH
   cwd "/tmp"
-  action :nothing
   notifies :reload, "service[nginx.service]", :delayed
 end
 
-
-git node["content"]["content"]["url"] do
-  repository node["content"]["content"]["url"]
-  destination node["content"]["content"]["destination"]
-  revision node["content"]["content"]["revision"]
-  user node[:user]
-  action :sync
-  notifies :run, "execute[minify]", :delayed
-end
-
-git node["content"]["jumbleberry.com"]["url"] do
-  repository node["content"]["jumbleberry.com"]["url"]
-  destination node["content"]["jumbleberry.com"]["destination"]
-  revision node["content"]["jumbleberry.com"]["revision"]
-  user node[:user]
-  action :sync
-  notifies :run, "execute[cp]", :immediately
-  notifies :run, "execute[minify]", :delayed
-end
 
 directory "#{node["openresty"]["dir"]}/ssl" do
   owner node[:user]
