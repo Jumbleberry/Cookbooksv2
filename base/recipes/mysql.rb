@@ -8,6 +8,14 @@ execute "mysql-default-password-again" do
   user "root"
 end
 
+# Add the universe repository to help with dependency resolution
+apt_repository 'trusty-univers' do
+  uri 'http://archive.ubuntu.com/ubuntu'
+  components ['universe']
+  distribution 'trusty'
+  action :add
+end
+
 # Install mysql server
 execute "mysql-install" do
   command "(export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -y -q mysql-server)"
