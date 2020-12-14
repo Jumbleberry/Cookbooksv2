@@ -48,6 +48,6 @@ template "/etc/php/#{node["php"]["version"]}/fpm/pool.d/www.conf" do
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
 end
 
-execute "composer self-update" do
+execute "composer self-update --1" do ##Pin to version 1 until we are ready to upgrade
   user "root"
 end
