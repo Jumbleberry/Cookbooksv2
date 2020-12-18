@@ -1,7 +1,7 @@
 cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "mysql-client-5.7", "redis-tools", "libpcre3-dev", "tzdata", "default-jre"]
+default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "tzdata", "default-jre"]
 
 default["timezone_iii"]["timezone"] = node["tz"]
 

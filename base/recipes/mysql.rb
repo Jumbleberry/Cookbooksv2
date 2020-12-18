@@ -1,16 +1,24 @@
 # Set mysql server default password
 execute "mysql-default-password" do
-  command "echo \"mysql-server-5.7 mysql-server/mysql_password password #{node["mysql"]["root_password"]}\" | debconf-set-selections"
+  command "echo \"mysql-server-5.6 mysql-server/mysql_password password #{node["mysql"]["root_password"]}\" | debconf-set-selections"
   user "root"
 end
 execute "mysql-default-password-again" do
-  command "echo \"mysql-server-5.7 mysql-server/mysql_password_again password #{node["mysql"]["root_password"]}\" | debconf-set-selections"
+  command "echo \"mysql-server-5.6 mysql-server/mysql_password_again password #{node["mysql"]["root_password"]}\" | debconf-set-selections"
   user "root"
+end
+
+# Add the universe repository to help with dependency resolution
+apt_repository 'trusty-universe' do
+  uri 'http://archive.ubuntu.com/ubuntu'
+  components ['universe']
+  distribution 'trusty'
+  action :add
 end
 
 # Install mysql server
 execute "mysql-install" do
-  command "(export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -y -q mysql-server)"
+  command "(export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -y -q mysql-client-core-5.6 mysql-server-5.6 mysql-client-5.6)"
   user "root"
 end
 
