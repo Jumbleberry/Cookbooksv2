@@ -11,10 +11,16 @@ unless node.attribute?(:ec2)
     mode "0644"
   end
 
-  query = "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY \'#{node["mysql"]["root_password"]}\'; FLUSH PRIVILEGES;"
+  query = "SET PASSWORD FOR 'root'@'localhost' = PASSWORD(\'#{node["mysql"]["root_password"]}\');"
   execute "set_root-password" do
     command "echo \"#{query}\" | mysql -uroot"
     only_if "echo 'show databases' | mysql -uroot mysql;"
+  end
+
+  # Set Global innodb settings via cli to address DEV-488
+  query = "set global innodb_large_prefix=on; set global innodb_file_format=Barracuda;"
+  execute "set_innodb" do
+    command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
   end
 
   # Create jbx user
