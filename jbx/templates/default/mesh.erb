@@ -69,7 +69,7 @@ init_by_lua_block {
             ngx.req.set_body_data("")
         end
     end
-
+    
     -- Convert an existing cookie into set-cookie format
     local function cookie_to_headers(cookie)
         local name = "cookie_" .. cookie
@@ -154,12 +154,12 @@ server {
     set                             $upstream_name "";
     set                             $upstream_server "";
     set                             $unencrypted_request "";
-
+    
     # Whether or not request is encrypted
     set                             $encrypted_uri "";
     set                             $original_args "";
     set                             $decrypted_args "";
-
+    
     # Args that may undergo some conversion
     set                             $hid "";
     set                             $sid "";
@@ -219,8 +219,8 @@ server {
     more_set_headers                "X-Backend-Connect-Time: $upstream_connect_time";
     more_set_headers                "X-Backend-Response-Time: $upstream_header_time";
     more_set_headers                "X-Backend-Status: $upstream_status";
-    more_set_headers                "X-Backend-Uri: $uri";
-    more_set_headers                "X-Backend-Args: $args";
+    # more_set_headers                "X-Backend-Uri: $uri";
+    # more_set_headers                "X-Backend-Args: $args";
     
     location = /favicon.ico { 
         return                      204;
@@ -411,7 +411,7 @@ server {
         # Only allow 1 concurrent request
         limit_conn                  conn_limit_per_ip 1;
         limit_conn_status           503;
-            
+        
         # 5 seconds between duplicate requests
         limit_req                   zone=force_cookie_reuse nodelay;
         limit_req_status            503;
@@ -632,29 +632,19 @@ server {
         local response_times    = ngx_re.split(ngx.var.upstream_header_time or ngx.var.request_time, ", ") or {}
         local upstream_statuses = ngx_re.split(ngx.var.upstream_status or ngx.status, ", ") or {}
         
-        -- Shave/Scrub detection
-        local scrub             = ngx.re.match(ngx.var.arg_referer or ngx.var.http_referer or "", "(?|&)y[0-9]=000([a-zA-Z])(&|$)") or nil
-        -- Referer Host
-        local referer_host      = ngx.re.match(ngx.var.arg_referer or ngx.var.http_referer or "", "^(?:[^:]*:)?(?://)?([^:/]+)") or nil
-        
         local upstream_names    = { ["127.0.0.1:8001"] = "hydra", ["127.0.0.1:8002"] = "hp", ["127.0.0.1:8003"] = "ndp" }
-        local safe_args         = { "sid", "rsid", "pub", "lpid", "retries", "redirects", "rel" }
+        local safe_args         = { "sid", "pub", "rel" }
         local na                = "N/A"
 
         local host              = (ngx.var.domain and ((ngx.var.subdomain or "").. ngx.var.domain)) or nil
+        local uri               = (ngx.var.uri or na)
 
         for k,v in pairs(upstreams) do
             local tags              = {
                 "upstream:"         .. (upstream_names[v] or "router"),
                 "upstream_hops:"    .. (k or "1"),
                 "response_code:"    .. (upstream_statuses[k] and upstream_statuses[k]:gsub("-", "499") or na),
-                "vanity_domain:"    .. (ngx.var.domain or ngx.var.host or na),
-                "subdomain:"        .. ((ngx.var.subdomain ~= nil and ngx.var.subdomain:len() > 1 and ngx.var.subdomain) or na),
-                "origin:"           .. (ngx.var.arg_origin or host or na),
-                "referer:"          .. (referer_host and referer_host[1] or na),
-                "uri:"              .. (ngx.var.uri or na),
-                "http_accept:"      .. (headers["Accept"] or headers["accept"] or na),
-                "scrub:"            .. (scrub and (scrub[1]:lower():match("y") and "active" or "inactive") or na)
+                "uri:"              .. (uri:match("/rd/") and uri or na)
             }
             
             -- pull arguments from the query string
@@ -764,7 +754,7 @@ server {
         fastcgi_keep_conn               on;
         fastcgi_hide_header             Server;
         fastcgi_hide_header             Connection;
-
+        
         fastcgi_connect_timeout         10;
         fastcgi_read_timeout            15;
         fastcgi_send_timeout            15;
@@ -800,16 +790,24 @@ server {
 server {
     listen                              8002 default_server reuseport;
     tcp_nopush                          off;
-
+    
     more_set_headers                    "X-Backend-Server: hitpath";
     set                                 $upstream mediaclicklb.com;
     set                                 $domain www.mediaclicktrker.com;
-
+    
     access_log                          /var/log/nginx/hp.log main buffer=64k flush=30s if=$loggable;
     
     location = /nginx {
         access_log                      off;
         stub_status                     on;
+    }
+
+    location = / {
+        return                          204;
+    }
+
+    location ~* ^/promo {
+        return                          404;
     }
 
     location ~* ^/rd/f {
@@ -932,9 +930,9 @@ server {
     }
     
     access_log                          /var/log/nginx/tp.log main buffer=64k flush=30s if=$loggable;
-
+    
     more_set_headers                    'Server: TP';
-
+    
     location = /thisthingisnotathing {
         rewrite                         ^/.* /nginx break;
         try_files                       @proxy @proxy;
@@ -947,7 +945,7 @@ server {
         access_log                      off;
         stub_status                     on;
     }
-
+    
     location / {
         try_files                       @proxy @proxy;
     }
@@ -957,7 +955,7 @@ server {
         proxy_set_header                Connection "";
         proxy_hide_header               Server;
         proxy_hide_header               Connection;
-
+        
         proxy_connect_timeout           1;
         proxy_read_timeout              15;
         proxy_send_timeout              15;
@@ -968,7 +966,7 @@ server {
         proxy_buffers                   16 4k;
         proxy_buffer_size               32k;
         proxy_busy_buffers_size         32k;
-
+        
         proxy_intercept_errors          on;
         proxy_next_upstream             non_idempotent error timeout invalid_header http_500 http_502 http_503 http_504;
         proxy_next_upstream_timeout     30;
@@ -1000,18 +998,18 @@ server {
         local upstream_statuses = ngx_re.split(ngx.var.upstream_status or ngx.status, ", ") or {}
         
         local upstream_names    = { ["127.0.0.1:8001"] = "hydra", ["127.0.0.1:8002"] = "hp", ["127.0.0.1:8003"] = "ndp" }
-        local safe_args         = { "sid", "pub", "lpid" }
+        local safe_args         = { "sid", "pub" }
         local na                = "N/A"
 
         local host              = (ngx.var.domain and ((ngx.var.subdomain or "").. ngx.var.domain)) or nil
+        local uri               = (ngx.var.uri or na)
 
         for k,v in pairs(upstreams) do
             local tags              = {
                 "upstream:"         .. (upstream_names[v] or "router"),
                 "upstream_hops:"    .. (k or "1"),
                 "response_code:"    .. (upstream_statuses[k] and upstream_statuses[k]:gsub("-", "499") or na),
-                "vanity_domain:"    .. (ngx.var.domain or ngx.var.host or na),
-                "uri:"              .. (ngx.var.uri or na)
+                "uri:"              .. (uri:match("/rd/") and uri or na)
             }
             
             -- pull arguments from the query string
