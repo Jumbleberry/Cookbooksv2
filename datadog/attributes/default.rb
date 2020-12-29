@@ -264,7 +264,7 @@ default['datadog']['statsd_forward_port'] = 8125
 default['datadog']['statsd_metric_namespace'] = nil
 
 # Histogram settings
-default['datadog']['histogram_aggregates'] = 'max, median, avg, count'
+default['datadog']['histogram_aggregates'] = 'max, median'
 default['datadog']['histogram_percentiles'] = '0.95'
 
 # extra config options
