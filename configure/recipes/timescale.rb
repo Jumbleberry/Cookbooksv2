@@ -1,4 +1,4 @@
-unless node.attribute?(:ec2)
+if node["environment"] != "prod"
   # Copy config files
   cookbook_file "/etc/postgresql/12/main/pg_hba.conf" do
     source "pg_hba.conf"

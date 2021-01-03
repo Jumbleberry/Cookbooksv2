@@ -12,7 +12,7 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
     end
   end
 
-  unless node.attribute?(:ec2)
+  if node["environment"] == "dev"
     if path.include? "fpm"
       template path + "/conf.d/20-xdebug.ini" do
         source "xdebug.ini.erb"

@@ -64,14 +64,13 @@ node["jbx"]["services"].each do |service|
   end
 end
 
-git "#{node["jbx"]["git-url"]}-#{action}" do
+git "#{node["jbx"]["git-url"]}" do
   destination node["jbx"]["path"]
   repository node["jbx"]["git-url"]
   revision node["jbx"]["branch"]
   user node[:user]
   group node[:user]
   action node.attribute?(:ec2) ? "sync" : "checkout"
-  only_if { should }
   notifies :create, "consul_template_config[jbx.credentials.json]", :immediately
   notifies :run, "execute[/bin/bash deploy.sh]", :delayed
   notifies node.attribute?(:ec2) ? :run : :nothing, "execute[database-migrations]", :delayed
