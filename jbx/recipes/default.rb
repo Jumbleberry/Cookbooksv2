@@ -87,7 +87,7 @@ end
 
 # Run the deploy script
 execute "/bin/bash deploy.sh" do
-  cwd "/var/www/jbx"
+  cwd node["jbx"]["path"]
   user node[:user]
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
   action :nothing
