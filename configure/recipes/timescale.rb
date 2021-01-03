@@ -17,7 +17,7 @@ if node["environment"] != "prod"
   execute "tune-and-restart-pgsql" do
     command "sudo timescaledb-tune -yes -quiet"
     user "root"
-    notifies :restart, "service[postgresql.service]", :immediate
+    notifies :reload, "service[postgresql.service]", :immediate
     only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
   end
 
