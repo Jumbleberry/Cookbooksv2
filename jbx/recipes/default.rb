@@ -60,24 +60,21 @@ node["jbx"]["services"].each do |service|
     })
     timing :delayed
     action :enable
+    notifies :reload, "service[nginx.service]", :delayed
   end
 end
 
-{ checkout: true, sync: node.attribute?(:ec2) }.each do |action, should|
-  git "#{node["jbx"]["git-url"]}-#{action}" do
-    destination node["jbx"]["path"]
-    repository node["jbx"]["git-url"]
-    revision node["jbx"]["branch"]
-    user node[:user]
-    group node[:user]
-    action action
-    only_if { should }
-    notifies :create, "consul_template_config[jbx.credentials.json]", :immediately
-    notifies :run, "execute[/bin/bash deploy.sh]", :delayed
-    if node.attribute?(:ec2)
-      notifies :run, "execute[database-migrations]", :delayed
-    end
-  end
+git "#{node["jbx"]["git-url"]}-#{action}" do
+  destination node["jbx"]["path"]
+  repository node["jbx"]["git-url"]
+  revision node["jbx"]["branch"]
+  user node[:user]
+  group node[:user]
+  action node.attribute?(:ec2) ? "sync" : "checkout"
+  only_if { should }
+  notifies :create, "consul_template_config[jbx.credentials.json]", :immediately
+  notifies :run, "execute[/bin/bash deploy.sh]", :delayed
+  notifies node.attribute?(:ec2) ? :run : :nothing, "execute[database-migrations]", :delayed
 end
 consul_template_config "jbx.credentials.json" do
   templates [{
