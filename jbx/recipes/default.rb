@@ -55,7 +55,7 @@ node["jbx"]["services"].each do |service|
     template service + ".erb"
     variables ({
       hostname: node["jbx"]["domains"][service],
-      path: "/var/www/jbx/public",
+      path: "/var/www/jbx",
       app: service,
     })
     timing :delayed
