@@ -1,4 +1,4 @@
-unless node.attribute?(:ec2)
+if node["environment"] == "dev"
   edit_resource(:service, "mysql.service") do
     subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", :immediately
   end

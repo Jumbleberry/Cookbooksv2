@@ -2,11 +2,11 @@ include_recipe "apt"
 
 if node["environment"] != "prod"
   include_recipe cookbook_name + "::trust"
+  include_recipe cookbook_name + "::timescale"
 end
 
 unless node.attribute?(:ec2)
   include_recipe cookbook_name + "::berks"
-  include_recipe cookbook_name + "::timescale"
 end
 
 include_recipe cookbook_name + "::dnsmasq"
