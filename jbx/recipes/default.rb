@@ -66,6 +66,14 @@ node["jbx"]["services"].each do |service|
   end
 end
 
+# Makes sure that the directory exists
+directory node["jbx"]["path"] do
+  owner node[:user]
+  group node[:user]
+  recursive true
+  action :create
+end
+
 git "#{node["jbx"]["git-url"]}" do
   destination node["jbx"]["path"]
   repository node["jbx"]["git-url"]
@@ -73,10 +81,11 @@ git "#{node["jbx"]["git-url"]}" do
   user node[:user]
   group node[:user]
   action node.attribute?(:ec2) ? "sync" : "checkout"
-  notifies :create, "consul_template_config[jbx.credentials.json]", :immediately
+  notifies :create, "consul_template_config[jbx.credentials.json]", :immediate
   notifies :run, "execute[/bin/bash deploy.sh]", :delayed
   notifies node.attribute?(:ec2) ? :run : :nothing, "execute[database-migrations]", :delayed
 end
+
 consul_template_config "jbx.credentials.json" do
   templates [{
     source: "/var/www/jbx/config/credentials.json.tpl",
@@ -85,6 +94,16 @@ consul_template_config "jbx.credentials.json" do
   }]
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
   notifies :reload, "service[consul-template.service]", :immediate
+end
+
+if node["jbx"]["path"] != "/var/www/jbx"
+  link "jbx.credentials.json" do
+    target_file node["jbx"]["path"] + "/config/credentials.json"
+    to "/var/www/jbx/config/credentials.json"
+    owner node[:user]
+    group node[:user]
+    action :create
+  end
 end
 
 # Run the deploy script
