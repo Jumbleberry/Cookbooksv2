@@ -2,7 +2,9 @@ include_recipe "configure"
 
 require "vault"
 
+jbx_cookbook = cookbook_name
 edit_resource(:openresty_site, "default") do
+  cookbook jbx_cookbook
   template "default.conf.erb"
   action :enable
   timing :delayed

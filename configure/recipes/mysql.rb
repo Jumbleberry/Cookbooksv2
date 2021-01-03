@@ -5,6 +5,7 @@ if node["environment"] == "dev"
 
   # Copy config file
   cookbook_file "/etc/mysql/my.cnf" do
+    manage_symlink_source true
     source "my.cnf"
     owner "root"
     group "root"

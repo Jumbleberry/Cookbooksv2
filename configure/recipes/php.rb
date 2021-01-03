@@ -15,6 +15,7 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
   if node["environment"] == "dev"
     if path.include? "fpm"
       template path + "/conf.d/20-xdebug.ini" do
+        manage_symlink_source true
         source "xdebug.ini.erb"
         owner "root"
         group "root"
