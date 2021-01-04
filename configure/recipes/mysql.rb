@@ -1,4 +1,4 @@
-if node["environment"] == "dev"
+if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "start"))
   edit_resource(:service, "mysql.service") do
     subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", :immediately
   end
