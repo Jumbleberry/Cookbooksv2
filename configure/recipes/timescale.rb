@@ -5,12 +5,14 @@ if node["environment"] != "prod"
     owner "root"
     group "root"
     mode "0644"
+    notifies :reload, "service[postgresql.service]", :immediate
   end
   cookbook_file "/etc/postgresql/12/main/postgresql.conf" do
     source "postgresql.conf"
     owner "root"
     group "root"
     mode "0644"
+    notifies :restart, "service[postgresql.service]", :immediate
   end
 
   # Tune pgsql for timescale
