@@ -13,3 +13,6 @@ include_recipe cookbook_name + "::mysql"
 include_recipe cookbook_name + "::ssh"
 include_recipe cookbook_name + "::services"
 include_recipe cookbook_name + "::timescale"
+
+output = "#{Chef::JSONCompat.to_json_pretty(node.to_hash)}"
+log output
