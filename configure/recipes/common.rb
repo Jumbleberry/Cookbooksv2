@@ -27,20 +27,23 @@ if node.attribute?(:ec2)
       action :create
     end
 
-      mount '/nvme' do
-        device ['/dev/nvme1n1']
-        fstype 'xfs'
-        action :mount
+    execute 'mkfs nvme1n1' do
+      command 'mkfs -t xfs /dev/nvme1n1'
+      not_if "grep -qs '/nvme ' /proc/mounts"
+    end
 
-
-      ##Mount the disk here if it is not mounted
+    mount '/nvme' do
+      device '/dev/nvme1n1'
+      fstype 'xfs'
+      action :mount
+      not_if "grep -qs '/nvme ' /proc/mounts"
+    end
 
       link '/nvme/mysql' do
         to '/var/lib/mysql'
         action :create
         not_if { File.symlink?('/nvme/mysql') }
       end
-    end
 
   end
 
