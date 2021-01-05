@@ -13,7 +13,7 @@ if node["environment"] != "prod"
     group "root"
     mode "0644"
     notifies :restart, "service[postgresql.service]", :immediate
-    notifies :run, "execute[convert-pgdb-to-timescaledb]", :immediate
+    notifies :run, "execute[convert-pgdb-to-timescaledb]", :delayed
   end
 
   # Disabled as "postgresql.conf" is already tuned based on this, and re-tuning will ensure an unnecessary update of the postgres.conf file
