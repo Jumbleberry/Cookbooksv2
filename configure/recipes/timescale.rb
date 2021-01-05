@@ -13,15 +13,17 @@ if node["environment"] != "prod"
     group "root"
     mode "0644"
     notifies :restart, "service[postgresql.service]", :immediate
+    notifies :run, "execute[convert-pgdb-to-timescaledb]", :immediate
   end
 
+  # Disabled as "postgresql.conf" is already tuned based on this, and re-tuning will ensure an unnecessary update of the postgres.conf file
   # Tune pgsql for timescale
-  execute "tune-and-restart-pgsql" do
-    command "sudo timescaledb-tune -yes -quiet"
-    user "root"
-    notifies :reload, "service[postgresql.service]", :immediate
-    only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
-  end
+  #   execute "tune-and-restart-pgsql" do
+  #     command "sudo timescaledb-tune -yes -quiet"
+  #     user "root"
+  #     notifies :reload, "service[postgresql.service]", :immediate
+  #     only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
+  #   end
 
   # Create pgsql user 'root' if it doesn't exist
   execute "pgsql-default-user" do
@@ -41,5 +43,6 @@ if node["environment"] != "prod"
   execute "convert-pgdb-to-timescaledb" do
     command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE\" -d local_timescale"
     user "postgres"
+    action :nothing
   end
 end
