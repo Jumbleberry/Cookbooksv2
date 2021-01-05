@@ -25,14 +25,21 @@ if node.attribute?(:ec2)
       group 'www-data'
       mode '0755'
       action :create
-    end 
+    end
 
-    ## Mount the disk here if it is not mounted
+      mount '/nvme' do
+        device ['/dev/nvme1n1']
+        fstype 'xfs'
+        action :mount
 
-    link '/nvme/mysql' do
-      to '/var/lib/mysql'
-      action :create
-      not_if { File.symlink?('/nvme/mysql') }
+
+      ##Mount the disk here if it is not mounted
+
+      link '/nvme/mysql' do
+        to '/var/lib/mysql'
+        action :create
+        not_if { File.symlink?('/nvme/mysql') }
+      end
     end
 
   end
