@@ -3,6 +3,15 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", :immediately
   end
 
+  # Copy config file
+  cookbook_file "/etc/mysql/my.cnf" do
+    manage_symlink_source true
+    source "my.cnf"
+    owner "root"
+    group "root"
+    mode "0644"
+  end
+
   if node.attribute?(:nvme) && !FileTest.directory?("/#{node["nvme"]["name"]}/mysql")
     service "mysql" do
       action :stop
@@ -42,15 +51,6 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     service "mysql" do
       action node["configure"]["services"]["mysql"]
     end
-  end
-
-  # Copy config file
-  cookbook_file "/etc/mysql/my.cnf" do
-    manage_symlink_source true
-    source "my.cnf"
-    owner "root"
-    group "root"
-    mode "0644"
   end
 
   query = "SET PASSWORD FOR 'root'@'localhost' = PASSWORD(\'#{node["mysql"]["root_password"]}\');"
