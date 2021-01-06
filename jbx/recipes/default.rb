@@ -82,8 +82,6 @@ git "#{node["jbx"]["git-url"]}" do
   group node[:user]
   action node.attribute?(:ec2) ? "sync" : "checkout"
   notifies :create, "consul_template_config[jbx.credentials.json]", :immediate
-  notifies :run, "execute[/bin/bash deploy.sh]", :delayed
-  notifies node.attribute?(:ec2) ? :run : :nothing, "execute[database-migrations]", :delayed
 end
 
 consul_template_config "jbx.credentials.json" do
@@ -111,16 +109,17 @@ execute "/bin/bash deploy.sh" do
   cwd node["jbx"]["path"]
   user node[:user]
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
-  action :nothing
+  subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
 end
 
 # Run database migrations
-execute "database-migrations" do
-  cwd "#{node["jbx"]["path"]}/application/cli"
-  command "/bin/bash ./migration.sh -c migrate -d all -o --no-interaction"
-  timeout 86400
-  not_if { ::Dir.glob("#{node["jbx"]["path"]}/application/migrations/*.php").empty? }
-  action :nothing
+if node.attribute?(:ec2)
+  execute "database-migrations" do
+    cwd "#{node["jbx"]["path"]}/application/cli"
+    command "/bin/bash ./migration.sh -c migrate -d all -o --no-interaction"
+    timeout 86400
+    subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
+  end
 end
 
 include_recipe cookbook_name + "::gearman"
