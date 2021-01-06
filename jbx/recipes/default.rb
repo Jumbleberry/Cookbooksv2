@@ -93,6 +93,7 @@ consul_template_config "jbx.credentials.json" do
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
   notifies :reload, "service[consul-template.service]", :immediate
   notifies :run, "ruby_block[wait for jbx.credentials.json]", :immediate
+  action :nothing
 end
 
 ruby_block "wait for jbx.credentials.json" do
