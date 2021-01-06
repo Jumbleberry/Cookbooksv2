@@ -49,7 +49,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     end
 
     service "mysql" do
-      action node["configure"]["services"]["mysql"]
+      action :start
     end
   end
 
