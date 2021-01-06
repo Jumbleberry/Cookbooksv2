@@ -1,6 +1,11 @@
 if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "start"))
   edit_resource(:service, "mysql.service") do
-    subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", :immediately
+    # If MySQL is installed on NVMe, delay restart to ensure files are restored first
+    subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", File.directory?("/var/lib/mysql.bak") ? :delayed : :immediate
+    subscribes :restart, "execute[restore_mysql]", :immediate
+
+    notifies :run, "execute[set_root_password]", :immediate
+    notifies :run, "execute[manage_mysql_settings]", :immediate
   end
 
   # Copy config file
@@ -47,22 +52,13 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
       command "rsync -av /var/lib/mysql.bak/ /var/lib/mysql/"
       user "root"
     end
-
-    service "mysql" do
-      action :start
-    end
   end
 
   query = "SET PASSWORD FOR 'root'@'localhost' = PASSWORD(\'#{node["mysql"]["root_password"]}\');"
-  execute "set_root-password" do
+  execute "set_root_password" do
     command "echo \"#{query}\" | mysql -uroot"
     only_if "echo 'show databases' | mysql -uroot mysql;"
-  end
-
-  # Set Global innodb settings via cli to address DEV-488
-  query = "set global innodb_large_prefix=on; set global innodb_file_format=Barracuda;"
-  execute "set_innodb" do
-    command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
+    action :nothing
   end
 
   # Create jbx user
@@ -71,10 +67,13 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}'; \
     DELETE FROM mysql.user WHERE user = 'root' AND password = ''; \
     FLUSH PRIVILEGES;
+    SET GLOBAL innodb_large_prefix=on;
+    SET GLOBAL innodb_file_format=Barracuda;
   EOH
 
-  execute "manage_mysql_users" do
+  execute "manage_mysql_settings" do
     command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
     only_if "echo 'show databases' | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
+    action :nothing
   end
 end
