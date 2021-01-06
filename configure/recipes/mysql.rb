@@ -9,7 +9,11 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     end
 
     execute "backup_mysql" do
-      command "mv /var/lib/mysql /var/lib/mysql.bak"
+      command <<-EOH
+        mv /var/lib/mysql /var/lib/mysql.bak
+        sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
+        sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+      EOH
       user "root"
       not_if { ::File.directory?("/var/lib/mysql.bak") }
     end
@@ -31,11 +35,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
     # Restore mysql & disable apparmor as it wont allow reads from /nvme* and this instance is dev only
     execute "restore_mysql" do
-      command <<-EOH
-        rsync -av /var/lib/mysql.bak/ /var/lib/mysql/
-        sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
-        sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
-      EOH
+      command "rsync -av /var/lib/mysql.bak/ /var/lib/mysql/"
       user "root"
     end
 
