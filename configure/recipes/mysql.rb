@@ -66,16 +66,15 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
   end
 
   # Create jbx user
-  query = "GRANT ALL ON *.* TO \'jbx\'@\'%\' IDENTIFIED BY \'#{node["mysql"]["root_password"]}\'"
-  execute "create_jbx_user" do
-    command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
-    only_if "echo 'show databases'  | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
-  end
+  query = <<-EOH
+    GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}'; \
+    GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}'; \
+    DELETE FROM mysql.user WHERE user = 'root' AND password = ''; \
+    FLUSH PRIVILEGES;
+  EOH
 
-  # Create 'root'@'%'
-  query = "GRANT ALL ON *.* TO \'root\'@\'%\' IDENTIFIED BY \'#{node["mysql"]["root_password"]}\'"
-  execute "create_root_user" do
+  execute "manage_mysql_users" do
     command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
-    only_if "echo 'show databases'  | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
+    only_if "echo 'show databases' | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
   end
 end
