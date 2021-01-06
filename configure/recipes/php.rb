@@ -1,5 +1,4 @@
 # Fpm configurations
-include_recipe cookbook_name + "::services"
 node["php"]["fpm"]["conf_dirs"].each do |path|
   template path + "/php.ini" do
     source "php.ini.erb"
