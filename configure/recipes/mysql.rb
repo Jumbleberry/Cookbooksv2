@@ -1,13 +1,4 @@
 if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "start"))
-  edit_resource(:service, "mysql.service") do
-    # If MySQL is installed on NVMe, delay restart to ensure files are restored first
-    subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", File.directory?("/var/lib/mysql.bak") ? :delayed : :immediate
-    subscribes :restart, "execute[restore_mysql]", :immediate
-
-    notifies :run, "execute[set_root_password]", :immediate
-    notifies :run, "execute[manage_mysql_settings]", :immediate
-  end
-
   # Copy config file
   cookbook_file "/etc/mysql/my.cnf" do
     manage_symlink_source true
@@ -75,5 +66,14 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
     only_if "echo 'show databases' | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
     action :nothing
+  end
+
+  edit_resource(:service, "mysql.service") do
+    # If MySQL is installed on NVMe, delay restart to ensure files are restored first
+    subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", File.directory?("/var/lib/mysql.bak") ? :delayed : :immediate
+    subscribes :restart, "execute[restore_mysql]", :immediate
+
+    notifies :run, "execute[set_root_password]", :immediate
+    notifies :run, "execute[manage_mysql_settings]", :immediate
   end
 end
