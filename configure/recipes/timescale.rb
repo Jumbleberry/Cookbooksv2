@@ -1,4 +1,4 @@
-if node["environment"] != "prod"
+if node["environment"] == "dev"
   # Copy config files
   cookbook_file "/etc/postgresql/12/main/pg_hba.conf" do
     source "pg_hba.conf"
