@@ -92,19 +92,23 @@ consul_template_config "jbx.credentials.json" do
   }]
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
   notifies :reload, "service[consul-template.service]", :immediate
-  notifies :run, "ruby_block[wait for jbx.credentials.json]", :immediate
   action :nothing
 end
 
-ruby_block "wait for jbx.credentials.json" do
+ruby_block "get_jbx_credentials" do
   block do
-    iter = 0
-    until ::File.exist?("/var/www/jbx/config/credentials.json") || iter > 15
-      sleep 1
-      iter += 1
+    credentials = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cred")
+
+    if (!credentials || !credentials.data[:data])
+      raise "Failed to fetch credentials from vault"
+    end
+
+    File.open("/var/www/jbx/config/credentials.json", "w") do |f|
+      f.write(credentials.data[:data].to_json)
     end
   end
-  action :nothing
+  only_if { !File.exist?("/var/www/jbx/config/credentials.json") }
+  action :run
 end
 
 if node["jbx"]["path"] != "/var/www/jbx"
