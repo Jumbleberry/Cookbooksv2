@@ -132,7 +132,7 @@ execute "/bin/bash deploy.sh" do
   cwd node["jbx"]["path"]
   user node[:user]
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
-  subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
+  subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
   action :nothing
 end
 
@@ -141,7 +141,7 @@ if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
   execute "seed_dev_jb" do
     command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --no-interaction"
     user node[:user]
-    subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
+    subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
     action :nothing
   end
 end
@@ -152,8 +152,7 @@ if node.attribute?(:ec2)
     cwd "#{node["jbx"]["path"]}/application/cli"
     command "/bin/bash ./migration.sh -c migrate -d all -o --no-interaction"
     timeout 86400
-    subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
-    action :nothing
+    subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
   end
 end
 
