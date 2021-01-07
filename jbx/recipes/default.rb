@@ -139,7 +139,7 @@ end
 if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
   # Seed the DB
   execute "seed_dev_jb" do
-    command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --no-interaction"
+    command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
     user node[:user]
     subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
     action :nothing
