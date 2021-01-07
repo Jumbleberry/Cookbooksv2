@@ -92,7 +92,6 @@ consul_template_config "jbx.credentials.json" do
   }]
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
   notifies :reload, "service[consul-template.service]", :immediate
-  action :nothing
 end
 
 ruby_block "get_jbx_credentials" do
@@ -133,7 +132,6 @@ execute "/bin/bash deploy.sh" do
   user node[:user]
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
   subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
-  action :nothing
 end
 
 if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
@@ -142,7 +140,6 @@ if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
     command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
     user node[:user]
     subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
-    action :nothing
   end
 end
 
