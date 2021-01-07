@@ -111,13 +111,19 @@ ruby_block "get_jbx_credentials" do
   action :run
 end
 
-if node["jbx"]["path"] != "/var/www/jbx"
+if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
   link "jbx.credentials.json" do
     target_file node["jbx"]["path"] + "/config/credentials.json"
     to "/var/www/jbx/config/credentials.json"
     owner node[:user]
     group node[:user]
     action :create
+  end
+
+  # Ensure DB name is overriden to match branch name
+  template "#{node["jbx"]["path"]}/credentials.#{node["environment"]}.json" do
+    source "credentials.env.json.erb"
+    mode "0644"
   end
 end
 
@@ -127,6 +133,17 @@ execute "/bin/bash deploy.sh" do
   user node[:user]
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
   subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
+  action :nothing
+end
+
+if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
+  # Seed the DB
+  execute "seed_dev_jb" do
+    command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --no-interaction"
+    user node[:user]
+    subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
+    action :nothing
+  end
 end
 
 # Run database migrations
@@ -136,6 +153,7 @@ if node.attribute?(:ec2)
     command "/bin/bash ./migration.sh -c migrate -d all -o --no-interaction"
     timeout 86400
     subscribes :run, "git[\"#{node["jbx"]["git-url"]}\"]", :delayed
+    action :nothing
   end
 end
 
