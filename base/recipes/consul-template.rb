@@ -18,14 +18,3 @@ edit_resource(:user, "www-data") do
   gid node["openresty"]["group_id"]
   action :create
 end
-
-# Clear delayed restart notification that will re-enable consul
-ruby_block "clearing delayed consul-template notifications" do
-  block do
-    run_context.delayed_notification_collection.each do |from, notification_array|
-      notification_array.each do |notification|
-        notification.action = :nothing
-      end
-    end
-  end
-end
