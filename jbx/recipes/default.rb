@@ -62,7 +62,7 @@ node["jbx"]["services"].each do |service|
     })
     timing :delayed
     action :enable
-    notifies :reload, "service[nginx.service]", :delayed
+    notifies :reload, "service[nginx.service]", :immediate
   end
 end
 
