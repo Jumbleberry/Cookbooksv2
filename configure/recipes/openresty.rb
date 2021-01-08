@@ -1,7 +1,7 @@
 include_recipe "openresty::commons_conf"
 
 node["openresty"]["luarocks"]["default_rocks"].each do |rock, version|
-  openresty_luarock rock do
+  edit_resource(:openresty_luarock, rock) do
     version version
     action :install
     notifies :reload, "service[nginx.service]", :delayed
@@ -17,7 +17,7 @@ edit_resource(:template, "nginx.conf") do
   cookbook "configure"
 end
 
-edit_resource(:cookbook_file, "#{node['openresty']['dir']}/mime.types") do
+edit_resource(:cookbook_file, "#{node["openresty"]["dir"]}/mime.types") do
   source "mime.types"
   cookbook "configure"
 end
