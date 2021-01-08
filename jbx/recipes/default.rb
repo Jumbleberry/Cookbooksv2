@@ -81,6 +81,8 @@ git "#{node["jbx"]["git-url"]}" do
   user node[:user]
   group node[:user]
   action node.attribute?(:ec2) ? :sync : :checkout
+  notifies :create, "consul_template_config[jbx.credentials.json]", :immediate
+  notifies :run, "ruby_block[get_jbx_credentials]", :immediate
 end
 
 consul_template_config "jbx.credentials.json" do
@@ -115,13 +117,14 @@ if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
     to "/var/www/jbx/config/credentials.json"
     owner node[:user]
     group node[:user]
-    action :create
+    subscribes :create, "git[#{node["jbx"]["git-url"]}]", :immediate
   end
 
   # Ensure DB name is overriden to match branch name
   template "#{node["jbx"]["path"]}/credentials.#{node["environment"]}.json" do
     source "credentials.env.json.erb"
     mode "0644"
+    subscribes :create, "git[#{node["jbx"]["git-url"]}]", :immediate
   end
 end
 
