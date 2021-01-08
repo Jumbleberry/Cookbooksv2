@@ -11,5 +11,7 @@ include_recipe cookbook_name + "::github"
 include_recipe cookbook_name + "::nodejs"
 include_recipe cookbook_name + "::mysql"
 include_recipe cookbook_name + "::ssh"
-include_recipe cookbook_name + "::services"
 include_recipe cookbook_name + "::timescale"
+
+# Manage services at the end
+include_recipe cookbook_name + "::services"

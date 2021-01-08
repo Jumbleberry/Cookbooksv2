@@ -1,5 +1,4 @@
 # Fpm configurations
-include_recipe cookbook_name + "::services"
 node["php"]["fpm"]["conf_dirs"].each do |path|
   template path + "/php.ini" do
     source "php.ini.erb"
@@ -12,9 +11,10 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
     end
   end
 
-  unless node.attribute?(:ec2)
+  if node["environment"] == "dev"
     if path.include? "fpm"
       template path + "/conf.d/20-xdebug.ini" do
+        manage_symlink_source true
         source "xdebug.ini.erb"
         owner "root"
         group "root"

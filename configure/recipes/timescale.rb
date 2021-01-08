@@ -1,25 +1,29 @@
-unless node.attribute?(:ec2)
+if node["environment"] == "dev"
   # Copy config files
   cookbook_file "/etc/postgresql/12/main/pg_hba.conf" do
     source "pg_hba.conf"
     owner "root"
     group "root"
     mode "0644"
+    notifies :reload, "service[postgresql.service]", :immediate
   end
   cookbook_file "/etc/postgresql/12/main/postgresql.conf" do
     source "postgresql.conf"
     owner "root"
     group "root"
     mode "0644"
+    notifies :restart, "service[postgresql.service]", :immediate
+    notifies :run, "execute[convert-pgdb-to-timescaledb]", :delayed
   end
 
+  # Disabled as "postgresql.conf" is already tuned based on this, and re-tuning will ensure an unnecessary update of the postgres.conf file
   # Tune pgsql for timescale
-  execute "tune-and-restart-pgsql" do
-    command "sudo timescaledb-tune -yes -quiet"
-    user "root"
-    notifies :restart, "service[postgresql.service]", :immediate
-    only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
-  end
+  #   execute "tune-and-restart-pgsql" do
+  #     command "sudo timescaledb-tune -yes -quiet"
+  #     user "root"
+  #     notifies :reload, "service[postgresql.service]", :immediate
+  #     only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
+  #   end
 
   # Create pgsql user 'root' if it doesn't exist
   execute "pgsql-default-user" do
@@ -39,5 +43,6 @@ unless node.attribute?(:ec2)
   execute "convert-pgdb-to-timescaledb" do
     command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE\" -d local_timescale"
     user "postgres"
+    action :nothing
   end
 end
