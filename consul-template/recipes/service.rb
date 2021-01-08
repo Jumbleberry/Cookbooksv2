@@ -37,11 +37,8 @@ else
 end
 
 # Create service user
-user consul_template_user do
-  not_if { consul_template_user == 'root' }
-  home '/dev/null'
-  shell '/bin/false'
-  comment 'consul-template service user'
+edit_resource(:user, consul_template_user) do
+  not_if { consul_template_user == "root" }
 end
 
 # Create service group
