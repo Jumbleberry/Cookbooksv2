@@ -78,6 +78,7 @@ git "#{node["jbx"]["git-url"]}" do
   destination node["jbx"]["path"]
   repository node["jbx"]["git-url"]
   revision node["jbx"]["branch"]
+  depth node["jbx"]["path"] != "/var/www/jbx" ? 0 : nil
   user node[:user]
   group node[:user]
   action node.attribute?(:ec2) ? :sync : :checkout
