@@ -62,7 +62,7 @@ node["jbx"]["services"].each do |service|
     })
     timing :delayed
     action :enable
-    notifies :reload, "service[nginx.service]", :immediate
+    notifies :reload, "service[nginx.service]", :delayed
   end
 end
 
@@ -80,8 +80,7 @@ git "#{node["jbx"]["git-url"]}" do
   revision node["jbx"]["branch"]
   user node[:user]
   group node[:user]
-  action node.attribute?(:ec2) ? "sync" : "checkout"
-  notifies :create, "consul_template_config[jbx.credentials.json]", :immediate
+  action node.attribute?(:ec2) ? :sync : :checkout
 end
 
 consul_template_config "jbx.credentials.json" do
@@ -131,7 +130,8 @@ execute "/bin/bash deploy.sh" do
   cwd node["jbx"]["path"]
   user node[:user]
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
-  subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
+  action :nothing
+  subscribes :run, "git[#{node["jbx"]["git-url"]}]", :immediate
 end
 
 if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
@@ -139,7 +139,8 @@ if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
   execute "seed_dev_jb" do
     command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
     user node[:user]
-    subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
+    action :nothing
+    subscribes :run, "git[#{node["jbx"]["git-url"]}]", :immediate
   end
 end
 
@@ -149,7 +150,8 @@ if node.attribute?(:ec2)
     cwd "#{node["jbx"]["path"]}/application/cli"
     command "/bin/bash ./migration.sh -c migrate -d all -o --no-interaction"
     timeout 86400
-    subscribes :run, "git[#{node["jbx"]["git-url"]}]", :delayed
+    action :nothing
+    subscribes :run, "git[#{node["jbx"]["git-url"]}]", :immediate
   end
 end
 
