@@ -2,15 +2,15 @@ if node["environment"] == "dev"
   # Copy config files
   cookbook_file "/etc/postgresql/12/main/pg_hba.conf" do
     source "pg_hba.conf"
-    owner "root"
-    group "root"
+    owner "postgres"
+    group "postgres"
     mode "0644"
     notifies :reload, "service[postgresql.service]", :immediate
   end
   cookbook_file "/etc/postgresql/12/main/postgresql.conf" do
     source "postgresql.conf"
-    owner "root"
-    group "root"
+    owner "postgres"
+    group "postgres"
     mode "0644"
     notifies :restart, "service[postgresql.service]", :immediate
     notifies :run, "execute[convert-pgdb-to-timescaledb]", :delayed
