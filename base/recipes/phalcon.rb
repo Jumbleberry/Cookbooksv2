@@ -1,9 +1,11 @@
 execute "curl -s #{node["phalcon"]["install_script"]} | sudo bash"
 
-package "php#{node["php"]["version"]}-phalcon" do
-  action :install
+apt_package "php#{node["php"]["version"]}-phalcon" do
   version node["phalcon"]["version"]
+  action %i{install lock}
 end
+
+execute "apt-mark hold php#{node["php"]["version"]}-phalcon"
 
 unless node.attribute?(:ec2)
   git "phalcon-devtools" do
