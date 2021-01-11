@@ -1,10 +1,7 @@
 include_recipe "apt"
 
-if node["environment"] != "prod"
-  include_recipe cookbook_name + "::trust"
-end
-
 unless node.attribute?(:ec2)
+  include_recipe cookbook_name + "::trust"
   include_recipe cookbook_name + "::berks"
 end
 
@@ -22,10 +19,7 @@ include_recipe cookbook_name + "::phalcon"
 include_recipe cookbook_name + "::gearman"
 include_recipe cookbook_name + "::nodejs"
 include_recipe cookbook_name + "::mysql"
-
-if node["environment"] == "dev"
-  include_recipe cookbook_name + "::timescale"
-end
+include_recipe cookbook_name + "::timescale"
 
 include_recipe "security"
 
