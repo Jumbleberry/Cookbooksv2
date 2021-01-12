@@ -1,6 +1,53 @@
 Changes
 =======
 
+# 4.8.0 / 2020-12-11
+* [FEATURE] Add `env` and `log_to_console` options [#759][] [@albertvaka][], and [#760][] [@nilskuehme][]
+* [BUGFIX] Fix adding new signing key for apt [#761][] [@nilskuehme][],  [#763][] [@KSerrania][], [#765][] [@albertvaka][] and [#767][] [@nilskuehme][]
+* [BUGFIX] Take site option into account in chef-handler config [#762][] [@KSerrania][]
+
+# 4.7.2 / 2020-11-25
+* [FEATURE] Trust new signing key [#754][] [@mikezhu-dd][]
+
+# 4.7.1 / 2020-11-25
+* [BUGFIX] Revert [#754][]
+
+# 4.7.0 / 2020-11-25
+* [FEATURE] Trust new signing key [#754][] [@mikezhu-dd][]
+* [FEATURE] Add support for the systemd check [#755][] [@nilskuehme][]
+* [FEATURE] Add support for Mongo authentication [#753][] [@nilskuehme][]
+* [BUGFIX] Fix conflit with gnupg2 on RHEL8/CentOS8 [#750][] [@haidars][]
+
+# 4.6.0 / 2020-10-15
+* [BUGFIX] Explicitly require yaml. See[#749][] [@albertvaka][]
+* [BUGFIX] Increase Windows MSI install timeout to 1200 seconds. See [#746][] [@mikezhu-dd][]
+* [BUGFIX] Network plugin yaml nesting. See [#739][] [@swalberg][]
+* [BUGFIX] Fix syntax issues in README examples. See [#744][] [@jimdaga][]
+* [FEATURE] [circlci] Add tests for Chef 16.5.77. See [#741][] [@truthbk][]
+* [BUGFIX] [spec] Fix hardcoded paths. See [#742][] [@albertvaka][]
+* [BUGFIX] Adds generated recipes for missing checks. See [#730][] [@albertvaka][]
+* [FEATURE] Update docs to include us3 region. See [#740][] [@albertvaka][]
+
+# 4.5.0 / 2020-09-02
+* [FEATURE] [cassandra] add support for failures/timeouts/unavailable collection. See [#725][] [@k2v][]
+* [FEATURE] Add timeout management for Mongo integration. See [#728][] [@Azraeht][]
+* [FEATURE] add support for the timeout setting for Rabbitmq. See [#729][] [@ABrehm264][]
+* [FEATURE] Install dd agent with yum on Amazon Linux 1. See [#731][] [@tymartin-novu][]
+* [FEATURE] Add third-party integrations support. See [#734][] [@julien-lebot][]
+* [FEATURE] Add Amazon Linux 2 to kitchen tests. See [#735][] [@julien-lebot][]
+* [BUGFIX] Set windows credentials as sensitive. See [#722][] [@julien-lebot][]
+* [BUGFIX] Remove duplicate attribute. See [#727][] [@julien-lebot][]
+* [BUGFIX] Make dd-agent recipe idempotent. See [#736][] [@julien-lebot][]
+* [MISC] Warn when the Agent will start despite being disabled. See [#732][] [@albertvaka][]
+
+# 4.4.0 / 2020-06-19
+* [FEATURE] Add support for `datadog-iot-agent` agent flavor. See [#717][]
+* [BUGFIX] Do not crash if agent_version doesn't match version regex. See [#711][] [@albertvaka][]
+* [BUGFIX] Support '+' sign (for nightlies) in agent version. See [#712][] [@albertvaka][]
+* [BUGFIX] Fix Proxy configuration with authentication. See [#714][] [@fatbasstard][]
+* [BUGFIX] Fix link to win32_event_log sample config. See [#715][] [@albertvaka][]
+* [BUGFIX] Do not crash if the agent is not running. See [#718][] [@albertvaka][]
+
 # 4.3.0 / 2020-04-30
 * [FEATURE] Allow configuration of log collection via `datadog['logs_agent_config']`. See [#704][] [@Nibons][]
 * [FEATURE] Update the list of Cassandra metrics to collect from JMX. See [#708][] [@k2v][]
@@ -869,8 +916,44 @@ A fix has gone in to `apt` 2.1.0 that relaxes this condition, and plays well wit
 [#707]: https://github.com/DataDog/chef-datadog/issues/707
 [#708]: https://github.com/DataDog/chef-datadog/issues/708
 [#709]: https://github.com/DataDog/chef-datadog/issues/709
+[#711]: https://github.com/DataDog/chef-datadog/issues/711
+[#712]: https://github.com/DataDog/chef-datadog/issues/712
+[#714]: https://github.com/DataDog/chef-datadog/issues/714
+[#715]: https://github.com/DataDog/chef-datadog/issues/715
+[#717]: https://github.com/DataDog/chef-datadog/issues/717
+[#718]: https://github.com/DataDog/chef-datadog/issues/718
+[#722]: https://github.com/DataDog/chef-datadog/issues/722
+[#725]: https://github.com/DataDog/chef-datadog/issues/725
+[#727]: https://github.com/DataDog/chef-datadog/issues/727
+[#728]: https://github.com/DataDog/chef-datadog/issues/728
+[#729]: https://github.com/DataDog/chef-datadog/issues/729
+[#730]: https://github.com/DataDog/chef-datadog/issues/730
+[#731]: https://github.com/DataDog/chef-datadog/issues/731
+[#732]: https://github.com/DataDog/chef-datadog/issues/732
+[#734]: https://github.com/DataDog/chef-datadog/issues/734
+[#735]: https://github.com/DataDog/chef-datadog/issues/735
+[#736]: https://github.com/DataDog/chef-datadog/issues/736
+[#739]: https://github.com/DataDog/chef-datadog/issues/739
+[#740]: https://github.com/DataDog/chef-datadog/issues/740
+[#741]: https://github.com/DataDog/chef-datadog/issues/741
+[#742]: https://github.com/DataDog/chef-datadog/issues/742
+[#744]: https://github.com/DataDog/chef-datadog/issues/744
+[#746]: https://github.com/DataDog/chef-datadog/issues/746
+[#749]: https://github.com/DataDog/chef-datadog/issues/749
+[#750]: https://github.com/DataDog/chef-datadog/issues/750
+[#753]: https://github.com/DataDog/chef-datadog/issues/753
+[#754]: https://github.com/DataDog/chef-datadog/issues/754
+[#755]: https://github.com/DataDog/chef-datadog/issues/755
+[#759]: https://github.com/DataDog/chef-datadog/issues/759
+[#760]: https://github.com/DataDog/chef-datadog/issues/760
+[#761]: https://github.com/DataDog/chef-datadog/issues/761
+[#762]: https://github.com/DataDog/chef-datadog/issues/762
+[#763]: https://github.com/DataDog/chef-datadog/issues/763
+[#765]: https://github.com/DataDog/chef-datadog/issues/765
+[#767]: https://github.com/DataDog/chef-datadog/issues/767
 [@ABrehm264]: https://github.com/ABrehm264
 [@AlexBevan]: https://github.com/AlexBevan
+[@Azraeht]: https://github.com/Azraeht
 [@BrentOnRails]: https://github.com/BrentOnRails
 [@DorianZaccaria]: https://github.com/DorianZaccaria
 [@EasyAsABC123]: https://github.com/EasyAsABC123
@@ -928,6 +1011,7 @@ A fix has gone in to `apt` 2.1.0 that relaxes this condition, and plays well wit
 [@elijahandrews]: https://github.com/elijahandrews
 [@eplanet]: https://github.com/eplanet
 [@evan2645]: https://github.com/evan2645
+[@fatbasstard]: https://github.com/fatbasstard
 [@flah00]: https://github.com/flah00
 [@foobarto]: https://github.com/foobarto
 [@frezbo]: https://github.com/frezbo
@@ -937,6 +1021,7 @@ A fix has gone in to `apt` 2.1.0 that relaxes this condition, and plays well wit
 [@gregf]: https://github.com/gregf
 [@grogancolin]: https://github.com/grogancolin
 [@gswallow]: https://github.com/gswallow
+[@haidars]: https://github.com/haidars
 [@hartfordfive]: https://github.com/hartfordfive
 [@hilli]: https://github.com/hilli
 [@historus]: https://github.com/historus
@@ -950,6 +1035,7 @@ A fix has gone in to `apt` 2.1.0 that relaxes this condition, and plays well wit
 [@jcftang-r7]: https://github.com/jcftang-r7
 [@jedi4ever]: https://github.com/jedi4ever
 [@jeffbyrnes]: https://github.com/jeffbyrnes
+[@jimdaga]: https://github.com/jimdaga
 [@jmanero-r7]: https://github.com/jmanero-r7
 [@jpcallanta]: https://github.com/jpcallanta
 [@jridgewell]: https://github.com/jridgewell
@@ -973,6 +1059,7 @@ A fix has gone in to `apt` 2.1.0 that relaxes this condition, and plays well wit
 [@mhebbar1]: https://github.com/mhebbar1
 [@mikelaning]: https://github.com/mikelaning
 [@miketheman]: https://github.com/miketheman
+[@mikezhu-dd]: https://github.com/mikezhu-dd
 [@mirceal]: https://github.com/mirceal
 [@mlcooper]: https://github.com/mlcooper
 [@moisesbotarro]: https://github.com/moisesbotarro
@@ -980,6 +1067,7 @@ A fix has gone in to `apt` 2.1.0 that relaxes this condition, and plays well wit
 [@mtougeron]: https://github.com/mtougeron
 [@nicholas-devlin]: https://github.com/nicholas-devlin
 [@nickmarden]: https://github.com/nickmarden
+[@nilskuehme]: https://github.com/nilskuehme
 [@nkts]: https://github.com/nkts
 [@nyanshak]: https://github.com/nyanshak
 [@olivielpeau]: https://github.com/olivielpeau
@@ -1006,12 +1094,14 @@ A fix has gone in to `apt` 2.1.0 that relaxes this condition, and plays well wit
 [@stensonb]: https://github.com/stensonb
 [@stolfi]: https://github.com/stolfi
 [@stonith]: https://github.com/stonith
+[@swalberg]: https://github.com/swalberg
 [@takus]: https://github.com/takus
 [@tejom]: https://github.com/tejom
 [@thisismana]: https://github.com/thisismana
 [@timusg]: https://github.com/timusg
 [@tmichelet]: https://github.com/tmichelet
 [@truthbk]: https://github.com/truthbk
+[@tymartin-novu]: https://github.com/tymartin-novu
 [@uzyexe]: https://github.com/uzyexe
 [@wk8]: https://github.com/wk8
 [@wolf31o2]: https://github.com/wolf31o2

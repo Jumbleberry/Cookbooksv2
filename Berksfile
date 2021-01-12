@@ -2,7 +2,7 @@ source "https://supermarket.getchef.com"
 
 cookbook "apt", "~> 7.1"
 cookbook "consul", "~> 3.1"
-cookbook "datadog", "~> 4.3.0"
+cookbook "datadog", "~> 4.8.0"
 cookbook "dnsmasq", "~> 0.2"
 cookbook "etc_environment", "~> 1.0.1"
 cookbook "golang", "~> 1.7"

@@ -20,6 +20,7 @@ include_recipe cookbook_name + "::gearman"
 include_recipe cookbook_name + "::nodejs"
 include_recipe cookbook_name + "::mysql"
 include_recipe cookbook_name + "::timescale"
+include_recipe cookbook_name + "::datadog"
 include_recipe cookbook_name + "::apt"
 
 include_recipe "security"

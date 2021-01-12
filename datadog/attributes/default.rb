@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: datadog
+# Cookbook:: datadog
 # Attributes:: default
 #
-# Copyright 2011-2015, Datadog
+# Copyright:: 2011-2015, Datadog
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ default['datadog']['agent_major_version'] = nil # nil to autodetect based on 'ag
 # Example:
 # default['datadog']['agent_version'] = '7.16.0'
 default['datadog']['agent_version'] = nil # nil to install latest
+# Agent flavor to install, acceptable values are "datadog-agent", "datadog-iot-agent"
+default['datadog']['agent_flavor'] = 'datadog-agent' # "datadog-agent" to install the datadog-agent package
 
 # Allow override with `upgrade` to get latest (Linux only)
 default['datadog']['agent_package_action'] = 'install'
@@ -58,7 +60,7 @@ default['datadog']['agent_allow_downgrade'] = false
 
 # The site of the Datadog intake to send Agent data to.
 # This configuration option is supported since Agent 6.6
-# Defaults to 'datadoghq.com', set to 'datadoghq.eu' to send data to the EU site.
+# Defaults to 'datadoghq.com', can be set to 'datadoghq.eu' (for the EU site) or 'us3.datadoghq.com'.
 default['datadog']['site'] = nil
 
 # The port on which the IPC api listens
@@ -107,6 +109,10 @@ default['datadog']['url'] = nil
 # `env:node.chef_environment`, `role:node.node.run_list.role`, `tag:somecheftag`
 default['datadog']['tags'] = ''
 
+# The environment name where the agent is running. Attached in-app to every
+# metric, event, log, trace, and service check emitted by the Agent.
+default['datadog']['env'] = nil
+
 # Collect EC2 tags, set to 'yes' to collect
 default['datadog']['collect_ec2_tags'] = nil
 
@@ -141,7 +147,7 @@ default['datadog']['yumrepo_suse'] = nil # uses Datadog stable repos by default
 
 # Older versions of yum embed M2Crypto with SSL that doesn't support TLS1.2
 yum_protocol =
-  if node['platform_family'] == 'rhel' && node['platform_version'].to_i < 6
+  if platform_family?('rhel') && node['platform_version'].to_i < 6
     'http'
   else
     'https'
@@ -165,9 +171,10 @@ default['datadog']['windows_agent_url'] = 'https://s3.amazonaws.com/ddagent-wind
 # Only applies if specific version specified
 default['datadog']['windows_agent_installer_prefix'] = nil
 
-# Location of additional rpm gpgkey to import (with signature `e09422b3`). In the future the rpm packages
+# Location of additional rpm gpg keys to import. In the future the rpm packages
 # of the Agent will be signed with this key.
-default['datadog']['yumrepo_gpgkey_new'] = "#{yum_protocol}://yum.datadoghq.com/DATADOG_RPM_KEY_E09422B3.public"
+default['datadog']['yumrepo_gpgkey_new_e09422b3'] = "#{yum_protocol}://yum.datadoghq.com/DATADOG_RPM_KEY_E09422B3.public"
+default['datadog']['yumrepo_gpgkey_new_fd4bf915'] = "#{yum_protocol}://yum.datadoghq.com/DATADOG_RPM_KEY_20200908.public"
 
 # Windows Agent Blacklist
 # Attribute to enforce silent failures on agent installs when attempting to install a
@@ -180,7 +187,7 @@ default['datadog']['windows_blacklist_silent_fail'] = false
 
 # Attribute to specify timeout in seconds on MSI operations (install/uninstall)
 # Default should suffice, but provides a knob in case instances with limited resources timeout.
-default['datadog']['windows_msi_timeout'] = 900
+default['datadog']['windows_msi_timeout'] = 1200
 
 # Agent installer checksum
 # Expected checksum to validate correct agent installer is downloaded (Windows only)
@@ -224,7 +231,8 @@ default['datadog']['hostname'] = node.name
 # rather than the hostname for chef-handler.
 default['datadog']['use_ec2_instance_id'] = false
 
-# Enable the agent to start at boot
+# Enable the agent to start at boot. Note that this can't be false if 'enable_process_agent'
+# or 'enable_trace_agent' are true, since they depend on the main agent.
 default['datadog']['agent_enable'] = true
 
 # Start agent or not
@@ -238,8 +246,9 @@ default['datadog']['syslog']['active'] = false
 default['datadog']['syslog']['udp'] = false
 default['datadog']['syslog']['host'] = nil
 default['datadog']['syslog']['port'] = nil
+default['datadog']['log_to_console'] = nil
 default['datadog']['log_file_directory'] =
-  if node['platform_family'] == 'windows'
+  if platform_family?('windows')
     nil # let the agent use a default log file dir
   else
     '/var/log/datadog'
@@ -264,7 +273,7 @@ default['datadog']['statsd_forward_port'] = 8125
 default['datadog']['statsd_metric_namespace'] = nil
 
 # Histogram settings
-default['datadog']['histogram_aggregates'] = 'max, median'
+default['datadog']['histogram_aggregates'] = 'max, median, avg, count'
 default['datadog']['histogram_percentiles'] = '0.95'
 
 # extra config options
