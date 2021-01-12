@@ -11,6 +11,8 @@ default[cookbook_name]["net"]["ipv4.tcp_tw_reuse"] = "1"
 default[cookbook_name]["net"]["ipv4.tcp_slow_start_after_idle"] = "0"
 
 default["apt"]["compile_time_update"] = true
+override["configure"]["update"] = true
+override["configure"]["upgrade"] = true
 
 default["dnsmasq"]["dns"] = {
   "all-servers" => nil,
@@ -80,7 +82,7 @@ default["openresty"]["luarocks"]["checksum"] = "66c1848a25924917ddc1901e865add8f
 
 default["openresty"]["luarocks"]["default_rocks"] = {
   "lua-resty-auto-ssl" => "0.13.1",
-  "jumbleberry-dogstatsd" => "1.0.1-1"
+  "jumbleberry-dogstatsd" => "1.0.1-1",
 }
 
 default["php"]["version"] = php_version = "7.3"
