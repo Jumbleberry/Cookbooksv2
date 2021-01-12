@@ -65,7 +65,6 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
   execute "manage_mysql_settings" do
     command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
     only_if "echo 'show databases' | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
-    action :nothing
   end
 
   edit_resource(:service, "mysql.service") do
