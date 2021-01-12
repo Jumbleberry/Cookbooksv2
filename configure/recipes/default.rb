@@ -12,6 +12,7 @@ include_recipe cookbook_name + "::nodejs"
 include_recipe cookbook_name + "::mysql"
 include_recipe cookbook_name + "::ssh"
 include_recipe cookbook_name + "::timescale"
+include_recipe cookbook_name + "::datadog"
 
 # Manage services at the end
 include_recipe cookbook_name + "::services"
