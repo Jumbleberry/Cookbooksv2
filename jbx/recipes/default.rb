@@ -122,7 +122,7 @@ if node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx"
   end
 
   # Ensure DB name is overriden to match branch name
-  template "#{node["jbx"]["path"]}/credentials.#{node["environment"]}.json" do
+  template "#{node["jbx"]["path"]}/config/credentials.#{node["environment"]}.json" do
     source "credentials.env.json.erb"
     mode "0644"
     subscribes :create, "git[#{node["jbx"]["git-url"]}]", :immediate
