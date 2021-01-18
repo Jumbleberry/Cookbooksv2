@@ -17,14 +17,3 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
 
   include_recipe "datadog::dd-agent"
 end
-
-if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["datadog"].include? "start")
-  template '/etc/datadog-agent/conf.d/php_fpm.d/conf.yaml' do
-    source 'datadog_php_fpm.erb'
-    owner 'root'
-    group 'root'
-    mode '0755'
-    action :create
-    variables({ :name => 'php-fpm', :search => 'php-fpm7.3'})
-  end
-end
