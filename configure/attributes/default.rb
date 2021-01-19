@@ -33,12 +33,13 @@ default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
 default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#{php_version}/fpm"]
 
 default["php"]["xdebug"] = {
-  "remote_enable" => true,
-  "remote_autostart" => true,
-  "remote_host" => "10.0.2.2",
-  "remote_port" => 9000,
+  "mode" => "debug",
+  "client_host" => "10.0.2.2",
+  "client_port" => 9003,
   "remote_log" => "/var/log/xdebug.log",
   "max_nesting_level" => 1000,
+  "idekey" => "PHPSTORM",
+  "start_with_request" => "yes",
 }
 
 default["gearman"]["retries"] = 1
