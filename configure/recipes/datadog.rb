@@ -17,3 +17,11 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
 
   include_recipe "datadog::dd-agent"
 end
+
+if node["php"]["fpm"]["conf_dirs"]
+  datadog_monitor 'php_fpm' do
+    instances node["php"]["fpm"]["conf_dirs"]
+    action :add
+    notifies :restart, 'service[datadog-agent]' if node['datadog']['agent_start']
+  end
+end
