@@ -15,7 +15,6 @@ override["configure"]["update"] = true
 override["configure"]["upgrade"] = true
 
 default["datadog"]["histogram_aggregates"] = "max, avg"
-default['datadog']['enable_process_agent'] = true
 
 default["dnsmasq"]["dns"] = {
   "all-servers" => nil,
