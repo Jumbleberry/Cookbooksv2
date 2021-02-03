@@ -20,7 +20,14 @@ end
 
 if node["php"]["fpm"]["conf_dirs"]
   datadog_monitor 'php_fpm' do
-    instances node["php"]["fpm"]["conf_dirs"]
+    instances [
+      {
+        'status_url' => 'http://localhost/fpm',
+        'ping_url' => 'http://localhost/fpm-ping',
+        'ping_reply' => 'pong',
+        'tags' => [node['environment']]
+      }
+    ]
     action :add
     notifies :restart, 'service[datadog-agent]' if node['datadog']['agent_start']
   end
