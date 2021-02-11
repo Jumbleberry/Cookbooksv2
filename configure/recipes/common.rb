@@ -1,3 +1,7 @@
+if node["datadog"] && node["datadog"]["application_key"] && node["datadog"]["application_key"] != "<APP_KEY>"
+  include_recipe "datadog::dd-handler"
+end
+
 include_recipe cookbook_name + "::user"
 include_recipe cookbook_name + "::ipaddress"
 include_recipe cookbook_name + "::nvme"
