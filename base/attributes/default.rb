@@ -14,6 +14,8 @@ default["apt"]["compile_time_update"] = true
 override["configure"]["update"] = true
 override["configure"]["upgrade"] = true
 
+default["datadog"]["histogram_aggregates"] = "max, avg"
+
 default["dnsmasq"]["dns"] = {
   "all-servers" => nil,
   "log-async" => 50,

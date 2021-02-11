@@ -64,3 +64,9 @@ edit_resource(:service, "postgresql.service") do
   supports status: true, restart: true, reload: true
   action node["configure"]["services"]["postgresql"] || stop_disable
 end
+
+edit_resource(:service, "datadog.service") do
+  service_name "datadog-agent"
+  supports status: true, restart: true, reload: true
+  action node["configure"]["services"]["datadog"] || stop_disable
+end
