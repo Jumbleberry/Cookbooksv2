@@ -50,3 +50,5 @@ default["etc_environment"] = {
   "GITHUB" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
   "PHP_IDE_CONFIG" => "serverName=#{node["environment"]}",
 }
+
+default["datadog"]["tags"] = [node["environment"]]
