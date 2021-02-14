@@ -6,6 +6,7 @@ default[cookbook_name]["update"] = false
 default[cookbook_name]["upgrade"] = false
 
 default["timezone_iii"]["timezone"] = node["tz"]
+default["timezone_iii"]["use_symlink"] = true
 
 default["openresty"]["keepalive_requests"] = 1024
 default["openresty"]["keepalive_timeout"] = 300
@@ -51,5 +52,15 @@ default["etc_environment"] = {
   "GITHUB" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
   "PHP_IDE_CONFIG" => "serverName=#{node["environment"]}",
 }
+
+default["datadog"]["agent_major_version"] = 7
+default["datadog"]["api_key"] = "<API_KEY>"
+default["datadog"]["application_key"] = "<APP_KEY>"
+
+default["datadog"]["agent_enable"] = false
+default["datadog"]["agent_start"] = false
+default["datadog"]["enable_process_agent"] = false
+default["datadog"]["enable_trace_agent"] = false
+default["datadog"]["enable_logs_agent"] = false
 
 default["datadog"]["tags"] = [node["environment"]]

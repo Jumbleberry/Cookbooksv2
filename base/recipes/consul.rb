@@ -9,4 +9,10 @@ end
 edit_resource(:service, "consul") do
   supports status: true, restart: true, reload: true, stop: true
   action %i{stop disable}
+  notifies :run, "execute[clear-consul-state]", :immediate
+end
+
+execute "clear-consul-state" do
+  command "rm -rf /var/lib/consul/*"
+  action :nothing
 end
