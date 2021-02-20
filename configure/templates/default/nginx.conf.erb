@@ -72,31 +72,6 @@ http {
                           valid=30s                  ipv6=off;
   
   ##
-  # Logging Settings
-  ##
-  log_format  main        '$remote_addr - $remote_user [$time_local] '
-                          '"$host" "$request" "$http_accept" '
-                          '$status $body_bytes_sent "$http_referer" '
-                          '"$http_user_agent" "$http_x_forwarded_for" '
-                          '$request_time $upstream_response_time $pipe';
-  
-  access_log              /var/log/nginx/access.log main buffer=64k flush=30s;
-  error_log               /var/log/nginx/error.log warn;
-  
-  map $request_uri $loggable {
-      ~*^/thisthingisnotathing 0;
-      ~*^/nginx                0;
-      ~*^/status(.php)?        0;
-      ~*^/fpm(-ping)?          0;
-      ~*^/favicon.ico          0;
-      ~*^/robots.txt           0;
-      ~*^/hsts                 0;
-      ~*^/v1                   0;
-      ~*^/+(\?|$)              0;
-      default                  1;
-  }
-  
-  ##
   # AWS Instances
   ##
   # Hydra
@@ -149,32 +124,130 @@ http {
   set_real_ip_from        2803:f800::/32;
   set_real_ip_from        2c0f:f248::/32;
   set_real_ip_from        2a06:98c0::/29;
-  
+
   real_ip_header          X-Forwarded-For;
   real_ip_recursive       on;
-      
+
   ##
   # Zones
   ##
   limit_conn_zone         $binary_remote_addr$http_x_forwarded_for$host$uri$arg_sid$arg_hid$arg_transid$arg_event$arg_md5
                               zone=conn_limit_per_ip:50m;
+  limit_conn_zone         $upstream zone=conn_limit_per_upstream:1m;
   limit_req_zone          $binary_remote_addr$http_x_forwarded_for$host$uri$arg_sid$arg_hid$arg_transid$arg_md5$arg_redirects$arg_retries 
-                            zone=force_cookie_reuse:50m rate=12r/m;
-  
+                              zone=force_cookie_reuse:50m rate=12r/m;
+
   ##
   # Scheme Detection
   ##
   map $http_x_forwarded_proto $real_scheme {
-      ''                  $scheme;
-      default             $scheme;
-      https               https;
-      http                http;
+    ''                    $scheme;
+    default               $scheme;
+    https                 https;
+    http                  http;
   }
   
   map $real_scheme $is_https {
-      default             '';
-      https               on;
+    default               '';
+    https                 on;
   }
+    
+  map $request_uri $loggable {
+    ~*^/thisthingisnotathing 0;
+    ~*^/nginx                0;
+    ~*^/status(.php)?        0;
+    ~*^/fpm(-ping)?          0;
+    ~*^/favicon.ico          0;
+    ~*^/robots.txt           0;
+    ~*^/hsts                 0;
+    ~*^/v1                   0;
+    ~*^/+(\?|$)              0;
+    default                  1;
+  }
+
+  ##
+  # Banned user agents
+  ##
+  map $http_user_agent $block_ua {
+    default               0;
+    '~*Jorgee'            1;
+    'Mozilla/5.0'         1;
+    'Mozilla/4.0 (compatible; Synapse)' 1;
+  }
+
+  ##
+  # Log Variables
+  ##
+  map $upstream $upstream {
+    default               $upstream;
+    ''                    'N/A';
+  }
+  
+  map $upstream_name $upstream_name {
+    default               $upstream_name;
+    ''                    'N/A';
+  }
+  
+  map $upstream_server $upstream_server {
+    default               $upstream_server;
+    ''                    'N/A';
+  }
+
+  map $domain $domain {
+    default               $domain;
+    ''                    $host;
+  }
+
+  map $subdomain $subdomain {
+    default               $subdomain;
+    ''                    '';
+  }
+  
+  map $real_ip $real_ip {
+    default               $real_ip;
+    ''                    $remote_addr;
+  }
+
+  map $unencrypted_request $unencrypted_request {
+    default               $unencrypted_request;
+    ''                    '';
+  }
+  
+  map $sid $sid {
+    default               $sid;
+    ''                    '';
+  }
+
+  map $hid $hid {
+    default               $hid;
+    ''                    '';
+  }
+
+  map $lpid $lpid {
+    default               $lpid;
+    ''                    '';
+  }
+
+  ##
+  # Logging Settings
+  ##
+  log_format  main        '"$upstream" $remote_addr - $remote_user [$time_local] '
+                          '"$host" "$request" "$http_accept" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for" '
+                          '$request_time $upstream_response_time $pipe';
+
+  log_format router       '"$hostname" [$time_local] '
+                          '"$upstream" "$upstream_name" "$upstream_server" $remote_addr $real_ip '
+                          '"$subdomain$domain" "$unencrypted_request" "$request" "$upstream_http_location" '
+                          '"$http_accept" "$http_referer" "$http_user_agent" "$http_x_forwarded_for" '
+                          '"$upstream_status" "$upstream_connect_time" "$upstream_header_time" "$upstream_response_time" '
+                          '$status $request_time $body_bytes_sent '
+                          'pub="$arg_pub" osid="$arg_sid" sid="$sid" rsid="$arg_rsid" hid="$hid" rhid="$arg_rhid" '
+                          'lpid="$lpid" c1="$arg_c1" c2="$arg_c2" c3="$arg_c3" transid="$arg_transid" rel="$arg_rel"';
+
+  access_log              /var/log/nginx/access.log main buffer=64k flush=30s;
+  error_log               /var/log/nginx/error.log warn;
   
   ##
   # Gzip Settings
@@ -192,16 +265,6 @@ http {
   gzip_min_length         1000;
   gzip_disable            "MSIE [1-6]\.";
   <% end %>
-  
-  ##
-  # Banned user agents
-  ##
-  map $http_user_agent $block_ua {
-      default             0;
-      '~*Jorgee'          1;
-      'Mozilla/5.0'       1;
-      'Mozilla/4.0 (compatible; Synapse)' 1;
-  }
   
   <% if node['openresty']['lua_package_path'] %>
   lua_package_path        <%= node['openresty']['lua_package_path'] %>;
