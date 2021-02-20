@@ -147,7 +147,7 @@ server {
     
     tcp_nopush                      off;
     merge_slashes                   off;
-    access_log                      /var/log/nginx/router.log main buffer=64k flush=30s if=$loggable;
+    access_log                      /var/log/nginx/router.log router buffer=64k flush=30s if=$loggable;
     
     # Default upstream server
     set                             $upstream hydra-hp;
@@ -408,6 +408,7 @@ server {
         error_page                  404 =403 @redirect_encrypted_only;
         error_page                  503 @redirect_exponential_backoff;
         
+<% if (@dedupe) %>
         # Only allow 1 concurrent request
         limit_conn                  conn_limit_per_ip 1;
         limit_conn_status           503;
@@ -415,7 +416,8 @@ server {
         # 5 seconds between duplicate requests
         limit_req                   zone=force_cookie_reuse nodelay;
         limit_req_status            503;
-        
+<% end %>
+
         # Continue normal processing
         try_files                   @proxy @proxy;
     }
@@ -560,7 +562,8 @@ server {
         
         # Connection limits to prevent abuse
         limit_conn                  conn_limit_per_ip 25;
-
+        limit_conn                  conn_limit_per_upstream 1000;
+        
         proxy_http_version          1.1;
         proxy_set_header            Connection "";
         
@@ -569,6 +572,9 @@ server {
         proxy_set_header            X-Forwarded-Proto $real_scheme;
         proxy_set_header            Accept-Encoding "";
         proxy_set_header            Content-Type "";
+
+        # Control Deduping
+        proxy_set_header            X-Dedupe <%= @dedupe ? "1" : "0" %>;
         
         # Mask CFs involvement in upstream
         proxy_set_header            Cf-Connecting-Ip "";
@@ -800,6 +806,10 @@ server {
     location = /nginx {
         access_log                      off;
         stub_status                     on;
+    }
+
+    location = /thisthingisnotathing {
+        rewrite                         ^ /status.php;
     }
 
     location = / {

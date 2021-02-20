@@ -8,13 +8,10 @@ node["openresty"]["luarocks"]["default_rocks"].each do |rock, version|
   end
 end
 
-edit_resource(:service, "nginx.service") do
-  subscribes :reload, "template[nginx.conf]", :delayed
-end
-
 edit_resource(:template, "nginx.conf") do
   source "nginx.conf.erb"
   cookbook "configure"
+  notifies :reload, "service[nginx.service]", :delayed
 end
 
 edit_resource(:cookbook_file, "#{node["openresty"]["dir"]}/mime.types") do
