@@ -1,5 +1,27 @@
+lua_shared_dict auto_ssl 128m;
+lua_shared_dict auto_ssl_settings 64k;
+
 # Optimize loading process
 init_by_lua_block {
+    auto_ssl = (require "resty.auto-ssl").new()
+
+    <% if node["jbx"].key?("redis") %>
+    auto_ssl:set("storage_adapter", "resty.auto-ssl.storage_adapters.redis")
+
+    auto_ssl:set("redis", {
+        host = "<%= node["jbx"]["redis"]["host"] %>",
+        port = <%= node["jbx"]["redis"]["port"] || 6379 %>,
+        db   = <%= node["jbx"]["redis"]["db"] || 1 %>
+    })
+    <% end %>
+    
+    auto_ssl:set("allow_domain", function(domain)
+        return true
+    end)
+
+    auto_ssl:set("dir", "/etc/nginx/ssl")
+    auto_ssl:init()
+
     local resty_dogstatsd = require "resty_dogstatsd"
 
     -- Flatten table of arguments into a 2d map
@@ -128,6 +150,10 @@ init_by_lua_block {
     _G.post_process          = post_process
 }
 
+init_worker_by_lua_block {
+  auto_ssl:init_worker()
+}
+
 server {
     listen 80 reuseport;
     listen [::]:80 reuseport;
@@ -135,11 +161,14 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
 
-    default_type text/html;
     ssl_certificate     /etc/nginx/ssl/api.pem;
     ssl_certificate_key /etc/nginx/ssl/api.key;
     ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers         HIGH:!aNULL:!MD5;
+    
+    ssl_certificate_by_lua_block {
+        auto_ssl:ssl_certificate()
+    }
 
     server_name                     ~^(?<subdomain>)(?<domain>[^\.]+(\.:)[^\.:]+)$
                                     ~^(?<subdomain>.*?(\.|:))(?<domain>[^\.]+(\.|:)[^\.:]+)$
@@ -147,6 +176,7 @@ server {
     
     tcp_nopush                      off;
     merge_slashes                   off;
+    default_type                    text/html;
     access_log                      /var/log/nginx/router.log router buffer=64k flush=30s if=$loggable;
     
     # Default upstream server
@@ -284,6 +314,12 @@ server {
         deny                        all;
         
         proxy_pass                  http://127.0.0.1:8500;
+    }
+
+    location /.well-known/acme-challenge/ {
+        content_by_lua_block {
+            auto_ssl:challenge_server()
+        }
     }
     
     # Rotator routes - HP does not know how to handle these
@@ -1029,5 +1065,19 @@ server {
             
             ngx.timer.at(0, post_process, "tp.request", tags, response_times[k])
         end
+    }
+}
+
+server {
+    listen 127.0.0.1:8999;
+    set $upstream auto_ssl;
+  
+    client_body_buffer_size 128k;
+    client_max_body_size 128k;
+  
+    location / {
+      content_by_lua_block {
+        auto_ssl:hook_server()
+      }
     }
 }
