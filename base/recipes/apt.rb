@@ -5,7 +5,7 @@ if node[:configure][:update]
 end
 
 if node[:configure][:upgrade]
-  execute "apt-get upgrade -y" do
+  execute "DEBIAN_FRONTEND=noninteractive apt-get upgrade -yq" do
     action :run
   end
 end
