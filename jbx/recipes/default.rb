@@ -13,9 +13,10 @@ end
 # SSL Keys
 cookbook_file "/etc/nginx/ssl/api.pem" do
   mode "0644"
-  source "api.pem"
+  source node["environment"] + "/api.pem"
   action :create
   notifies :reload, "service[nginx.service]", :delayed
+  ignore_failure true
 end
 
 template "/etc/nginx/ssl/api.key.tpl" do
