@@ -60,6 +60,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     FLUSH PRIVILEGES;
     SET GLOBAL innodb_large_prefix=on;
     SET GLOBAL innodb_file_format=Barracuda;
+    SET GLOBAL event_scheduler=on;
   EOH
 
   execute "manage_mysql_settings" do
