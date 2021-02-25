@@ -109,6 +109,7 @@ default["php"]["packages"] = {
   "php#{php_version}-gearman" => "*",
   "php#{php_version}-xdebug" => "*",
   "php#{php_version}-pgsql" => "*",
+  "php#{php_version}-intl" => "*",
 }
 
 default["gearman"]["version"] = "1.1.*"
