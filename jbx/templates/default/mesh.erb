@@ -16,6 +16,11 @@ init_by_lua_block {
     <% end %>
     
     auto_ssl:set("allow_domain", function(domain)
+        -- Don't attempt to get certificates for IP addresses, it seems to freeze nginx
+        if domain:match("(%d+)%.(%d+)%.(%d+)%.(%d+)") or domain:match(":") then
+            return false
+        end
+
         return true
     end)
 
