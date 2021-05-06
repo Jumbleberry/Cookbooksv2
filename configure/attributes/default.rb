@@ -1,7 +1,7 @@
 cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins"
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "tzdata", "default-jre"]
+default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "tzdata", "default-jre", "gcc"]
 default[cookbook_name]["update"] = false
 default[cookbook_name]["upgrade"] = false
 
