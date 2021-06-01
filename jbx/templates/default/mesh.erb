@@ -21,6 +21,11 @@ init_by_lua_block {
             return false
         end
 
+        -- Don't get certs for byod.jumbleberry.com or amazonaws.com
+        if domain:match("byod.jumbleberry.com") or domain:match("amazonaws.com") or domain:match("awsglobalaccelerator.com") then
+            return false
+        end
+
         return true
     end)
 
