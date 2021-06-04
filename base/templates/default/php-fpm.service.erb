@@ -8,6 +8,8 @@ Type=notify
 PIDFile=/run/php/php<%= node["php"]["version"] %>-fpm.pid
 EnvironmentFile=-/etc/environment
 ExecStart=/usr/sbin/php-fpm<%= node["php"]["version"] %> --nodaemonize --fpm-config /etc/php/<%= node["php"]["version"] %>/fpm/php-fpm.conf
+ExecStartPost=-/usr/lib/php/php-fpm-socket-helper install /run/php/php-fpm.sock /etc/php/<%= node["php"]["version"] %>/fpm/pool.d/www.conf <%= node["php"]["version"].gsub(".", "") %>
+ExecStopPost=-/usr/lib/php/php-fpm-socket-helper remove /run/php/php-fpm.sock /etc/php/<%= node["php"]["version"] %>/fpm/pool.d/www.conf <%= node["php"]["version"].gsub(".", "") %>
 ExecReload=/bin/kill -USR2 $MAINPID
 
 [Install]
