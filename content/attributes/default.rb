@@ -1,5 +1,5 @@
 default["openresty"]["luarocks"]["default_rocks"] = {
-  "lua-resty-auto-ssl" => "0.13.1",
+  "jumbleberry-auto-ssl" => "0.13.1-2",
 }
 
 default["nodejs"]["npm_packages"] = [

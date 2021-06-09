@@ -83,7 +83,7 @@ default["openresty"]["luarocks"]["url"] = "http://luarocks.org/releases/luarocks
 default["openresty"]["luarocks"]["checksum"] = "66c1848a25924917ddc1901e865add8f19f2585360c44a001a03a8c234d3e796"
 
 default["openresty"]["luarocks"]["default_rocks"] = {
-  "lua-resty-auto-ssl" => "0.13.1",
+  "jumbleberry-auto-ssl" => "0.13.1-2",
   "jumbleberry-dogstatsd" => "1.0.1-1",
 }
 
