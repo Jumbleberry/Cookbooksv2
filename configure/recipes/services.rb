@@ -1,11 +1,5 @@
 stop_disable = %i{stop disable}
 
-edit_resource(:service, "dnsmasq.service") do
-  service_name "dnsmasq"
-  supports status: true, restart: true, reload: true
-  action node["configure"]["services"]["dnsmasq"] || stop_disable
-end
-
 edit_resource(:service, "php#{node["php"]["version"]}-fpm.service") do
   service_name "php#{node["php"]["version"]}-fpm"
   supports status: true, restart: true, reload: true
