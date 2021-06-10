@@ -2,7 +2,7 @@
 # Cookbook:: trusted_certicate
 # resource:: trusted_certicate
 #
-# Copyright:: 2015-2017, Chef Software, Inc.
+# Copyright:: Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,29 +17,52 @@
 # limitations under the License.
 #
 
-property :certificate_name, String, name_property: true
-property :content, String, required: true
-
+resource_name :trusted_certificate
 provides :trusted_certificate
+
+property :certificate_name, String, name_property: true
+property :content, String, required: [:create]
+property :sensitive, [true, false], default: true
 
 action :create do
   execute 'update trusted certificates' do
-    command platform_family?('debian', 'suse') ? 'update-ca-certificates' : 'update-ca-trust extract'
+    command update_cert_command
     action :nothing
   end
 
-  file "#{certificate_path}/#{new_resource.certificate_name}.crt" do
-    content new_resource.content
-    owner 'root'
-    group 'staff' if platform_family?('debian')
-    action :create
-    notifies :run, 'execute[update trusted certificates]'
+  if new_resource.content.start_with?('cookbook_file://')
+    src = new_resource.content.split('://')[1].split('::')
+    cookbook_file "#{certificate_path}/#{new_resource.certificate_name}.crt" do
+      sensitive new_resource.sensitive
+      source src[-1]
+      cookbook src.length == 2 ? src[0] : cookbook_name
+      owner 'root'
+      group 'staff' if platform_family?('debian')
+      notifies :run, 'execute[update trusted certificates]'
+    end
+  elsif new_resource.content =~ %r{^[a-zA-Z]*://.*}
+    remote_file "#{certificate_path}/#{new_resource.certificate_name}.crt" do
+      sensitive new_resource.sensitive
+      source new_resource.content
+      owner 'root'
+      group 'staff' if platform_family?('debian')
+      notifies :run, 'execute[update trusted certificates]'
+    end
+  else
+    file "#{certificate_path}/#{new_resource.certificate_name}.crt" do
+      sensitive new_resource.sensitive
+      content new_resource.content
+      owner 'root'
+      group 'staff' if platform_family?('debian')
+      action :create
+      notifies :run, 'execute[update trusted certificates]'
+    end
   end
 end
 
 action :delete do
   execute 'update trusted certificates' do
-    command platform_family?('debian', 'suse') ? 'update-ca-certificates' : 'update-ca-trust extract'
+    command update_cert_command
     action :nothing
   end
 
@@ -50,6 +73,12 @@ action :delete do
 end
 
 action_class do
+  # @return [String] the platform specific command to update certs
+  def update_cert_command
+    platform_family?('debian', 'suse') ? 'update-ca-certificates' : 'update-ca-trust extract'
+  end
+
+  # @return [String] the platform specific path to certs
   def certificate_path
     case node['platform_family']
     when 'debian'
