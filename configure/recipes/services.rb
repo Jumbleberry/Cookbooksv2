@@ -43,6 +43,7 @@ end
 
 edit_resource(:service, "gearman-manager.service") do
   service_name "gearman-manager"
+  provider Chef::Provider::Service::Systemd
   supports status: true, restart: true, reload: true
   action node["configure"]["services"]["gearman"] || stop_disable
 end
