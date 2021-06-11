@@ -54,10 +54,10 @@ default["consul_template"]["service_group"] = "www-data"
 default["consul_template"]["consul_addr"] = "127.0.0.1:8500"
 default["consul_template"]["vault_addr"] = default["hashicorp-vault"]["config"]["address"]
 
-default["openssl_source"]["openssl"]["version"] = "1.0.2p"
+default["openssl_source"]["openssl"]["version"] = "1.0.2u"
 default["openssl_source"]["openssl"]["prefix"] = "/usr"
 default["openssl_source"]["openssl"]["url"] = "https://www.openssl.org/source/openssl-#{default["openssl_source"]["openssl"]["version"]}.tar.gz"
-default["openssl_source"]["openssl"]["checksum"] = "50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00"
+default["openssl_source"]["openssl"]["checksum"] = "ecd0c6ffb493dd06707d38b14bb4d8c2288bb7033735606569d8f90f89669d16"
 default["openssl_source"]["openssl"]["configure_flags"] = [
   "--openssldir=/etc/ssl",
   "--libdir=lib",
@@ -73,6 +73,8 @@ default["openresty"]["max_subrequests"] = 250
 default["openresty"]["extra_modules"] += ["base::openresty_modules"]
 default["openresty"]["configure_flags"] = [
   "--add-module=/tmp/nginx_upstream_check_module-master",
+  "--with-openssl=/tmp/chef/openssl-1.0.2u/",
+  "--with-cc-opt=\"-Wimplicit-fallthrough=0\"",
 ]
 
 default["openresty"]["service"]["restart_on_update"] = false
