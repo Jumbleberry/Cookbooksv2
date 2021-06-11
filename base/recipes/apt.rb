@@ -19,7 +19,10 @@ else
   include_recipe "apt::unattended-upgrades"
   execute "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure unattended-upgrades"
   execute "apt-mark hold unattended-upgrades"
-  execute "apt-mark hold 4.4.0-203-generic"
+
+  if node["lsb"]["release"].to_f < 18
+    execute "apt-mark hold 4.4.0-203-generic"
+  end
 end
 
 if node["recipes"].include?("configure::base")
