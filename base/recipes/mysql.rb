@@ -8,23 +8,36 @@ execute "mysql-default-password-again" do
   user "root"
 end
 
-package_arch = node["kernel"]["machine"] =~ /x86_64/ ? "x86_64" : "i386"
-package_url = "https://downloads.mysql.com/archives/get/p/23/file/mysql-5.6.16-debian6.0-#{package_arch}.deb"
-package_file = "/tmp/mysql-5.6.16.deb"
+package_arch = node["kernel"]["machine"] =~ /x86_64/ ? "amd64" : "i386"
+package_url = "https://downloads.mysql.com/archives/get/p/23/file/mysql-server_5.6.51-1debian9_#{package_arch}.deb-bundle.tar"
+package_file = "/tmp/mysql-5.6.51.deb"
 
 remote_file "mysql_download" do
-  path package_file
+  path package_file + ".tar"
   source package_url
   not_if { ::File.exist?(package_file) }
-  notifies :install, "package[mysql]", :immediately
+  notifies :run, "execute[mysql_untar]", :immediately
+  notifies :install, "package[mysql-common]", :immediately
+  notifies :install, "package[mysql-community-client]", :immediately
+  notifies :install, "package[mysql-client]", :immediately
+  notifies :install, "package[mysql-community-server]", :immediately
+  notifies :install, "package[mysql-server]", :immediately
   notifies :stop, "service[mysql]", :immediately
   notifies :disable, "service[mysql]", :immediately
 end
 
-package "mysql" do
-  source package_file
-  provider Chef::Provider::Package::Dpkg if node["platform_family"] == "debian"
+execute "mysql_untar" do
+  command "tar -xvf #{package_file}.tar"
+  cwd "/tmp"
   action :nothing
+end
+
+["mysql-common", "mysql-community-client", "mysql-client", "mysql-community-server", "mysql-server"].each do |p|
+  package p do
+    source "/tmp/#{p}_5.6.51-1debian9_amd64.deb"
+    provider Chef::Provider::Package::Dpkg if node["platform_family"] == "debian"
+    action :nothing
+  end
 end
 
 service "mysql" do
