@@ -119,7 +119,7 @@ default["gearman"]["manager"]["repository"] = "https://github.com/brianlmoon/Gea
 default["gearman"]["manager"]["revision"] = "ffc828dac2547aff76cb4962bb3fcc4f454ec8a2"
 
 default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
-default["phalcon"]["version"] = "3.4.5-1+php#{php_version}"
+default["phalcon"]["version"] = "3.4.5-5+ubuntu20.04.1+deb.sury.org+1"
 default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.git"
 
 default["nodejs"]["install_method"] = "binary"
