@@ -8,21 +8,26 @@ execute "mysql-default-password-again" do
   user "root"
 end
 
-# Add the universe repository to help with dependency resolution
-apt_repository 'trusty-universe' do
-  uri 'http://archive.ubuntu.com/ubuntu'
-  components ['universe']
-  distribution 'trusty'
-  action :add
+package_arch = node["kernel"]["machine"] =~ /x86_64/ ? "x86_64" : "i386"
+package_url = "https://downloads.mysql.com/archives/get/p/23/file/mysql-5.6.16-debian6.0-#{package_arch}.deb"
+package_file = "/tmp/mysql-5.6.16.deb"
+
+remote_file "mysql_download" do
+  path package_file
+  source package_url
+  not_if { ::File.exist?(package_file) }
+  notifies :install, "package[mysql]", :immediately
+  notifies :stop, "service[mysql]", :immediately
+  notifies :disable, "service[mysql]", :immediately
 end
 
-# Install mysql server
-execute "mysql-install" do
-  command "(export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -y -q mysql-client-core-5.6 mysql-server-5.6 mysql-client-5.6)"
-  user "root"
+package "mysql" do
+  source package_file
+  provider Chef::Provider::Package::Dpkg if node["platform_family"] == "debian"
+  action :nothing
 end
 
 service "mysql" do
   supports status: true, restart: true, reload: true
-  action %i{stop disable}
+  action :nothing
 end
