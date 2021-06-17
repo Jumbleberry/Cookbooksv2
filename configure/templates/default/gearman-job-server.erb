@@ -16,15 +16,15 @@
 # Missing examples for memcache persitent queue store...
 
 # Parameters to pass to gearmand.
-PARAMS='<% if @gearman.key?("mysql") %>\
+PARAMS="<% if @gearman.key?("mysql") %>\
     -q mysql \
-    --mysql-host="<%= @gearman['mysql']['host'] %>" \
-    --mysql-user="<%= @gearman['mysql']['user'] %>" \
-    --mysql-password="<%= @gearman['mysql']['password'] %>" \
-    --mysql-db="<%= @gearman['mysql']['db'] %>" \
-    --mysql-table="<%= @gearman['mysql']['table'] %>" \
-    --mysql-port=<%= @gearman['mysql']['port'] %> \
+    --mysql-host='<%= @gearman['mysql']['host'] %>' \
+    --mysql-user='<%= @gearman['mysql']['user'] %>' \
+    --mysql-password='<%= @gearman['mysql']['password'] %>' \
+    --mysql-db='<%= @gearman['mysql']['db'] %>' \
+    --mysql-table='<%= @gearman['mysql']['table'] %>' \
+    --mysql-port=<%= @gearman['mysql']['port'] || 3306 %> \
 <% end %>
     -L <%= @gearman['host'] %> \
     --job-retries=<%= @gearman['retries'] %> \
-    -d'
+    -d"
