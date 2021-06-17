@@ -1,12 +1,12 @@
 package "dnsmasq"
 user "dnsmasq"
 
-if platform?("ubuntu") && node["platform_version"] >= "18.04"
+if platform?("ubuntu") && node["platform_version"].to_i >= 18
   directory "/etc/systemd/resolved.conf.d"
 
   file "Fix systemd-resolved conflict" do
     path "/etc/systemd/resolved.conf.d/dnsmasq.conf"
-    content "[Resolve]\nDNSStubListener=no"
+    content node["platform_version"].to_i >= 20 ? "[Resolve]\nDNSStubListener=no" : "[Resolve]\nnameserver 127.0.0.1"
     notifies :restart, "service[systemd-resolved]", :immediately
   end
 
