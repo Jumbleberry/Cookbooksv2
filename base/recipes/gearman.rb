@@ -33,6 +33,7 @@ end
 
 service "gearman-job-server" do
   supports status: true, restart: true, reload: true, stop: true
+  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
 end
 
