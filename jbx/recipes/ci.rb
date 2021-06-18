@@ -5,7 +5,7 @@ if node["environment"] != "prod"
     action :run
   end
 
-  random_id = rand(36 ** 16).to_s(36)
+  random_id = node["jbx"]["branch"].gsub(/[^0-9A-Za-z]/, '-') + "_" + rand(36 ** 8).to_s(36)
   execute "phpunit" do
     command <<-EOH
       #{node["jbx"]["path"]}/command github:check --shasum #{node["jbx"]["branch"]} & (\
