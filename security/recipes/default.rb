@@ -7,6 +7,11 @@ when "ubuntu", "amazon", "centos"
   include_recipe "security::generic-tcp-timestamp"
   include_recipe "security::unix-anonymous-root-ssh-logins"
   include_recipe "security::unix-user-home-dir-mode"
+
+  # tty removed in >= 20
+  if node["lsb"]["release"].to_i < 20
+    include_recipe "security::unix-anonymous-root-tty-logins"
+  end
 else
   print " !!!! -> #{node["platform"]} <- this OS not tested yet "
 end
