@@ -61,6 +61,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     SET GLOBAL innodb_large_prefix=on;
     SET GLOBAL innodb_file_format=Barracuda;
     SET GLOBAL event_scheduler=on;
+    SET GLOBAL sql_mode='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
   EOH
 
   execute "manage_mysql_settings" do
