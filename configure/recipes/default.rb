@@ -1,7 +1,8 @@
+include_recipe cookbook_name + "::dnsmasq"
+
 include_recipe "base::apt"
 
 include_recipe cookbook_name + "::common"
-include_recipe cookbook_name + "::dnsmasq"
 include_recipe cookbook_name + "::vault"
 include_recipe cookbook_name + "::consul"
 include_recipe cookbook_name + "::consul-template"
