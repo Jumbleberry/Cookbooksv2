@@ -13,11 +13,6 @@ execute "nginx_upstream_check_module" do
   action :nothing
 end
 
-cookbook_file "ngx_user.patch" do
-  path "/tmp/ngx_user.patch"
-  action :create
-end
-
 src_file_name = node["openresty"]["source"]["name"] % { file_prefix: node["openresty"]["source"]["file_prefix"], version: node["openresty"]["source"]["version"] }
 src_file_url = node["openresty"]["source"]["url"] % { name: src_file_name }
 src_filepath = "#{node["openresty"]["source"]["path"]}/#{src_file_name}.tar.gz"
@@ -32,8 +27,7 @@ bash "patch_openresty_source" do
   code <<-EOH
       tar zxf #{::File.basename(src_filepath)} -C #{::File.dirname(src_filepath)} &&
       cd #{nginx_path} &&
-      patch -d . -p 0 < /tmp/nginx_upstream_check_module-master/check_1.11.1+.patch &&
-      patch -d . -p 1 < /tmp/ngx_user.patch &&
+      patch -d . -p 1 < /tmp/nginx_upstream_check_module-master/check_1.16.1+.patch &&
       cd #{::File.dirname(src_filepath)} &&
       tar -czf #{::File.basename(src_file_name)}.tar.gz #{::File.basename(src_file_name)} &&
       rm -rf #{::File.basename(src_file_name)}
