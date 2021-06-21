@@ -27,6 +27,8 @@ default["openresty"]["group_id"] = 33
 default["openresty"]["user_home"] = "/var/www"
 default["openresty"]["user_shell"] = "/bin/bash"
 
+default["openresty"]["try_aio"] = node.attribute?(:ec2)
+
 default["php"]["fpm"]["display_errors"] = "Off"
 default["php"]["fpm"]["listen"] = "/var/run/php7-fpm.sock"
 default["php"]["fpm"]["pm"] = "dynamic"
