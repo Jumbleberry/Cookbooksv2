@@ -114,8 +114,8 @@ default["php"]["packages"] = {
 }
 
 default["gearman"]["version"] = "1.1.*"
-default["gearman"]["manager"]["repository"] = "https://github.com/brianlmoon/GearmanManager.git"
-default["gearman"]["manager"]["revision"] = "ffc828dac2547aff76cb4962bb3fcc4f454ec8a2"
+default["gearman"]["manager"]["repository"] = "https://github.com/Jumbleberry/GearmanManager.git"
+default["gearman"]["manager"]["revision"] = "1.1"
 
 default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
 default["phalcon"]["version"] = case node["lsb"]["release"].to_i
