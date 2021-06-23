@@ -1,0 +1,54 @@
+server {
+    listen      80;
+    server_name <%= @hostname %> www.<%= @hostname %>;
+    root        <%= @path %>/public;
+    
+    set         $upstream admin;
+
+    # Show server host name as header
+    add_header  X-Backend-Server $hostname;
+
+    <% ssl = File.file?("/etc/nginx/ssl/api.key.tpl") %>
+    <% if (ssl) %>
+    listen      443 ssl;
+    
+    # Redirect non ELB traffic to https
+    if ($real_scheme != "https") {
+        return 301 https://$server_name$request_uri;
+    }
+    
+    ssl_protocols               TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers                 EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:EECDH+RC4:RSA+RC4:!MD5;
+    ssl_prefer_server_ciphers   on;
+    ssl_session_cache           shared:SSL:10m;
+    ssl_session_timeout         10m; 
+    
+    ssl_certificate             /etc/nginx/ssl/api.pem;
+    ssl_certificate_key         /etc/nginx/ssl/api.key;
+    
+    <% end %>
+
+    index       index.php;
+    try_files   $uri $uri/ /index.php?_url=$uri&$args;
+    
+    location    = /robots.txt  { access_log off; log_not_found off; try_files $uri =404; }
+    location    = /favicon.ico { access_log off; log_not_found off; try_files $uri =404; }	
+    
+    access_log  /var/log/nginx/<%= @hostname %>.access.log main buffer=4k flush=1m;
+    error_log   /var/log/nginx/<%= @hostname %>.error.log warn;
+
+    location ~ ^/(img/|js/|css/) {
+        root <%= @path %>/application/modules/mail/resources; 
+    }
+
+    location ~ \.php$ {
+        try_files                       $uri index.php =404;
+        fastcgi_pass                    unix:<%= node["php"]["fpm"]["listen"] %>;
+        fastcgi_index                   index.php;
+        fastcgi_split_path_info         ^(.+\.php)(/.+)$;
+        fastcgi_param PATH_INFO         $fastcgi_path_info;
+        fastcgi_param PATH_TRANSLATED   $document_root$fastcgi_path_info;
+        fastcgi_param SCRIPT_FILENAME   $document_root$fastcgi_script_name;
+        include                         fastcgi_params;
+    }
+}
