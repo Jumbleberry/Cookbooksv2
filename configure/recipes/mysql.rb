@@ -1,4 +1,10 @@
 if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "start"))
+  # Fixes poor IO performance on dev/ci when seeding tables
+  execute "echo noop > /sys/block/sda/queue/scheduler" do
+    only_if { node["lsb"]["release"].to_i < 20 }
+    ignore_failure true
+  end
+
   # Copy config file
   cookbook_file "/etc/mysql/my.cnf" do
     manage_symlink_source true
