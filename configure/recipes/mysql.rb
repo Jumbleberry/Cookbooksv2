@@ -1,10 +1,8 @@
 if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "start"))
-  if !node.attribute?(:nvme)
-    # Fixes poor IO performance on dev/ci when seeding tables
-    execute "echo noop > /sys/block/sda/queue/scheduler" do
-      only_if { node["lsb"]["release"].to_i < 20 }
-      ignore_failure true
-    end
+  # Fixes poor IO performance on dev/ci when seeding tables
+  execute "echo noop > /sys/block/sda/queue/scheduler" do
+    only_if { node["lsb"]["release"].to_i < 20 && !node.attribute?(:nvme) }
+    ignore_failure true
   end
 
   # Copy config file
