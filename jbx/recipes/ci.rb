@@ -16,7 +16,6 @@ if node["environment"] != "prod"
     EOH
     environment ({ "ENV" => node[:environment] })
     cwd node["jbx"]["path"]
-    user node[:user]
     action :run
   end
 end
