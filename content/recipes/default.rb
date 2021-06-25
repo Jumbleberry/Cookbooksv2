@@ -68,7 +68,6 @@ execute "minify-content" do
   notifies :reload, "service[nginx.service]", :delayed
 end
 
-
 directory "#{node["openresty"]["dir"]}/ssl" do
   owner node[:user]
   group node[:user]
@@ -93,4 +92,5 @@ openresty_site "content" do
   template "content.conf.erb"
   timing :delayed
   action :enable
+  notifies :reload, "service[nginx.service]", :delayed
 end
