@@ -141,7 +141,7 @@ execute "seed_dev_jb" do
   environment ({ "ENV" => node[:environment] })
   user "root"
   action :nothing
-  only_if { (node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx") || (node["environment"] != "prod" && node["jbx"]["path"] == "/var/www/jbx" && !::File.exist?(db_seed_status)) }
+  only_if { (node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx") || (node["environment"] == "dev" && node["jbx"]["path"] == "/var/www/jbx" && !::File.exist?(db_seed_status)) }
 end
 
 # Run database migrations
