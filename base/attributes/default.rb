@@ -54,10 +54,10 @@ default["consul_template"]["service_group"] = "www-data"
 default["consul_template"]["consul_addr"] = "127.0.0.1:8500"
 default["consul_template"]["vault_addr"] = default["hashicorp-vault"]["config"]["address"]
 
-default["openssl_source"]["openssl"]["version"] = "1.0.2p"
+default["openssl_source"]["openssl"]["version"] = "1.1.1k"
 default["openssl_source"]["openssl"]["prefix"] = "/usr"
 default["openssl_source"]["openssl"]["url"] = "https://www.openssl.org/source/openssl-#{default["openssl_source"]["openssl"]["version"]}.tar.gz"
-default["openssl_source"]["openssl"]["checksum"] = "50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00"
+default["openssl_source"]["openssl"]["checksum"] = "892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5"
 default["openssl_source"]["openssl"]["configure_flags"] = [
   "--openssldir=/etc/ssl",
   "--libdir=lib",
@@ -66,14 +66,15 @@ default["openssl_source"]["openssl"]["configure_flags"] = [
   "-Wl,--enable-new-dtags",
 ]
 
-default["openresty"]["source"]["version"] = "1.11.2.5"
+default["openresty"]["source"]["version"] = "1.19.3.1"
 default["openresty"]["source"]["file_prefix"] = "openresty"
-default["openresty"]["source"]["checksum"] = "f8cc203e8c0fcd69676f65506a3417097fc445f57820aa8e92d7888d8ad657b9"
+default["openresty"]["source"]["checksum"] = "f36fcd9c51f4f9eb8aaab8c7f9e21018d5ce97694315b19cacd6ccf53ab03d5d"
 default["openresty"]["max_subrequests"] = 250
 default["openresty"]["extra_modules"] += ["base::openresty_modules"]
 default["openresty"]["configure_flags"] = [
   "--add-module=/tmp/nginx_upstream_check_module-master",
-]
+  "--with-openssl=/tmp/chef/openssl-1.1.1k/",
+] + (node["lsb"]["release"].to_i >= 20 ? ["--with-cc-opt=\"-Wimplicit-fallthrough=0\""] : [])
 
 default["openresty"]["service"]["restart_on_update"] = false
 default["openresty"]["service"]["start_on_boot"] = false
@@ -113,11 +114,15 @@ default["php"]["packages"] = {
 }
 
 default["gearman"]["version"] = "1.1.*"
-default["gearman"]["manager"]["repository"] = "https://github.com/brianlmoon/GearmanManager.git"
-default["gearman"]["manager"]["revision"] = "ffc828dac2547aff76cb4962bb3fcc4f454ec8a2"
+default["gearman"]["manager"]["repository"] = "https://github.com/Jumbleberry/GearmanManager.git"
+default["gearman"]["manager"]["revision"] = "1.1"
 
 default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
-default["phalcon"]["version"] = "3.4.5-1+php#{php_version}"
+default["phalcon"]["version"] = case node["lsb"]["release"].to_i
+  when 16, 18 then "3.4.5-1+php7.3"
+  else "3.4.5-5+ubuntu#{node["lsb"]["release"]}.1+deb.sury.org+1"
+  end
+
 default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.git"
 
 default["nodejs"]["install_method"] = "binary"
