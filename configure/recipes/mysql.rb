@@ -1,4 +1,10 @@
 if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "start"))
+  # Fixes poor IO performance on dev/ci when seeding tables
+  execute "echo noop > /sys/block/sda/queue/scheduler" do
+    only_if { node["lsb"]["release"].to_i < 20 && !node.attribute?(:nvme) }
+    ignore_failure true
+  end
+
   # Copy config file
   cookbook_file "/etc/mysql/my.cnf" do
     manage_symlink_source true
@@ -61,6 +67,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     SET GLOBAL innodb_large_prefix=on;
     SET GLOBAL innodb_file_format=Barracuda;
     SET GLOBAL event_scheduler=on;
+    SET GLOBAL sql_mode='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
   EOH
 
   execute "manage_mysql_settings" do

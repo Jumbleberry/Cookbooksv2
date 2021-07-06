@@ -1,17 +1,18 @@
 execute "curl -s #{node["phalcon"]["install_script"]} | sudo bash"
+phalcon_package = node["lsb"]["release"].to_i < 20 ? "php#{node["php"]["version"]}-phalcon" : "php#{node["php"]["version"]}-phalcon3"
 
-apt_package "php#{node["php"]["version"]}-phalcon" do
+apt_package "#{phalcon_package}" do
   version node["phalcon"]["version"]
   action %i{install lock}
 end
 
-execute "apt-mark hold php#{node["php"]["version"]}-phalcon"
+execute "apt-mark hold #{phalcon_package}"
 
 unless node.attribute?(:ec2)
   git "phalcon-devtools" do
     repository node["phalcon"]["devtools"]
     user "root"
-    branch "v3.4.11"
+    branch "3.4.x"
     destination "/usr/share/phalcon-devtools"
     action :sync
   end

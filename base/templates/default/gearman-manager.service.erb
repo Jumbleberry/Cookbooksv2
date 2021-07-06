@@ -36,6 +36,7 @@ start()
   if start-stop-daemon \
     --start \
     --startas $DAEMON \
+    --user $GEARMANUSER \
     --pidfile $PIDFILE \
     -- -P $PIDFILE \
        -l $LOGFILE \
@@ -58,6 +59,7 @@ stop()
     --stop \
     --oknodo \
     --retry 20 \
+    --user $GEARMANUSER \
     --pidfile $PIDFILE
   then
     log_end_msg 0
