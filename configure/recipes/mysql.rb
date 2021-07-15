@@ -1,8 +1,10 @@
 if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "start"))
   # Fixes poor IO performance on dev/ci when seeding tables
-  execute "echo noop > /sys/block/sda/queue/scheduler" do
-    only_if { node["lsb"]["release"].to_i < 20 && !node.attribute?(:nvme) }
-    ignore_failure true
+  node["block_device"].select { |device, info| device =~ /^.d.$/ && info["size"].to_i > 0 }.each do |device, info|
+    execute "scheduler-#{device}" do
+      command "echo 'noop' > /sys/block/#{device}/queue/scheduler"
+      only_if "grep -F 'noop' /sys/block/#{device}/queue/scheduler"
+    end
   end
 
   # Copy config file
