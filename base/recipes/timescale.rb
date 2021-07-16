@@ -23,3 +23,7 @@ service "postgresql.service" do
   service_name "postgresql"
   action %i{stop disable}
 end
+
+package "pgloader" do
+  action :install
+end
