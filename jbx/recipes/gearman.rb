@@ -27,7 +27,7 @@ if node["jbx"]["gearman"]
         timeout: "3s",
         args: [
           node["consul"]["service"]["config_dir"] + "/gearman_check.php",
-          node["ipaddress"],
+          node["gearman"]["host"],
         ],
       },
     )
