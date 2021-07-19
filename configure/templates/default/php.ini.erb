@@ -1774,7 +1774,7 @@ opcache.enable=<% if node['environment'] != 'dev' -%>1<% else -%>0<% end -%>
 opcache.memory_consumption=256
 
 ; The amount of memory for interned strings in Mbytes.
-opcache.interned_strings_buffer=16
+opcache.interned_strings_buffer=32
 
 ; The maximum number of keys (scripts) in the OPcache hash table.
 ; Only numbers between 200 and 1000000 are allowed.
@@ -1807,10 +1807,10 @@ opcache.save_comments=1
 
 ; If enabled, a fast shutdown sequence is used for the accelerated code
 ; Depending on the used Memory Manager this may cause some incompatibilities.
-opcache.fast_shutdown=0
+opcache.fast_shutdown=1
 
 ; Allow file existence override (file_exists, etc.) performance feature.
-opcache.enable_file_override=0
+opcache.enable_file_override=1
 
 ; A bitmask, where each bit enables or disables the appropriate OPcache
 ; passes
@@ -1829,7 +1829,7 @@ opcache.enable_file_override=0
 
 ; Allows exclusion of large files from being cached. By default all files
 ; are cached.
-opcache.max_file_size=32000
+opcache.max_file_size=512000
 
 ; Check the cache checksum each N requests.
 ; The default value of "0" means that the checks are disabled.
