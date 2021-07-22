@@ -26,7 +26,7 @@ init_by_lua_block {
             return false
         end
 
-        return true
+        return domain:match(".")
     end)
 
     auto_ssl:set("dir", "/etc/nginx/ssl")
