@@ -52,11 +52,12 @@ default["consul"]["config"]["advertise_addr_wan"] = node["ipaddress"]
 default["consul_template"]["service_user"] = "www-data"
 default["consul_template"]["service_group"] = "www-data"
 default["consul_template"]["consul_addr"] = "127.0.0.1:8500"
-default["consul_template"]["vault_addr"] = default["hashicorp-vault"]["config"]["address"]
+default["consul_template"]["vault_addr"] = node["hashicorp-vault"]["config"]["address"]
 
 default["openssl_source"]["openssl"]["version"] = "1.1.1k"
-default["openssl_source"]["openssl"]["prefix"] = "/usr"
-default["openssl_source"]["openssl"]["url"] = "https://www.openssl.org/source/openssl-#{default["openssl_source"]["openssl"]["version"]}.tar.gz"
+default["openssl_source"]["openssl"]["abi_version"] = "1.1.1"
+default["openssl_source"]["openssl"]["prefix"] = "/opt/openssl-#{node["openssl_source"]["openssl"]["abi_version"]}"
+default["openssl_source"]["openssl"]["url"] = "https://www.openssl.org/source/openssl-#{node["openssl_source"]["openssl"]["version"]}.tar.gz"
 default["openssl_source"]["openssl"]["checksum"] = "892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5"
 default["openssl_source"]["openssl"]["configure_flags"] = [
   "--openssldir=/etc/ssl",
@@ -73,7 +74,7 @@ default["openresty"]["max_subrequests"] = 250
 default["openresty"]["extra_modules"] += ["base::openresty_modules"]
 default["openresty"]["configure_flags"] = [
   "--add-module=/tmp/nginx_upstream_check_module-master",
-  "--with-openssl=#{Chef::Config["file_cache_path"]}/openssl-1.1.1k/",
+  "--with-openssl=#{node["openssl_source"]["openssl"]["prefix"]}",
   "--with-stream_realip_module",
 ] + (node["lsb"]["release"].to_i >= 20 ? ["--with-cc-opt=\"-Wimplicit-fallthrough=0\""] : [])
 
