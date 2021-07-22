@@ -1,0 +1,71 @@
+From 1d5c9b6fa03b71bbb461a473215f4be81cc9aa73 Mon Sep 17 00:00:00 2001
+From: Bellardia <ian@jumbleberry.com>
+Date: Thu, 22 Jul 2021 10:53:39 -0400
+Subject: [PATCH] Parse proxy & xfwd headers
+
+---
+ src/http/modules/ngx_http_realip_module.c | 27 ++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/src/http/modules/ngx_http_realip_module.c b/src/http/modules/ngx_http_realip_module.c
+index 9586ebe..479e241 100644
+--- a/src/http/modules/ngx_http_realip_module.c
++++ b/src/http/modules/ngx_http_realip_module.c
+@@ -14,6 +14,7 @@
+ #define NGX_HTTP_REALIP_XFWD     1
+ #define NGX_HTTP_REALIP_HEADER   2
+ #define NGX_HTTP_REALIP_PROXY    3
++#define NGX_HTTP_REALIP_PROXY_XFWD 4
+ 
+ 
+ typedef struct {
+@@ -189,6 +190,25 @@ ngx_http_realip_handler(ngx_http_request_t *r)
+ 
+         break;
+ 
++    case NGX_HTTP_REALIP_PROXY_XFWD:
++
++        if (r->connection->proxy_protocol == NULL) {
++            xfwd = &r->headers_in.x_forwarded_for;
++
++            if (xfwd->elts == NULL) {
++                return NGX_DECLINED;
++            }
++
++            value = NULL;
++
++            break;
++        }
++
++        value = &r->connection->proxy_protocol->src_addr;
++        xfwd = NULL;
++
++        break;
++
+     default: /* NGX_HTTP_REALIP_HEADER */
+ 
+         part = &r->headers_in.headers.part;
+@@ -236,7 +256,7 @@ found:
+                                     rlcf->recursive)
+         != NGX_DECLINED)
+     {
+-        if (rlcf->type == NGX_HTTP_REALIP_PROXY) {
++        if (rlcf->type == NGX_HTTP_REALIP_PROXY || (rlcf->type == NGX_HTTP_REALIP_PROXY_XFWD && c->proxy_protocol != NULL)) {
+             ngx_inet_set_port(addr.sockaddr, c->proxy_protocol->src_port);
+         }
+ 
+@@ -442,6 +462,11 @@ ngx_http_realip(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+         return NGX_CONF_OK;
+     }
+ 
++    if (ngx_strcmp(value[1].data, "proxy_protocol_xfwd") == 0) {
++        rlcf->type = NGX_HTTP_REALIP_PROXY_XFWD;
++        return NGX_CONF_OK;
++    }
++
+     rlcf->type = NGX_HTTP_REALIP_HEADER;
+     rlcf->hash = ngx_hash_strlow(value[1].data, value[1].data, value[1].len);
+     rlcf->header = value[1];
+-- 
+2.30.2
+
