@@ -75,6 +75,8 @@ default["openresty"]["extra_modules"] += ["base::openresty_modules"]
 default["openresty"]["configure_flags"] = [
   "--add-module=/tmp/nginx_upstream_check_module-master",
   "--with-stream_realip_module",
+  "--with-cc-opt=\"-I#{node["openssl_source"]["openssl"]["prefix"]}/include\"",
+  "--with-ld-opt=\"-L#{node["openssl_source"]["openssl"]["prefix"]}/lib\"",
 ] + (node["lsb"]["release"].to_i >= 20 ? ["--with-cc-opt=\"-Wimplicit-fallthrough=0\""] : [])
 
 default["openresty"]["service"]["restart_on_update"] = false
