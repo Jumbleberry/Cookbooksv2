@@ -168,8 +168,8 @@ server {
     listen 80 reuseport;
     listen [::]:80 reuseport;
     
-    listen 443 ssl;
-    listen [::]:443 ssl;
+    listen 443 ssl reuseport;
+    listen [::]:443 ssl reuseport;
 
     listen 8080 proxy_protocol reuseport;
     listen [::]:8080 proxy_protocol reuseport;
