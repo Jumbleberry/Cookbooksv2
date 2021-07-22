@@ -66,14 +66,15 @@ default["openssl_source"]["openssl"]["configure_flags"] = [
   "-Wl,--enable-new-dtags",
 ]
 
-default["openresty"]["source"]["version"] = "1.19.3.1"
+default["openresty"]["source"]["version"] = "1.19.3.2"
 default["openresty"]["source"]["file_prefix"] = "openresty"
-default["openresty"]["source"]["checksum"] = "f36fcd9c51f4f9eb8aaab8c7f9e21018d5ce97694315b19cacd6ccf53ab03d5d"
+default["openresty"]["source"]["checksum"] = "ce40e764990fbbeb782e496eb63e214bf19b6f301a453d13f70c4f363d1e5bb9"
 default["openresty"]["max_subrequests"] = 250
 default["openresty"]["extra_modules"] += ["base::openresty_modules"]
 default["openresty"]["configure_flags"] = [
   "--add-module=/tmp/nginx_upstream_check_module-master",
-  "--with-openssl=/tmp/chef/openssl-1.1.1k/",
+  "--with-openssl=#{Chef::Config["file_cache_path"]}/openssl-1.1.1k/",
+  "--with-stream_realip_module",
 ] + (node["lsb"]["release"].to_i >= 20 ? ["--with-cc-opt=\"-Wimplicit-fallthrough=0\""] : [])
 
 default["openresty"]["service"]["restart_on_update"] = false
