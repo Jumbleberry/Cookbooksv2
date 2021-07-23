@@ -16,7 +16,6 @@ cookbook_file "/etc/nginx/ssl/api.pem" do
   mode "0644"
   source node["environment"] + "/api.pem"
   action :create
-  notifies :run, "execute[consul-template api.key]", :immediately
   notifies :reload, "service[nginx.service]", :delayed
   ignore_failure true
 end
@@ -29,18 +28,6 @@ template "/etc/nginx/ssl/api.key.tpl" do
     domain: "api",
   })
   only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][:api].nil? }
-  notifies :create, "consul_template_config[api.key]", :immediately
-  notifies :run, "execute[consul-template api.key]", :immediately
-end
-
-consul_template_config "api.key" do
-  templates [{
-    source: "/etc/nginx/ssl/api.key.tpl",
-    destination: "/etc/nginx/ssl/api.key",
-    command: "(service nginx reload 2>/dev/null || service nginx start)",
-  }]
-  action :nothing
-  notifies :reload, "service[consul-template.service]", :immediate
 end
 
 execute "consul-template api.key" do
@@ -50,8 +37,8 @@ execute "consul-template api.key" do
       "-vault-addr \"#{node["hashicorp-vault"]["config"]["address"]}\" -vault-token \"#{node.run_state["VAULT_TOKEN"]}\""
   }
   environment ({ "ENV" => node[:environment] })
-  action :nothing
   only_if { ::File.exist?("/etc/nginx/ssl/api.key.tpl") }
+  notifies :reload, "service[nginx.service]", :delayed
 end
 
 db_seed_status = ::File.join(node["openresty"]["source"]["state"], "jbx.dev_seed")
@@ -103,7 +90,7 @@ consul_template_config "jbx.credentials.json" do
     destination: "/var/www/jbx/config/credentials.json",
     command: "service php#{node["php"]["version"]}-fpm reload && (cd /var/www/jbx && /bin/bash deploy.sh)",
   }]
-  action :nothing
+  action node["jbx"]["consul-template"] ? :create : :delete
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
 end
 
@@ -114,7 +101,7 @@ execute "consul-template jbx.credentials.json" do
       "-vault-addr \"#{node["hashicorp-vault"]["config"]["address"]}\" -vault-token \"#{node.run_state["VAULT_TOKEN"]}\""
   }
   environment ({ "ENV" => node[:environment] })
-  action :nothing
+  action node.attribute?(:ec2) ? :run : :nothing
   only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") }
 end
 
@@ -158,14 +145,13 @@ execute "/bin/bash #{node["jbx"]["path"]}/deploy.sh" do
   cwd node["jbx"]["path"]
   environment ({ "COMPOSER_HOME" => "/var/www/.composer", "COMPOSER_CACHE_DIR" => "/tmp/composer" })
   user node[:user]
-  notifies :create, "consul_template_config[jbx.credentials.json]", :before
   notifies :run, "execute[consul-template jbx.credentials.json]", :before
   notifies :create, "link[jbx.credentials.json]", :before
   notifies :create, "template[#{node["jbx"]["path"]}/config/credentials.#{node["environment"]}.json]", :before
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :before
   notifies :run, "execute[seed_dev_jb]", :immediately
   notifies :run, "execute[database-migrations]", :immediately
-  action node.attribute?(:ec2) ? :nothing : :run
+  action :run
 end
 
 execute "consul-template sync jbx" do
