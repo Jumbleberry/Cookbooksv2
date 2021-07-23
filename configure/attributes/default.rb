@@ -37,6 +37,7 @@ default["php"]["fpm"]["start_servers"] = "60"
 default["php"]["fpm"]["min_spare_servers"] = "60"
 default["php"]["fpm"]["max_spare_servers"] = "100"
 default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib"
+default["php"]["fpm"]["process_control_timeout"] = 5
 
 php_version = node["php"]["version"] || "7.3"
 default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
