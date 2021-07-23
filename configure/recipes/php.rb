@@ -42,6 +42,12 @@ file node["php"]["xdebug"]["remote_log"] do
   not_if { node["php"]["xdebug"]["remote_log"].empty? }
 end
 
+replace_or_add "php-fpm process_control_timeout" do
+  path "/etc/php/#{node["php"]["version"]}/fpm/php-fpm.conf"
+  pattern ".*process_control_timeout.*"
+  line "process_control_timeout = #{node["php"]["fpm"]["process_control_timeout"]}"
+end
+
 template "/etc/php/#{node["php"]["version"]}/fpm/pool.d/www.conf" do
   source "www.conf.erb"
   variables(node["php"]["fpm"])
