@@ -20,18 +20,6 @@ template "/etc/nginx/ssl/admin.key.tpl" do
     domain: "admin",
   })
   only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/admin/cert")) && !certs.data[:data][:admin].nil? }
-  notifies :create, "consul_template_config[admin.key]", :immediately
-  notifies :run, "execute[consul-template admin.key]", :immediately
-end
-
-consul_template_config "admin.key" do
-  templates [{
-              source: "/etc/nginx/ssl/admin.key.tpl",
-              destination: "/etc/nginx/ssl/admin.key",
-              command: "(service nginx reload 2>/dev/null || service nginx start)",
-            }]
-  action :nothing
-  notifies :reload, "service[consul-template.service]", :immediate
 end
 
 execute "consul-template admin.key" do
@@ -41,8 +29,8 @@ execute "consul-template admin.key" do
       "-vault-addr \"#{node["hashicorp-vault"]["config"]["address"]}\" -vault-token \"#{node.run_state["VAULT_TOKEN"]}\""
   }
   environment ({ "ENV" => node[:environment] })
-  action :nothing
   only_if { ::File.exist?("/etc/nginx/ssl/admin.key.tpl") }
+  notifies :reload, "service[nginx.service]", :delayed
 end
 
 openresty_site "admin" do
@@ -73,6 +61,7 @@ git node["admin"]["git-url"] do
   group node[:user]
   action node.attribute?(:ec2) ? :sync : :checkout
   notifies :run, "execute[/bin/bash #{node["admin"]["path"]}/deploy.sh]", :immediately
+  notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
 end
 
 # Run the deploy script
@@ -88,8 +77,19 @@ consul_template_config "admin.application.ini" do
               source: "#{node["admin"]["path"]}/application/configs/application.ini.tpl",
               destination: "#{node["admin"]["path"]}/application/configs/application.ini",
             }]
+  action node["admin"]["consul-template"] ? :create : :delete
   only_if { ::File.exist?("#{node["admin"]["path"]}/application/configs/application.ini.tpl") }
-  notifies :reload, "service[consul-template.service]", :immediate
+end
+
+execute "consul-template admin.application.ini" do
+  sensitive true
+  command lazy {
+    "consul-template -once -template \"#{node["admin"]["path"]}/application/configs/application.ini.tpl:#{node["admin"]["path"]}/application/configs/application.ini\" " +
+      "-vault-addr \"#{node["hashicorp-vault"]["config"]["address"]}\" -vault-token \"#{node.run_state["VAULT_TOKEN"]}\""
+  }
+  environment ({ "ENV" => node[:environment] })
+  action :run
+  only_if { ::File.exist?("#{node["admin"]["path"]}/application/configs/application.ini.tpl") }
 end
 
 consul_template_config "admin.settings.php" do
@@ -97,8 +97,19 @@ consul_template_config "admin.settings.php" do
               source: "#{node["admin"]["path"]}/cron_scripts/includes/config/settings.php.tpl",
               destination: "#{node["admin"]["path"]}/cron_scripts/includes/config/settings.php",
             }]
+  action node["admin"]["consul-template"] ? :create : :delete
   only_if { ::File.exist?("#{node["admin"]["path"]}/cron_scripts/includes/config/settings.php.tpl") }
-  notifies :reload, "service[consul-template.service]", :immediate
+end
+
+execute "consul-template admin.settings.php" do
+  sensitive true
+  command lazy {
+    "consul-template -once -template \"#{node["admin"]["path"]}/cron_scripts/includes/config/settings.php.tpl:#{node["admin"]["path"]}/cron_scripts/includes/config/settings.php\" " +
+      "-vault-addr \"#{node["hashicorp-vault"]["config"]["address"]}\" -vault-token \"#{node.run_state["VAULT_TOKEN"]}\""
+  }
+  environment ({ "ENV" => node[:environment] })
+  action :run
+  only_if { ::File.exist?("#{node["admin"]["path"]}/cron_scripts/includes/config/settings.php.tpl") }
 end
 
 execute "consul-template sync admin" do
