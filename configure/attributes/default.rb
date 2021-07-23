@@ -11,6 +11,7 @@ end
 
 default[cookbook_name]["update"] = false
 default[cookbook_name]["upgrade"] = false
+default[cookbook_name]["elb"] = { "target_groups" => [] }
 
 default["timezone_iii"]["timezone"] = node["tz"]
 default["timezone_iii"]["use_symlink"] = true
