@@ -3,15 +3,15 @@ This instance is managed with AWS OpsWorks.
    ######  OpsWorks Summary  ######
    Operating System: <%= @os_release %>
    OpsWorks Instance: <%= @instance[:hostname] %>
-   OpsWorks Instance ID: <%= @instance[:id] %>
-   OpsWorks Layers: <%= @instance[:layers].map{|id| @layers[id][:name] }.join(', ') %>
+   OpsWorks Instance ID: <%= @instance[:instance_id] %>
+   OpsWorks Layers: <%= @layers.keys.join(', ') %>
    OpsWorks Stack: <%= @stack[:name] %>
-<% if @instance[:region] && @instance[:availability_zone] && @instance[:aws_instance_id] -%>
-   EC2 Region: <%= @instance[:region] %>
+<% if @instance[:availability_zone] && @instance[:availability_zone] && @instance[:ec2_instance_id] -%>
+   EC2 Region: <%= @instance[:availability_zone] %>
    EC2 Availability Zone: <%= @instance[:availability_zone] %>
-   EC2 Instance ID: <%= @instance[:aws_instance_id] %>
+   EC2 Instance ID: <%= @instance[:ec2_instance_id] %>
 <% end -%>
-   Public IP: <%= @instance[:ip] %>
+   Public IP: <%= @instance[:public_ip] %>
    Private IP: <%= @instance[:private_ip] %>
 <% if @stack[:vpc_id] && @instance[:subnet_id] -%>
    VPC ID: <%= @stack[:vpc_id] %>
