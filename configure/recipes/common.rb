@@ -2,6 +2,7 @@ if node["datadog"] && node["datadog"]["application_key"] && node["datadog"]["app
   include_recipe "datadog::dd-handler"
 end
 
+include_recipe cookbook_name + "::opsworks"
 include_recipe cookbook_name + "::user"
 include_recipe cookbook_name + "::ipaddress"
 include_recipe cookbook_name + "::nvme"

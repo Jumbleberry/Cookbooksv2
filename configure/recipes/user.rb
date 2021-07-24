@@ -1,5 +1,5 @@
 ohai_plugin "user" do
-  path "/etc/chef/ohai_plugins/"
+  path node["configure"]["plugin_path"]
   compile_time true
 end
 
