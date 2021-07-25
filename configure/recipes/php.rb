@@ -11,18 +11,18 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
     end
   end
 
-  if node["environment"] == "dev"
-    if path.include? "fpm"
-      template path + "/conf.d/20-xdebug.ini" do
-        manage_symlink_source true
-        source "xdebug.ini.erb"
-        owner "root"
-        group "root"
-        mode 0644
-        variables({ xdebug: node["php"]["xdebug"] })
-        notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
-      end
+  if path.include? "fpm"
+    template path + "/conf.d/20-xdebug.ini" do
+      manage_symlink_source true
+      source "xdebug.ini.erb"
+      owner "root"
+      group "root"
+      mode 0644
+      variables({ xdebug: node["php"]["xdebug"] })
+      notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
+    end
 
+    if node["environment"] == "dev"
       link path + "/conf.d/10-spx.ini" do
         to path + "/../mods-available/spx.ini"
         owner "root"
