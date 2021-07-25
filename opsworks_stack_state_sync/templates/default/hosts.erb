@@ -11,21 +11,21 @@ ff02::3 ip6-allhosts
 
 # OpsWorks Layer State
 127.0.0.1 localhost.<%= node[:environment] %> localhost
-127.0.1.1 <%= @localhost_name %>.<%= node[:role] %>.<%= node[:environment] %> <%= @localhost_name %>.<%= node[:environment] %> <%= @localhost_name %>
+127.0.1.1 <%= @localhost_name %>.<%= node[:environment] %> <%= @localhost_name %>
 
-<% @nodes.each do |node| -%>
-<% if node.attribute?(:private_ip) && node['private_ip'] %>
-<% if Resolv.getaddress(node['private_ip']) -%>
-<%= node['private_ip'] %> <%= node['name'] %> <%= node['hostname'] %>
+<% @nodes.each do |i| -%>
+<% if i["private_ip"] %>
+<% if Resolv.getaddress(i["private_ip"]) -%>
+<%= i["private_ip"] %> <%= i["name"] || i["hostname"] %>.<%= node[:environment] %> <%= i["name"] || i["hostname"] %>
 <% else -%>
-<%= "# Unable to resolve IP '#{node['private_ip']}' for hostname '#{node['name']}'" %>
+<%= "# Unable to resolve IP '#{i["private_ip"]}' for hostname '#{i["name"] || i["hostname"]}'" %>
 <% end -%>
 <% end -%>
-<% if node.attribute?(:ip) && node['ip'] %>
-<% if Resolv.getaddress(node['ip']) -%>
-<%= node['ip'] %> <%= node['name'] %>-ext <%= node['hostname'] %>-ext
+<% if i["public_ip"] %>
+<% if Resolv.getaddress(i["public_ip"]) -%>
+<%= i["public_ip"] %> <%= i["name"] || i["hostname"] %>.<%= node[:environment] %>-ext <%= i["name"] || i["hostname"] %>-ext
 <% else -%>
-<%= "# Unable to resolve IP '#{node['ip']}' for hostname '#{node['name']}'" %>
+<%= "# Unable to resolve IP '#{i["public_ip"]}' for hostname '#{i["name"] || i["hostname"]}'" %>
 <% end -%>
 <% end -%>
 <% end -%>
