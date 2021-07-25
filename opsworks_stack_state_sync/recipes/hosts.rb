@@ -5,7 +5,7 @@ template "/etc/hosts" do
   mode "0644"
   variables(
     localhost_name: node.attribute?(:opsworks) ? node[:opsworks][:instance][:hostname] : node[:hostname],
-    nodes: search(:node, "name:*")
+    nodes: node.attribute?(:opsworks) ? search(:aws_opsworks_instance, "hostname:*") : search(:node, "name:*"),
   )
 end
 
