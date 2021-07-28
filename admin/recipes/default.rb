@@ -41,7 +41,7 @@ openresty_site "admin" do
               app: "admin",
             })
   timing :delayed
-  action node["admin"]["enabled"] ? :enable : :disabled
+  action node["admin"]["enabled"] ? :enable : :disable
   notifies :reload, "service[nginx.service]", :delayed
 end
 
