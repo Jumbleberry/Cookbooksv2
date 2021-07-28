@@ -376,7 +376,7 @@ chdir = /
 ;env[TEMP] = /tmp
 env[ENV] = $ENV
 env[DD_ENV] = $ENV
-env[DD_TRACE_ENABLED] = <%= node[:datadog][:enable_trace_agent] || false %>
+env[DD_TRACE_ENABLED] = <%= (node[:datadog][:enable_trace_agent] || 0) && 1 || 0 %>
 
 ; Additional php.ini defines, specific to this pool of workers. These settings
 ; overwrite the values previously defined in the php.ini. The directives are the
