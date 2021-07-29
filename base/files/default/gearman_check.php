@@ -17,7 +17,7 @@ try {
         $code = 1;
     
     // No workers but everything else is fine - something is wrong but again, not fatal
-    if (!count($admin->getWorkers()))
+    if (!count($admin->getWorkers()->getWorkers() ?? []))
         $code = 1;
     
 // Failed to connect, service is down
