@@ -21,6 +21,7 @@ if node["jbx"]["gearman"]
     type "service"
     parameters(
       port: 4730,
+      address: node["ipaddress"],
       tags: ["gearman"],
       check: {
         interval: "5s",
