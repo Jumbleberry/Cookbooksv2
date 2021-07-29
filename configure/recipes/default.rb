@@ -20,3 +20,4 @@ include_recipe cookbook_name + "::datadog"
 
 # Manage services at the end
 include_recipe cookbook_name + "::services"
+include_recipe cookbook_name + "::elb_register"
