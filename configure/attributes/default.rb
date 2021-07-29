@@ -65,6 +65,7 @@ default["etc_environment"] = {
   "PHP_IDE_CONFIG" => "serverName=#{node["environment"]}",
 }
 
+default["datadog"]["hostname"] = (node.attribute?(:opsworks) ? node["opsworks"]["instance"]["hostname"] : node["hostname"]) + "." + node["environment"]
 default["datadog"]["agent_major_version"] = 7
 default["datadog"]["api_key"] = "<API_KEY>"
 default["datadog"]["application_key"] = "<APP_KEY>"
