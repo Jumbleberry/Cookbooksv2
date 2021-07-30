@@ -14,7 +14,7 @@
 
 ##PATH##
 DAEMON=/usr/local/bin/gearman-manager
-PIDDIR=/var/run/gearman
+PIDDIR=/run/gearman
 PIDFILE=${PIDDIR}/manager.pid
 LOGFILE=/var/log/gearman-manager.log
 CONFIGDIR=/etc/gearman-manager
@@ -58,7 +58,7 @@ stop()
   if start-stop-daemon \
     --stop \
     --oknodo \
-    --retry 20 \
+    --retry INT/20/TERM/1 \
     --user $GEARMANUSER \
     --pidfile $PIDFILE
   then
