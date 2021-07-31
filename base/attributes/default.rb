@@ -118,7 +118,7 @@ default["php"]["packages"] = {
 
 default["gearman"]["version"] = "1.1.*"
 default["gearman"]["manager"]["repository"] = "https://github.com/Jumbleberry/GearmanManager.git"
-default["gearman"]["manager"]["revision"] = "1.1"
+default["gearman"]["manager"]["revision"] = "c0768a3ab0226cb23a953fd41bd600f676f46505"
 
 default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
 default["phalcon"]["version"] = case node["lsb"]["release"].to_i
