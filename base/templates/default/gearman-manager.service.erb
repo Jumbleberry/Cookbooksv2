@@ -24,6 +24,7 @@ PARAMS="-c ${CONFIGDIR}/config.ini"
 test -x ${DAEMON} || exit 0
 
 . /lib/lsb/init-functions
+. /etc/gearman-manager/environment
 
 start()
 {
@@ -41,6 +42,7 @@ start()
     -- -P $PIDFILE \
        -l $LOGFILE \
        -u $GEARMANUSER \
+       -e $ENV \
        -d \
        $PARAMS 
   then
@@ -58,7 +60,7 @@ stop()
   if start-stop-daemon \
     --stop \
     --oknodo \
-    --retry INT/20/TERM/1 \
+    --retry INT/60/TERM/1 \
     --user $GEARMANUSER \
     --pidfile $PIDFILE
   then
