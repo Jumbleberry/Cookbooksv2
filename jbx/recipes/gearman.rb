@@ -8,7 +8,7 @@ if node["jbx"]["gearman"]
   end
 
   # Symlink our config script
-  edit_resource(:link, "/etc/gearman-manager/config.ini") do
+  link "/etc/gearman-manager/config.ini" do
     to "#{node["jbx"]["path"]}/application/modules/processing/config/config.ini"
     action :create
     owner node[:user]

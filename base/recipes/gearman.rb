@@ -39,7 +39,8 @@ end
 
 # Un-symlink our config script to prevent install file from overwriting our good version
 if node.attribute?("jbx")
-  link "/etc/gearman-manager/config.ini" do
+  link "unlink /etc/gearman-manager/config.ini" do
+    target_file "/etc/gearman-manager/config.ini"
     to "#{node["jbx"]["path"]}/application/modules/processing/config/config.ini"
     action :delete
     only_if { File.symlink?("/etc/gearman-manager/config.ini") }
