@@ -55,18 +55,25 @@ git "gearman-manager" do
   notifies :create, "template[gearman-manager.service]", :immediately
 end
 
-template "gearman-manager.service" do
-  path "/usr/share/gearman-manager/install/deb.sh"
-  source "gearman-manager.service.erb"
-  mode "0755"
-  notifies :run, "execute[gearman-manager-install]", :immediately
-end
-
 # Install gearman manager
 execute "gearman-manager-install" do
   command "echo 1 | /bin/bash install.sh"
   cwd "/usr/share/gearman-manager/install"
   user "root"
+  action :nothing
+end
+
+template "gearman-manager.service" do
+  path "/etc/init.d/gearman-manager"
+  source "gearman-manager.service.erb"
+  owner "root"
+  group "root"
+  mode 00755
+  notifies :run, "execute[gearman systemcl daemon-reload]", :immediately
+end
+
+execute "gearman systemcl daemon-reload" do
+  command "systemctl daemon-reload"
   action :nothing
 end
 
