@@ -9,13 +9,6 @@ apt_update "update-gearman" do
   action :periodic
 end
 
-file "/var/log/gearmand.log" do
-  mode "0644"
-  owner node[:user]
-  group node[:user]
-  action :create
-end
-
 package "gearman" do
   action :install
   version node["gearman"]["version"]
@@ -37,30 +30,39 @@ service "gearman-job-server" do
   action %i{stop disable}
 end
 
-# Un-symlink our config script to prevent install file from overwriting our good version
-if node.attribute?("jbx")
-  link "unlink /etc/gearman-manager/config.ini" do
-    target_file "/etc/gearman-manager/config.ini"
-    to "#{node["jbx"]["path"]}/application/modules/processing/config/config.ini"
-    action :delete
-    only_if { File.symlink?("/etc/gearman-manager/config.ini") }
-  end
+manager_dir = "/usr/local/share/gearman-manager"
+directory manager_dir do
+  owner node[:user]
+  group node[:user]
+  action :create
+end
+
+directory "/etc/gearman-manager/workers" do
+  owner node[:user]
+  group node[:user]
+  recursive true
+  action :create
+end
+
+directory "/run/gearman-manager" do
+  owner node[:user]
+  group node[:user]
+  action :create
 end
 
 git "gearman-manager" do
-  destination "/usr/share/gearman-manager"
+  destination manager_dir
   repository node["gearman"]["manager"]["repository"]
   revision node["gearman"]["manager"]["revision"]
+  user node[:user]
+  group node[:user]
   action :sync
-  notifies :create, "template[gearman-manager.service]", :immediately
 end
 
-# Install gearman manager
-execute "gearman-manager-install" do
-  command "echo 1 | /bin/bash install.sh"
-  cwd "/usr/share/gearman-manager/install"
-  user "root"
-  action :nothing
+link "/usr/local/bin/gearman-manager" do
+  to "#{manager_dir}/pecl-manager.php"
+  mode "0755"
+  action :create
 end
 
 template "gearman-manager.service" do
@@ -68,21 +70,13 @@ template "gearman-manager.service" do
   source "gearman-manager.service.erb"
   owner "root"
   group "root"
-  mode 00755
+  mode "0755"
   notifies :run, "execute[gearman systemcl daemon-reload]", :immediately
 end
 
 execute "gearman systemcl daemon-reload" do
   command "systemctl daemon-reload"
   action :nothing
-end
-
-# We need to chmod gearman manager...
-file "/usr/local/bin/gearman-manager" do
-  action :touch
-  mode "0755"
-  owner "root"
-  group "root"
 end
 
 service "gearman-manager" do

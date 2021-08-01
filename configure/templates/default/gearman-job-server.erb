@@ -17,6 +17,8 @@
 
 # Parameters to pass to gearmand.
 PARAMS="<% if @gearman.key?("mysql") %>\
+    -b 128 \
+    -l /var/log/gearman-job-server/gearmand.log \
     -q mysql \
     --mysql-host='<%= @gearman['mysql']['host'] %>' \
     --mysql-user='<%= @gearman['mysql']['user'] %>' \
