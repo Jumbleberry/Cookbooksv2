@@ -12,9 +12,8 @@
 # Description:       Enable gearman manager daemon
 ### END INIT INFO
 
-##PATH##
 DAEMON=/usr/local/bin/gearman-manager
-PIDDIR=/run/gearman
+PIDDIR=/run/gearman-manager
 PIDFILE=${PIDDIR}/manager.pid
 LOGFILE=/var/log/gearman-manager.log
 CONFIGDIR=/etc/gearman-manager
