@@ -7,6 +7,7 @@ edit_resource(:service, "gearman-job-server.service") do
 end
 
 edit_resource(:service, "gearman-manager.service") do
+  subscribes :restart, "git[gearman-manager]", :delayed
   subscribes :restart, "template[/etc/default/gearman-job-server]", :delayed
   subscribes :restart, "template[/etc/gearman-manager/environment]", :delayed
 end
