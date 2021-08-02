@@ -1,13 +1,13 @@
 if node["environment"] == "dev"
   # Copy config files
-  cookbook_file "/etc/postgresql/12/main/pg_hba.conf" do
+  cookbook_file "/etc/postgresql/13/main/pg_hba.conf" do
     source "pg_hba.conf"
     owner "postgres"
     group "postgres"
     mode "0644"
     notifies :reload, "service[postgresql.service]", :immediate
   end
-  cookbook_file "/etc/postgresql/12/main/postgresql.conf" do
+  cookbook_file "/etc/postgresql/13/main/postgresql.conf" do
     source "postgresql.conf"
     owner "postgres"
     group "postgres"
@@ -34,7 +34,7 @@ if node["environment"] == "dev"
 
   # Create pgsql db 'local_timescale' if it doesn't exist
   execute "pgsql-default-db" do
-    command "psql -c \"CREATE DATABASE local_timescale\""
+    command "psql -c \"CREATE DATABASE local_timescale ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0\""
     user "postgres"
     not_if "psql -U postgres -lqt | grep -qw local_timescale", :user => "postgres"
   end

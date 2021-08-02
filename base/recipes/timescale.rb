@@ -1,6 +1,9 @@
 # Install pgsql server
 execute "pgsql-install" do
-  command "echo \"deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -c -s)-pgdg main\" | sudo tee /etc/apt/sources.list.d/pgdg.list; wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -"
+  command <<-EOH
+    echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -c -s)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+  EOH
   user "root"
 end
 
@@ -15,6 +18,15 @@ apt_update "update-timescale" do
 end
 
 package "timescaledb-postgresql-12" do
+  action :remove
+end
+
+package "timescaledb-2-postgresql-13" do
+  options '-o Dpkg::Options::="--force-overwrite"'
+  action :install
+end
+
+package "pgloader" do
   action :install
 end
 
