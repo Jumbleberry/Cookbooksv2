@@ -1,6 +1,6 @@
 if node["environment"] != "prod"
-  execute "seed_dev_jb" do
-    command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
+  execute "seed_dev_db" do
+    command "#{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
     environment ({ "ENV" => node[:environment] })
     user node[:user]
     action :run
@@ -12,7 +12,8 @@ if node["environment"] != "prod"
       #{node["jbx"]["path"]}/command github:check --shasum #{node["jbx"]["branch"]} &
       (\
         #{node["jbx"]["path"]}/phpunit --log-junit /tmp/#{random_id}.xml > /tmp/#{random_id}.txt; \
-        #{node["jbx"]["path"]}/command github:check --shasum #{node["jbx"]["branch"]} --junit /tmp/#{random_id}.xml --phpunit /tmp/#{random_id}.txt \
+        #{node["jbx"]["path"]}/command github:check --shasum #{node["jbx"]["branch"]} --junit /tmp/#{random_id}.xml --phpunit /tmp/#{random_id}.txt; \
+        #{node["jbx"]["path"]}/command seed:fresh --drop --no-interaction \
       ) &
     EOH
     environment ({ "ENV" => node[:environment] })
