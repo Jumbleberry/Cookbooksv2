@@ -24,7 +24,7 @@ PARAMS="<% if @gearman.key?("mysql") %>\
     --mysql-user='<%= @gearman['mysql']['user'] %>' \
     --mysql-password='<%= @gearman['mysql']['password'] %>' \
     --mysql-db='<%= @gearman['mysql']['db'] %>' \
-    --mysql-table='<%= @gearman['mysql']['table'] %>' \
+    --mysql-table='<%= @gearman['mysql']['table'] || node[:hostname] %>' \
     --mysql-port=<%= @gearman['mysql']['port'] || 3306 %> \
 <% end %>
     -L <%= @gearman['host'] %> \
