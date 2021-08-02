@@ -19,10 +19,12 @@ end
 
 package "timescaledb-postgresql-12" do
   action :remove
+  notifies :stop, "service[postgresql.service]", :immediately
 end
 
 package "timescaledb-loader-postgresql-12" do
   action :remove
+  notifies :stop, "service[postgresql.service]", :immediately
 end
 
 package "timescaledb-2-postgresql-13" do
