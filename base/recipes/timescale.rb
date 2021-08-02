@@ -21,6 +21,10 @@ package "timescaledb-postgresql-12" do
   action :remove
 end
 
+package "timescaledb-loader-postgresql-12" do
+  action :remove
+end
+
 package "timescaledb-2-postgresql-13" do
   options '-o Dpkg::Options::="--force-overwrite"'
   action :install
