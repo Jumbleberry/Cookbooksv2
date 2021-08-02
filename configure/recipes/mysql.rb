@@ -11,27 +11,29 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
   cookbook_file "/etc/mysql/my.cnf" do
     manage_symlink_source true
     source "my.cnf"
-    owner "root"
-    group "root"
     mode "0644"
   end
 
-  if node.attribute?(:nvme) && !FileTest.directory?("/#{node["nvme"]["name"]}/mysql")
+  if node.attribute?(:nvme)
+    nvme = "/#{node["nvme"]["name"]}/mysql"
+    bak = "/var/lib/mysql.bak"
+
     service "mysql" do
-      action :stop
+      action :nothing
     end
 
+    # Backup mysql & disable apparmor as it wont allow reads from /nvme*
     execute "backup_mysql" do
       command <<-EOH
-        mv /var/lib/mysql /var/lib/mysql.bak
+        mv /var/lib/mysql #{bak}
         sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
         sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
       EOH
-      user "root"
-      not_if { ::File.directory?("/var/lib/mysql.bak") }
+      notifies :stop, "service[mysql]", :before
+      not_if { ::File.directory?(bak) }
     end
 
-    directory "/#{node["nvme"]["name"]}/mysql" do
+    directory nvme do
       recursive true
       owner "mysql"
       group "mysql"
@@ -40,16 +42,26 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     end
 
     link "/var/lib/mysql" do
-      to "/#{node["nvme"]["name"]}/mysql"
+      to nvme
       owner "mysql"
       group "mysql"
       action :create
     end
 
-    # Restore mysql & disable apparmor as it wont allow reads from /nvme* and this instance is dev only
+    # Copy mysql to nvme dir
     execute "restore_mysql" do
-      command "rsync -av /var/lib/mysql.bak/ /var/lib/mysql/"
-      user "root"
+      command "rsync -avh #{bak}/ #{nvme}/"
+      not_if { ::File.exists?("#{nvme}/ibdata1") }
+    end
+
+    cron "Backup MySQL NVMe" do
+      command "[ -f #{nvme}/ibdata1 ] && (rsync -avh --delete #{nvme}/ #{bak}/ || rsync -avh --ignore-errors --delete #{nvme}/ #{bak}/)"
+      minute "*/15"
+    end
+
+    cron "Restore MySQL NVMe" do
+      command "[ -d /#{node["nvme"]["name"]} ] && [ ! -f #{nvme}/ibdata1 ] && mkdir -p #{nvme} && rsync -avh --ignore-errors #{bak}/ #{nvme}/ && service mysql restart"
+      minute "*"
     end
   end
 
@@ -79,10 +91,18 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
   edit_resource(:service, "mysql.service") do
     # If MySQL is installed on NVMe, delay restart to ensure files are restored first
-    subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", File.directory?("/var/lib/mysql.bak") ? :delayed : :immediate
+    subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", File.directory?(bak) ? :delayed : :immediate
     subscribes :restart, "execute[restore_mysql]", :immediate
 
     notifies :run, "execute[set_root_password]", :immediate
     notifies :run, "execute[manage_mysql_settings]", :immediate
+  end
+else
+  cron "Backup MySQL NVMe" do
+    action :delete
+  end
+
+  cron "Restore MySQL NVMe" do
+    action :delete
   end
 end
