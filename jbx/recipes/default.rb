@@ -115,11 +115,11 @@ link "jbx.credentials.json" do
 end
 
 # Ensure DB name is overriden to match branch name
-template "#{node["jbx"]["path"]}/config/credentials.#{node["environment"]}.json" do
+template "#{node["jbx"]["path"]}/config/credentials.dev.json" do
   source "credentials.env.json.erb"
   mode "0644"
-  action :nothing
-  only_if { node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx" }
+  action :create
+  only_if { node["jbx"].attribute?(:credentials) }
 end
 
 # Seed the DB
@@ -147,7 +147,7 @@ execute "/bin/bash #{node["jbx"]["path"]}/deploy.sh" do
   user node[:user]
   notifies :run, "execute[consul-template jbx.credentials.json]", :before
   notifies :create, "link[jbx.credentials.json]", :before
-  notifies :create, "template[#{node["jbx"]["path"]}/config/credentials.#{node["environment"]}.json]", :before
+  notifies :create, "template[#{node["jbx"]["path"]}/config/credentials.dev.json]", :before
   notifies :run, "execute[seed_dev_jb]", :immediately
   notifies :run, "execute[database-migrations]", :immediately
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
