@@ -14,9 +14,9 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     mode "0644"
   end
 
+  bak = "/var/lib/mysql.bak"
   if node.attribute?(:nvme)
     nvme = "/#{node["nvme"]["name"]}/mysql"
-    bak = "/var/lib/mysql.bak"
 
     service "mysql" do
       action :nothing
