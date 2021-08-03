@@ -9,6 +9,11 @@ elsif (node["lsb"]["release"].to_i >= 18)
   default[cookbook_name]["packages"] += ["libpython-stdlib", "libpython2.7-minimal", "libpython2.7-stdlib", "python", "python-minimal", "python2.7", "python2.7-minimal"]
 end
 
+default["nodejs"]["npm_packages"] = node["environment"] != "prod" ? [{
+  "name" => "@datadog/datadog-ci",
+  "options" => ["--prefix /usr"],
+}] : []
+
 default[cookbook_name]["update"] = false
 default[cookbook_name]["upgrade"] = false
 default[cookbook_name]["elb"] = { "target_groups" => [] }
