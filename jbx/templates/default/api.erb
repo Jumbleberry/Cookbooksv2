@@ -15,7 +15,7 @@ server {
     # Show server host name as header
     add_header  X-Backend-Server $hostname;
     
-    <% ssl = File.file?("/etc/nginx/ssl/#{@app}.key.tpl") %>
+    <% ssl = File.file?("/etc/nginx/ssl/#{@app}.key") %>
     <% if (ssl) %>
     listen      443 ssl;
     
