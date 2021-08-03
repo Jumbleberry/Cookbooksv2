@@ -167,12 +167,14 @@ init_worker_by_lua_block {
 server {
     listen 80 reuseport;
     listen [::]:80 reuseport;
-    
-    listen 443 ssl reuseport;
-    listen [::]:443 ssl reuseport;
 
     listen 8080 proxy_protocol reuseport;
     listen [::]:8080 proxy_protocol reuseport;
+    
+    <% ssl = File.file?("/etc/nginx/ssl/api.key") %>
+    <% if (ssl) %>
+    listen 443 ssl reuseport;
+    listen [::]:443 ssl reuseport;
 
     listen 8443 proxy_protocol ssl reuseport;
     listen [::]:8443 proxy_protocol ssl reuseport;
@@ -190,6 +192,7 @@ server {
     ssl_certificate_by_lua_block {
         auto_ssl:ssl_certificate()
     }
+    <% end %>
 
     server_name                     ~^(?<subdomain>)(?<domain>[^\.]+(\.:)[^\.:]+)$
                                     ~^(?<subdomain>.*?(\.|:))(?<domain>[^\.]+(\.|:)[^\.:]+)$
