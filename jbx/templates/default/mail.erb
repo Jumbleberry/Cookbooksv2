@@ -8,7 +8,7 @@ server {
     # Show server host name as header
     add_header  X-Backend-Server $hostname;
 
-    <% ssl = File.file?("/etc/nginx/ssl/api.key.tpl") %>
+    <% ssl = File.file?("/etc/nginx/ssl/api.key") %>
     <% if (ssl) %>
     listen      443 ssl;
     
@@ -20,7 +20,6 @@ server {
     
     ssl_certificate             /etc/nginx/ssl/api.pem;
     ssl_certificate_key         /etc/nginx/ssl/api.key;
-    
     <% end %>
 
     index       index.php;

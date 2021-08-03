@@ -30,7 +30,6 @@ server {
     
     ssl_certificate             /etc/nginx/ssl/<%= @app %>.pem;
     ssl_certificate_key         /etc/nginx/ssl/<%= @app %>.key;
-
     <% end %>
     
     if ($http_host = "www.<%= node["admin"]["domain"] %>") {
