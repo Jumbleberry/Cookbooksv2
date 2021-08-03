@@ -2,18 +2,18 @@ default["openresty"]["luarocks"]["default_rocks"] = {
   "jumbleberry-auto-ssl" => "0.13.1-2",
 }
 
-default["nodejs"]["npm_packages"] = [
+default["nodejs"]["npm_packages"] += [
   {
     "name" => "uglify-js",
-    "options" => ["--prefix /usr"]
+    "options" => ["--prefix /usr"],
   },
   {
     "name" => "uglifycss",
-    "options" => ["--prefix /usr"]
+    "options" => ["--prefix /usr"],
   },
   {
     "name" => "html-minifier",
-    "options" => ["--prefix /usr"]
+    "options" => ["--prefix /usr"],
   },
 ]
 
