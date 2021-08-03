@@ -13,7 +13,8 @@ if node["environment"] != "prod"
       (\
         #{node["jbx"]["path"]}/phpunit --log-junit /tmp/#{random_id}.xml > /tmp/#{random_id}.txt; \
         #{node["jbx"]["path"]}/command github:check --shasum #{node["jbx"]["branch"]} --junit /tmp/#{random_id}.xml --phpunit /tmp/#{random_id}.txt; \
-        #{node["jbx"]["path"]}/command seed:fresh --drop --no-interaction \
+        #{node["jbx"]["path"]}/command seed:fresh --drop --no-interaction; \
+        DATADOG_API_KEY=#{node["datadog"]["api_key"]} DD_ENV=ci datadog-ci junit upload --service jbx unit-tests/junit-reports /tmp/#{random_id}.xml \
       ) &
     EOH
     environment ({ "ENV" => node[:environment] })
