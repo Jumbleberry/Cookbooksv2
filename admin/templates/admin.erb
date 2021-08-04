@@ -7,7 +7,7 @@ server {
     server_name <%= node["admin"]["domain"] %> www.<%= node["admin"]["domain"] %>;
     root        <%= node["admin"]["path"] %>/public;
     
-    set         $upstream admin;
+    set         $upstream <%= @app %>;
 
     # Show server host name as header
     add_header  X-Backend-Server $hostname;

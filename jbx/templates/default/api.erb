@@ -10,7 +10,7 @@ server {
                 ~^(?<branch>.+)\.<%= @hostname %>;
     root        <%= @path %>;
     
-    set         $upstream jbx;
+    set         $upstream <%= @app %>;
 
     # Show server host name as header
     add_header  X-Backend-Server $hostname;
