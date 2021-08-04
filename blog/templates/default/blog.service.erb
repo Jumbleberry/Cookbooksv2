@@ -1,0 +1,16 @@
+[Unit]
+Description=Ghost service for blog
+After=network.target
+
+[Service]
+Type=simple
+User=<%= @user %>
+Group=<%= @group %>
+WorkingDirectory=<%= @path %>
+Environment="NODE_ENV=production"
+ExecStart=/usr/local/bin/node /usr/bin/ghost run
+Restart=always
+SyslogIdentifier=Ghost
+
+[Install]
+WantedBy=multi-user.target
