@@ -114,6 +114,7 @@ default["php"]["packages"] = {
   "php#{php_version}-xdebug" => "*",
   "php#{php_version}-pgsql" => "*",
   "php#{php_version}-intl" => "*",
+  "php#{php_version}-igbinary" => "*",
 }
 
 default["gearman"]["version"] = "1.1.*"
@@ -129,7 +130,7 @@ default["phalcon"]["version"] = case node["lsb"]["release"].to_i
 default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.git"
 
 default["nodejs"]["install_method"] = "binary"
-default["nodejs"]["version"] = "12.13.0"
+default["nodejs"]["version"] = "14.17.4"
 default["nodejs"]["binary"]["checksum"] = "c69671c89d0faa47b64bd5f37079e4480852857a9a9366ee86cdd8bc9670074a"
 
 default["mysql"]["root_password"] = "root"
