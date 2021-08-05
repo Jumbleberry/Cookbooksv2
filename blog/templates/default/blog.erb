@@ -5,7 +5,7 @@ server {
     set         $upstream <%= @app %>;
 
     server_name <%= @hostname %>;
-    access_log	/var/log/nginx/<%= @app %>.access.log main buffer=64k flush=1m;
+    access_log	/var/log/nginx/<%= @app %>.access.log main buffer=64k flush=60s if=$loggable;
     error_log   /var/log/nginx/<%= @app %>.error.log warn;
     root        <%= @path %>/current;
 
