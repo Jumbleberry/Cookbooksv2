@@ -15,12 +15,18 @@ init_by_lua_block {
 <% end %>
 
   auto_ssl:set("allow_domain", function(domain)
+    -- Don't attempt to get certificates for IP addresses, it seems to freeze nginx
+    if domain:match("(%d+)%.(%d+)%.(%d+)%.(%d+)") or domain:match(":") then
+        return false
+    end
+
     local p = io.popen('find "/var/www/content" -maxdepth 1 -type d -printf "%f\n"')
     for file in p:lines() do
       if file == domain or domain:sub(-(file:len() + 1)) == "." .. file then
         return true
       end
     end
+
     return false
   end)
 
