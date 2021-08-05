@@ -42,8 +42,8 @@ server {
     location = /robots.txt  { access_log off; log_not_found off; try_files $uri =404; }
     location = /favicon.ico { access_log off; log_not_found off; try_files $uri =404; }	
     
-    access_log  /var/log/nginx/<%= @app %>.access.log  main buffer=64k flush=30s if=$loggable;
-    error_log  /var/log/nginx/<%= @app %>.error.log  warn;
+    access_log  /var/log/nginx/<%= @app %>.access.log main buffer=64k flush=60s if=$loggable;
+    error_log  /var/log/nginx/<%= @app %>.error.log warn;
     
     location ~ ^/s3/images/ {
         proxy_cache            s3;
