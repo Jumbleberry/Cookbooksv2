@@ -75,7 +75,7 @@ server {
   add_header                X-Content-Type-Options nosniff;
   add_header                X-XSS-Protection "1; mode=block";
 
-  access_log                /var/log/nginx/content.access.log main buffer=4k flush=1m;
+  access_log                /var/log/nginx/content.access.log main buffer=64k flush=60s if=$loggable;
   error_log                 /var/log/nginx/content.error.log warn;
 
   set_by_lua_block $directory {
@@ -138,7 +138,7 @@ server {
   add_header                X-Content-Type-Options nosniff;
   add_header                X-XSS-Protection "1; mode=block";
 
-  access_log                /var/log/nginx/content.access.log main buffer=4k flush=1m;
+  access_log                /var/log/nginx/content.access.log main buffer=64k flush=60s if=$loggable;
   error_log                 /var/log/nginx/content.error.log warn;
 
   set_by_lua_block $directory {
