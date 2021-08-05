@@ -82,3 +82,4 @@ default["datadog"]["enable_trace_agent"] = false
 default["datadog"]["enable_logs_agent"] = false
 
 default["datadog"]["tags"] = [node["environment"]]
+default["datadog"]["logs"] = {}

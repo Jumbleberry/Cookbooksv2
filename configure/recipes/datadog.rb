@@ -17,9 +17,16 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
 
   include_recipe "datadog::dd-agent"
 
+  datadog_monitor "system_core" do
+    logs node["datadog"]["logs"]["system_core"] || []
+    action :add
+    notifies :restart, "service[datadog-agent]", :delayed
+  end
+
   if node["configure"]["services"]["php"] && (node["configure"]["services"]["php"].include? "enable")
     datadog_monitor "php_fpm" do
       instances [{ "status_url" => "http://localhost/fpm", "ping_url" => "http://localhost/fpm-ping", "ping_reply" => "pong" }]
+      logs node["datadog"]["logs"]["php"] || []
       action :add
       notifies :restart, "service[datadog-agent]", :delayed
     end
@@ -28,6 +35,7 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
   if node["configure"]["services"]["nginx"] && (node["configure"]["services"]["nginx"].include? "enable")
     datadog_monitor "nginx" do
       instances [{ "nginx_status_url" => "http://localhost/nginx" }]
+      logs node["datadog"]["logs"]["nginx"] || []
       action :add
       notifies :restart, "service[datadog-agent]", :delayed
     end
@@ -37,6 +45,7 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
     datadog_monitor "gearmand" do
       instances [{ "server" => node["gearman"]["host"], "port" => node["gearman"]["port"] || 4730 }]
       use_integration_template true
+      logs node["datadog"]["logs"]["gearman"] || []
       action :add
       notifies :restart, "service[datadog-agent]", :delayed
     end
@@ -45,6 +54,7 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
   if node["configure"]["services"]["redis"] && (node["configure"]["services"]["redis"].include? "enable")
     datadog_monitor "redisdb" do
       instances [{ "server" => "localhost", "port" => 6379 }]
+      logs node["datadog"]["logs"]["redis"] || []
       action :add
       notifies :restart, "service[datadog-agent]", :delayed
     end
@@ -53,6 +63,7 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
   if node["configure"]["services"]["mysql"] && (node["configure"]["services"]["mysql"].include? "enable")
     datadog_monitor "mysql" do
       instances [{ "server" => "localhost", "port" => 3306, "user" => "root", "pass" => node["mysql"]["root_password"] }]
+      logs node["datadog"]["logs"]["mysql"] || []
       action :add
       notifies :restart, "service[datadog-agent]", :delayed
     end
@@ -61,6 +72,7 @@ if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["d
   if node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "enable")
     datadog_monitor "postgres" do
       instances [{ "server" => "localhost", "port" => 5432, "user" => "root", "pass" => node["pgsql"]["root_password"], "dbname" => "local_timescale" }]
+      logs node["datadog"]["logs"]["postgresql"] || []
       action :add
       notifies :restart, "service[datadog-agent]", :delayed
     end
