@@ -9,7 +9,7 @@ end
 
 # Install timescale
 apt_repository "timescale-ppa" do
-  uri "ppa:timescale/timescaledb-ppa"
+  uri "ppa:timescale/timescaledb-ppa2"
 end
 
 apt_update "update-timescale" do
