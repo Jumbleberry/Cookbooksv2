@@ -19,12 +19,15 @@ end
 
 package "timescaledb-postgresql-12" do
   action :remove
-  notifies :stop, "service[postgresql.service]", :immediately
+  notifies :stop, "service[postgresql.service]", :before
 end
 
 package "timescaledb-loader-postgresql-12" do
   action :remove
-  notifies :stop, "service[postgresql.service]", :immediately
+end
+
+package "pgloader" do
+  action :remove
 end
 
 package "timescaledb-2-postgresql-13" do
@@ -32,12 +35,17 @@ package "timescaledb-2-postgresql-13" do
   action :install
 end
 
-package "pgloader" do
-  action :install
-end
-
 # define postgresql service
 service "postgresql.service" do
   service_name "postgresql"
   action %i{stop disable}
+end
+
+if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
+  cookbook_file "/usr/local/bin/pgloader" do
+    mode "0755"
+    source "pgloader"
+  end
+else
+  include_recipe cookbook_name + "::pgloader"
 end
