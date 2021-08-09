@@ -126,7 +126,7 @@ end
 execute "seed_dev_jb" do
   command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction" + (node["jbx"]["path"] == "/var/www/jbx" ? " && touch #{db_seed_status}" : "")
   environment ({ "ENV" => node[:environment] })
-  user "root"
+  user node[:user]
   action :nothing
   only_if { (node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx") || (node["environment"] == "dev" && node["jbx"]["path"] == "/var/www/jbx" && !::File.exist?(db_seed_status)) }
 end
