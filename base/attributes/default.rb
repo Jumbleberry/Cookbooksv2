@@ -19,6 +19,9 @@ default[cookbook_name]["net"]["ipv4.tcp_mtu_probing"] = "0"
 default[cookbook_name]["net"]["ipv4.tcp_congestion_control"] = "bbr"
 default[cookbook_name]["vm"]["swappiness"] = "10"
 
+default[cookbook_name]["initcwnd"] = "20"
+default[cookbook_name]["initrwnd"] = "20"
+
 default["apt"]["compile_time_update"] = true
 override["configure"]["update"] = true
 override["configure"]["upgrade"] = true
