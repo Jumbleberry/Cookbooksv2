@@ -1,4 +1,5 @@
 include_recipe cookbook_name + "::dnsmasq"
+include_recipe cookbook_name + "::network"
 
 include_recipe "base::apt"
 include_recipe "ulimit"
