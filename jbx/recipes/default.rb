@@ -124,11 +124,16 @@ end
 
 # Seed the DB
 execute "seed_dev_jb" do
-  command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction" + (node["jbx"]["path"] == "/var/www/jbx" ? " && touch #{db_seed_status}" : "")
+  command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
   environment ({ "ENV" => node[:environment] })
   user node[:user]
   action :nothing
+  notifies :run, "execute[touch #{db_seed_status}]", :immediately if node["jbx"]["path"] == "/var/www/jbx"
   only_if { (node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx") || (node["environment"] == "dev" && node["jbx"]["path"] == "/var/www/jbx" && !::File.exist?(db_seed_status)) }
+end
+
+execute "touch #{db_seed_status}" do
+  action :nothing
 end
 
 # Run database migrations
