@@ -8,6 +8,10 @@ default["nodejs"]["npm_packages"] = [
     "name" => "ghost-cli",
     "options" => ["--prefix /usr"],
   },
+  {
+    "name" => "sharp",
+    "options" => ["--prefix /usr", "--unsafe-perm"],
+  },
 ]
 
 # Ghost CLI won't let it be installed in a dir without public read
