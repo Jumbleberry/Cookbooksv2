@@ -54,6 +54,12 @@ server {
     error_log   /var/log/nginx/<%= @hostname %>.error.log warn;
 
     location ~ \.php$ {
+<% if node["environment"] == "prod" -%>
+        if ($http_origin ~* 'jumbledev\.com$') {
+            return     403;
+        }
+
+<% end %>
         if ($request_method = 'OPTIONS') {
             add_header 'Access-Control-Allow-Origin' '*';
             add_header 'Access-Control-Allow-Credentials' 'true';
