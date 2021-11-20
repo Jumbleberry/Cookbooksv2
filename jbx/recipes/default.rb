@@ -124,7 +124,7 @@ end
 
 # Seed the DB
 execute "seed_dev_jb" do
-  command "/usr/bin/php #{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
+  command "#{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
   environment ({ "ENV" => node[:environment] })
   user node[:user]
   action :nothing
