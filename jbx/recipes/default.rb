@@ -81,7 +81,6 @@ git "#{node["jbx"]["git-url"]}" do
   user node[:user]
   group node[:user]
   action node.attribute?(:ec2) ? :sync : :checkout
-  notifies :run, "execute[/bin/bash #{node["jbx"]["path"]}/deploy.sh]", :immediately
 end
 
 consul_template_config "jbx.credentials.json" do
