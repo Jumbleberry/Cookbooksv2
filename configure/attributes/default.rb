@@ -46,7 +46,7 @@ default["php"]["fpm"]["max_requests"] = "0"
 default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib"
 default["php"]["fpm"]["process_control_timeout"] = 5
 
-php_version = node["php"]["version"] || "7.3"
+php_version = node["php"]["version"] || "7.4"
 default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
 default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#{php_version}/fpm"]
 
