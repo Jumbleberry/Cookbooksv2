@@ -39,7 +39,7 @@ end
 # Install Phalcon
 execute "phalcon" do
   command <<-EOH
-        git clone --depth 1 --branch 3.4.x https://github.com/phalcon/cphalcon.git
+        git clone --depth 1 --branch 3.4.x https://github.com/Jumbleberry/Phalcon.git cphalcon
         cd cphalcon
         zephir build
     EOH
