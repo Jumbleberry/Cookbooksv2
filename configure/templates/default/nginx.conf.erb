@@ -151,18 +151,21 @@ http {
     default               '';
     https                 on;
   }
-    
-  map $request_uri $loggable {
-    ~*^/thisthingisnotathing 0;
-    ~*^/nginx                0;
-    ~*^/status(.php)?        0;
-    ~*^/fpm(-ping)?          0;
-    ~*^/favicon.ico          0;
-    ~*^/robots.txt           0;
-    ~*^/hsts                 0;
-    ~*^/v1                   0;
-    ~*^/+(\?|$)              0;
-    default                  1;
+
+  ##
+  # Ignorable Paths for Logging
+  ##
+  map $request_uri $ignorable {
+    ~*^/thisthingisnotathing 1;
+    ~*^/nginx                1;
+    ~*^/status(.php)?        1;
+    ~*^/fpm(-ping)?          1;
+    ~*^/favicon.ico          1;
+    ~*^/robots.txt           1;
+    ~*^/hsts                 1;
+    ~*^/v1                   1;
+    ~*^/+(\?|$)              1;
+    default                  0;
   }
 
   ##
@@ -172,8 +175,15 @@ http {
     default               0;
     '~*Google-Read-Aloud' 1;
     '~*Jorgee'            1;
+    '~*Headless'          1;
     'Mozilla/5.0'         1;
     'Mozilla/4.0 (compatible; Synapse)' 1;
+    'Chrome/88.0.4298.0 Safari/537.36'  1; # Headless Chrome
+  }
+
+  map "$block_ua:$ignorable" $loggable {
+    '0:0'                 1;
+    default               0;
   }
 
   ##
