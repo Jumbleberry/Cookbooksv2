@@ -158,6 +158,27 @@ execute "/bin/bash #{node["jbx"]["path"]}/deploy.sh" do
   action :run
 end
 
+# Get wheel file for pip installation
+remote_file "#{node["jbx"]["path"]}/torch-1.9.1%2Bcpu-cp36-cp36m-linux_x86_64.whl" do
+  source 'https://download.pytorch.org/whl/cpu/torch-1.9.1%2Bcpu-cp36-cp36m-linux_x86_64.whl'
+  owner node[:user]
+  group node[:user]
+  mode '0755'
+  action :create
+end
+
+execute "pip installation" do
+  command "pip3 install --user --ignore-installed #{node["jbx"]["path"]}/torch-1.9.1%2Bcpu-cp36-cp36m-linux_x86_64.whl --no-cache-dir -r #{node["jbx"]["path"]}/application/library/ml/python/requirements.txt"
+  user node[:user]
+  environment ({ "ENV" => node[:environment], "HOME" => "/var/www" })
+  action :run
+end
+
+Delete the Wheel file
+file "#{node["jbx"]["path"]}/torch-1.9.1%2Bcpu-cp36-cp36m-linux_x86_64.whl" do
+  action :delete
+end
+
 execute "consul-template sync jbx" do
   command ":"
   notifies :reload, "service[consul-template.service]", :delayed
