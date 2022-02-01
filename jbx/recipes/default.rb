@@ -147,7 +147,7 @@ end
 # Run the deploy script
 execute "/bin/bash #{node["jbx"]["path"]}/deploy.sh" do
   cwd node["jbx"]["path"]
-  environment ({ "ENV" => node[:environment], "COMPOSER_HOME" => "/var/www/.composer", "COMPOSER_CACHE_DIR" => "/tmp/composer" })
+  environment ({ "ENV" => node[:environment], "HOME" => "/var/www", "COMPOSER_HOME" => "/var/www/.composer", "COMPOSER_CACHE_DIR" => "/tmp/composer" })
   user node[:user]
   notifies :run, "execute[consul-template jbx.credentials.json]", :before
   notifies :create, "link[jbx.credentials.json]", :before
