@@ -174,8 +174,9 @@ execute "pip installation" do
   action :run
 end
 
-Delete the Wheel file
-file "#{node["jbx"]["path"]}/torch-1.9.1%2Bcpu-cp36-cp36m-linux_x86_64.whl" do
+# Delete the Wheel file
+file 'wheel' do
+  path "#{node["jbx"]["path"]}/torch-1.9.1%2Bcpu-cp36-cp36m-linux_x86_64.whl"
   action :delete
 end
 
