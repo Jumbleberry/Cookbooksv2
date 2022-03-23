@@ -24,6 +24,7 @@ if node["environment"] != "prod"
             GITHUB_REPOSITORY=$(git config --get remote.origin.url | cut -d ":" -f2 | cut -f 1 -d '.') \
             GITHUB_SHA=$(git rev-parse HEAD) \
             GITHUB_HEAD_REF=$(git branch -a --contains HEAD 2>/dev/null | sed -n 2p | awk '{ printf $1 }' | cut -c16-) \
+            DD_GIT_BRANCH=#{branch} \
             datadog-ci junit upload --service jbx unit-tests/junit-reports /tmp/#{random_id}.xml; \
         #{cleanup} \
       ) &
