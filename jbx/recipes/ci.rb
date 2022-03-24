@@ -27,9 +27,6 @@ if node["environment"] != "prod"
 			      DD_GIT_COMMIT_AUTHOR_NAME="$(git show -s --format=%an)" \
 			      DD_GIT_COMMIT_AUTHOR_EMAIL="$(git show -s --format=%ae)" \
 			      DD_GIT_COMMIT_AUTHOR_DATE="$(git show -s --format=%ad)" \
-			      DD_GIT_COMMIT_COMMITTER_NAME="$(git show -s --format=%cn)" \
-			      DD_GIT_COMMIT_COMMITTER_EMAIL="$(git show -s --format=%ce)" \
-			      DD_GIT_COMMIT_COMMITTER_DATE="$(git show -s --format=%cd)" \
             DD_GIT_BRANCH=#{branch} \
             datadog-ci junit upload --service jbx unit-tests/junit-reports /tmp/#{random_id}.xml; \
         #{cleanup} \
