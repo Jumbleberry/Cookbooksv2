@@ -21,9 +21,15 @@ if node["environment"] != "prod"
         #{node["jbx"]["path"]}/command github:check --shasum #{branch} --junit /tmp/#{random_id}.xml --phpunit /tmp/#{random_id}.txt; \
         DATADOG_API_KEY=#{node["datadog"]["api_key"]} DD_ENV=ci \
             GITHUB_ACTION=codebuild \
-            GITHUB_REPOSITORY=$(git config --get remote.origin.url | cut -d ":" -f2 | cut -f 1 -d '.') \
-            GITHUB_SHA=$(git rev-parse HEAD) \
-            GITHUB_HEAD_REF=$(git branch -a --contains HEAD 2>/dev/null | sed -n 2p | awk '{ printf $1 }' | cut -c16-) \
+            DD_GIT_REPOSITORY_URL="$(git config --get remote.origin.url)" \
+            DD_GIT_COMMIT_SHA="$(git rev-parse HEAD)" \
+			      DD_GIT_COMMIT_MESSAGE="$(git show -s --format=%s)" \
+			      DD_GIT_COMMIT_AUTHOR_NAME="$(git show -s --format=%an)" \
+			      DD_GIT_COMMIT_AUTHOR_EMAIL="$(git show -s --format=%ae)" \
+			      DD_GIT_COMMIT_AUTHOR_DATE="$(git show -s --format=%ad)" \
+			      DD_GIT_COMMIT_COMMITTER_NAME="$(git show -s --format=%cn)" \
+			      DD_GIT_COMMIT_COMMITTER_EMAIL="$(git show -s --format=%ce)" \
+			      DD_GIT_COMMIT_COMMITTER_DATE="$(git show -s --format=%cd)" \
             DD_GIT_BRANCH=#{branch} \
             datadog-ci junit upload --service jbx unit-tests/junit-reports /tmp/#{random_id}.xml; \
         #{cleanup} \
