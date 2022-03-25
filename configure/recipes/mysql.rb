@@ -7,10 +7,22 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     end
   end
 
+  replace_or_add "mysql.service" do
+    path "/lib/systemd/system/mysql.service"
+    pattern ".*LimitNOFILE.*"
+    line "LimitNOFILE = 100000"
+    notifies :run, "execute[mysql systemcl daemon-reload]", :immediately
+  end
+
+  execute "mysql systemcl daemon-reload" do
+    command "systemctl daemon-reload"
+    action :nothing
+  end
+
   # Copy config file
-  cookbook_file "/etc/mysql/my.cnf" do
+  template "/etc/mysql/my.cnf" do
     manage_symlink_source true
-    source "my.cnf"
+    source "my.cnf.erb"
     mode "0644"
   end
 
@@ -91,8 +103,9 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
   edit_resource(:service, "mysql.service") do
     # If MySQL is installed on NVMe, delay restart to ensure files are restored first
-    subscribes :restart, "cookbook_file[/etc/mysql/my.cnf]", File.directory?(bak) ? :delayed : :immediate
+    subscribes :restart, "template[/etc/mysql/my.cnf]", File.directory?(bak) ? :delayed : :immediate
     subscribes :restart, "execute[restore_mysql]", :immediate
+    subscribes :restart, "replace_or_add[mysql.service]", :delayed
 
     notifies :run, "execute[set_root_password]", :immediate
     notifies :run, "execute[manage_mysql_settings]", :immediate
