@@ -96,13 +96,13 @@ user                            = mysql
 
 # InnoDB Settings
 default_storage_engine          = InnoDB
-innodb_buffer_pool_instances    = 1     # Use 1 instance per 1GB of InnoDB pool size
-innodb_buffer_pool_size         = 256M  # Use up to 70-80% of RAM
+innodb_buffer_pool_instances    = <%= ((node.memory.total[/\d*/].to_i / (1024 * 1024)) * (node.attribute?(:ec2) ? 0.25 : 0.10)).to_f.ceil %> # Use 1 instance per 1GB of InnoDB pool size
+innodb_buffer_pool_size         = <%= ((node.memory.total[/\d*/].to_i / 1024) * (node.attribute?(:ec2) ? 0.25 : 0.10)).to_i %>M # Use up to 10-25% of RAM
 innodb_file_per_table           = 1
 innodb_flush_log_at_trx_commit  = 0
 innodb_flush_method             = O_DIRECT
-innodb_log_buffer_size          = 16M
-innodb_log_file_size            = 16M
+innodb_log_buffer_size          = <%= ((node.memory.total[/\d*/].to_i / 1024) * (node.attribute?(:ec2) ? 0.25 : 0.10) * 0.20).to_i %>M # Use up to 20% of buffer pool size
+innodb_log_file_size            = <%= ((node.memory.total[/\d*/].to_i / 1024) * (node.attribute?(:ec2) ? 0.25 : 0.10) * 0.20).to_i %>M # Use up to 20% of buffer pool size
 innodb_stats_on_metadata        = 0
 innodb_doublewrite              = 0
 
@@ -134,8 +134,8 @@ back_log                        = 512
 thread_cache_size               = 100
 thread_stack                    = 192K
 
-interactive_timeout             = 300
-wait_timeout                    = 300
+interactive_timeout             = 28800
+wait_timeout                    = 28800
 
 sync_binlog                     = 0
 
@@ -152,7 +152,7 @@ sync_binlog                     = 0
                                         # More info at: https://mariadb.com/kb/en/aborting-statements/
 
 # Buffer Settings
-join_buffer_size                = 4M    # UPD
+join_buffer_size                = 16M    # UPD
 read_buffer_size                = 64K   # UPD
 read_rnd_buffer_size            = 64k   # UPD
 sort_buffer_size                = 1M    # UPD
@@ -162,9 +162,9 @@ sort_buffer_size                = 1M    # UPD
 # to be overriden (also see comment next to open_files_limit).
 # E.g. for MySQL 5.7, please check: https://dev.mysql.com/doc/refman/5.7/en/using-systemd.html
 # and for MariaDB check: https://mariadb.com/kb/en/library/systemd/
-table_definition_cache          = 5000 # UPD
-table_open_cache                = 5000 # UPD
-open_files_limit                = 10000 # UPD - This can be 2x to 3x the table_open_cache value or match the system's
+table_definition_cache          = 50000 # UPD
+table_open_cache                = 50000 # UPD
+open_files_limit                = 100000 # UPD - This can be 2x to 3x the table_open_cache value or match the system's
                                         # open files limit usually set in /etc/sysctl.conf or /etc/security/limits.conf
                                         # In systemd managed systems this limit must also be set in:
                                         # /etc/systemd/system/mysqld.service.d/override.conf (for MySQL 5.7+) and
