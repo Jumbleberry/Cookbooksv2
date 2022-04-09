@@ -14,7 +14,7 @@ ruby_block "sleuth_deployment" do
         request.set_form_data(
         "api_key" => "#{data_hash['sleuth']['key']}",
         "environment" => "#{data_hash['sleuth']['env']}",
-        "sha" => "#{commit_hash}",
+        "sha" => "#{commit_hash.strip}",
         )
 
         req_options = {
@@ -24,7 +24,8 @@ ruby_block "sleuth_deployment" do
         response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
         http.request(request)
         end
-        
+        Chef::Log.warn("#{response.code}")
+        Chef::Log.warn("#{response.body}")
     end
     action :run
 end
