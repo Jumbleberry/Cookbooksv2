@@ -32,7 +32,7 @@ bash "php-spx" do
     make
     sudo make install
     cd /tmp
-    rm -rf /tmmp/php-spx
+    rm -rf /tmp/php-spx
   EOH
   not_if { ::File.exist?("/etc/php/#{node["php"]["version"]}/mods-available/spx.ini") }
   notifies :create, "template[spx.ini]", :immediately
