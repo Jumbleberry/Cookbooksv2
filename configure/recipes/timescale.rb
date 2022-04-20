@@ -41,7 +41,7 @@ if node["environment"] == "dev"
 
   # conver the pgdb to timescaledb
   execute "convert-pgdb-to-timescaledb" do
-    command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION 2.3.1 CASCADE\" -d local_timescale"
+    command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION '2.3.1' CASCADE\" -d local_timescale"
     user "postgres"
     action :nothing
   end
