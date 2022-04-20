@@ -2,15 +2,14 @@
 execute "zephir-lang" do
   command <<-EOH
         sudo apt-get install php7.4-dev re2c -y
-        git clone --branch master git://github.com/zephir-lang/php-zephir-parser.git
-        cd php-zephir-parser
-        git checkout 5605563e96bbf1d3f29ca44e98ac1ca199648f21
+        git clone --branch master https://github.com/zephir-lang/php-zephir-parser.git zephir-parser
+        cd zephir-parser
         phpize
         ./configure
         make
         sudo make install
     EOH
-  cwd Chef::Config["file_cache_path"] || "/tmp"
+  cwd "/usr/local"
   not_if { ::File.exist?("/etc/php/#{node["php"]["version"]}/mods-available/zephir.ini") }
   notifies :create, "template[zephir.ini]", :immediately
 end
@@ -41,9 +40,10 @@ execute "phalcon" do
   command <<-EOH
         git clone --depth 1 --branch 3.4.x https://github.com/Jumbleberry/Phalcon.git cphalcon
         cd cphalcon
-        zephir build
+        /usr/local/bin/zephir fullclean
+        ZEPHIR_RELEASE=1 CFLAGS="-march=native -O3 -fvisibility=hidden -fomit-frame-pointer -flto -DPHALCON_RELEASE -DZEPHIR_RELEASE=1" /usr/local/bin/zephir build --no-dev
     EOH
-  cwd Chef::Config["file_cache_path"] || "/tmp"
+  cwd "/usr/local"
   not_if { ::File.exist?("/etc/php/#{node["php"]["version"]}/mods-available/phalcon.ini") }
   notifies :create, "template[phalcon.ini]", :immediately
 end
