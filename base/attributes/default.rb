@@ -44,6 +44,7 @@ default["dnsmasq"]["dns_options"] = %w{
   no-resolv
   domain-needed
   bogus-priv
+  no-negcache
 }
 
 default["redisio"]["package_install"] = false
