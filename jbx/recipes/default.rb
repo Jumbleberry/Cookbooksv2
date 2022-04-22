@@ -166,4 +166,5 @@ end
 include_recipe cookbook_name + "::gearman"
 include_recipe cookbook_name + "::crons"
 include_recipe cookbook_name + "::kinesis"
-include_recipe cookbook_name + "::datadog_apm"
+include_recipe cookbook_name + "::datadog_apm" if node.attribute?(:ec2)
+include_recipe cookbook_name + "::deployment_markers" if node.attribute?(:ec2)
