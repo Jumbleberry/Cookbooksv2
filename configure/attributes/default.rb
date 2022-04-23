@@ -83,5 +83,5 @@ default["datadog"]["enable_trace_agent"] = false
 default["datadog"]["enable_logs_agent"] = false
 default["datadog"]["trace_env"] = node["environment"]
 
-default["datadog"]["tags"] = { "environment" => node["environment"], "opsworks_stack" => node.attribute?(:opsworks) ? node[:opsworks][:stack][:name] : "vagrant" }
+default["datadog"]["tags"] = {}
 default["datadog"]["logs"] = {}
