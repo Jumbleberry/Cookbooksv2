@@ -1,3 +1,6 @@
+node.default["datadog"]["tags"]["environment"] = node["environment"]
+node.default["datadog"]["tags"]["service"] = (node.read("opsworks", "instance", "role") || ["dev"]).join("|")
+
 datadog_enabled = node["configure"]["services"]["datadog"] && (node["configure"]["services"]["datadog"].include? "start")
 datadog_php_ini = "/etc/php/#{node["php"]["version"]}/fpm/conf.d/98-ddtrace.ini"
 
