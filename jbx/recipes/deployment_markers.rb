@@ -4,6 +4,7 @@ require 'uri'
 
 ruby_block "sleuth_deployment" do
     block do
+        %x(git config --global --add safe.directory /var/www/jbx)
         commit_hash = %x(cd #{node["jbx"]["path"]}; git rev-parse HEAD)
         file = File.read('/var/www/jbx/config/credentials.json')
         data_hash = JSON.parse(file)
