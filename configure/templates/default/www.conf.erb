@@ -376,8 +376,8 @@ chdir = /
 ;env[TEMP] = /tmp
 env[ENV] = $ENV
 env[DD_ENV] = $ENV
-env[DD_TRACE_ENABLED] = <%= (node[:datadog][:enable_trace_agent] || 0) && 1 || 0 %>
-env[DD_PROFILING_ENABLED] = <%= (node[:datadog][:enable_profiling] || false) && true || false %>
+env[DD_PROFILING_ENABLED] = <%= (node[:datadog][:enable_profiling] || 0) && "true" || "false" %>
+env[DD_TRACE_ENABLED] = <%= (node[:datadog][:enable_trace_agent] || 0) && "true" || "false" %>
 env[DD_AGENT_HOST] = $HOSTNAME
 env[DD_SERVICE] = jbx
 
