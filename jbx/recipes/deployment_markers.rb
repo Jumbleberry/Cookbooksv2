@@ -2,10 +2,9 @@ require 'json'
 require 'net/http'
 require 'uri'
 
-commit_hash = %x(cd #{node["jbx"]["path"]}; git rev-parse HEAD)
-
 ruby_block "sleuth_deployment" do
     block do
+        commit_hash = %x(cd #{node["jbx"]["path"]}; git rev-parse HEAD)
         file = File.read('/var/www/jbx/config/credentials.json')
         data_hash = JSON.parse(file)
         
