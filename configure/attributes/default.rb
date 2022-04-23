@@ -77,9 +77,11 @@ default["datadog"]["application_key"] = "<APP_KEY>"
 
 default["datadog"]["agent_enable"] = false
 default["datadog"]["agent_start"] = false
+default["datadog"]["enable_profiling"] = false
 default["datadog"]["enable_process_agent"] = false
 default["datadog"]["enable_trace_agent"] = false
 default["datadog"]["enable_logs_agent"] = false
+default["datadog"]["trace_env"] = node["environment"]
 
-default["datadog"]["tags"] = [node["environment"]]
+default["datadog"]["tags"] = { "environment" => node["environment"], "opsworks_stack" => node.attribute?(:opsworks) ? node[:opsworks][:stack][:name] : "vagrant" }
 default["datadog"]["logs"] = {}
