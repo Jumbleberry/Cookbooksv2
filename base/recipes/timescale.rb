@@ -30,7 +30,7 @@ package "pgloader" do
   action :remove
 end
 
-package "timescaledb-2-postgresql-13" do
+package "timescaledb-2-2.3.1-postgresql-13" do
   options '-o Dpkg::Options::="--force-overwrite"'
   action :install
 end

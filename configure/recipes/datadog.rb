@@ -1,4 +1,26 @@
-if node["configure"]["services"]["datadog"] && (node["configure"]["services"]["datadog"].include? "start")
+node.default["datadog"]["tags"]["environment"] = node["environment"]
+node.default["datadog"]["tags"]["service"] = (node.read("opsworks", "instance", "role") || ["dev"]).join("|")
+
+datadog_enabled = node["configure"]["services"]["datadog"] && (node["configure"]["services"]["datadog"].include? "start")
+datadog_php_ini = "/etc/php/#{node["php"]["version"]}/fpm/conf.d/98-ddtrace.ini"
+
+replace_or_add "datadog tracing" do
+  path datadog_php_ini
+  pattern ".*extension = ddtrace.so.*"
+  line (datadog_enabled && node["datadog"]["enable_trace_agent"] ? "" : ";") + "extension = ddtrace.so"
+  notifies :restart, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
+  only_if { ::File.exist?(datadog_php_ini) }
+end
+
+replace_or_add "datadog profiling" do
+  path datadog_php_ini
+  pattern ".*zend_extension = datadog-profiling.so.*"
+  line (datadog_enabled && node["datadog"]["enable_profiling"] ? "" : ";") + "zend_extension = datadog-profiling.so"
+  notifies :restart, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
+  only_if { ::File.exist?(datadog_php_ini) }
+end
+
+if datadog_enabled
   include_recipe cookbook_name + "::vault"
 
   require "vault"

@@ -43,10 +43,10 @@ default["php"]["fpm"]["start_servers"] = "60"
 default["php"]["fpm"]["min_spare_servers"] = "60"
 default["php"]["fpm"]["max_spare_servers"] = "100"
 default["php"]["fpm"]["max_requests"] = "0"
-default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib"
+default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib:/usr/share/php/zf1/library"
 default["php"]["fpm"]["process_control_timeout"] = 5
 
-php_version = node["php"]["version"] || "7.3"
+php_version = node["php"]["version"] || "7.4"
 default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
 default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#{php_version}/fpm"]
 
@@ -77,9 +77,11 @@ default["datadog"]["application_key"] = "<APP_KEY>"
 
 default["datadog"]["agent_enable"] = false
 default["datadog"]["agent_start"] = false
+default["datadog"]["enable_profiling"] = false
 default["datadog"]["enable_process_agent"] = false
 default["datadog"]["enable_trace_agent"] = false
 default["datadog"]["enable_logs_agent"] = false
+default["datadog"]["trace_env"] = node["environment"]
 
-default["datadog"]["tags"] = [node["environment"]]
+default["datadog"]["tags"] = {}
 default["datadog"]["logs"] = {}
