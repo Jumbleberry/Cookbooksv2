@@ -27,6 +27,7 @@ override["configure"]["update"] = true
 override["configure"]["upgrade"] = true
 
 default["datadog"]["histogram_aggregates"] = "max, avg"
+default["datadog"]["tracer"]["version"] = "0.72.0"
 
 default["dnsmasq"]["dns"] = {
   "all-servers" => nil,
@@ -44,16 +45,17 @@ default["dnsmasq"]["dns_options"] = %w{
   no-resolv
   domain-needed
   bogus-priv
+  no-negcache
 }
 
 default["redisio"]["package_install"] = false
 default["redisio"]["bypass_setup"] = false
-default["redisio"]["version"] = "5.0.5"
+default["redisio"]["version"] = "6.0.5"
 
 default["hashicorp-vault"]["gems"] = {
-  "vault" => "0.13.0",
+  "vault" => "0.16.0",
 }
-default["hashicorp-vault"]["version"] = "1.2.3"
+default["hashicorp-vault"]["version"] = "1.10.0"
 default["hashicorp-vault"]["config"]["path"] = "/etc/vault/vault.json"
 default["hashicorp-vault"]["config"]["address"] = "https://vault.jumbleberry.com"
 
@@ -66,11 +68,11 @@ default["consul_template"]["service_group"] = "www-data"
 default["consul_template"]["consul_addr"] = "127.0.0.1:8500"
 default["consul_template"]["vault_addr"] = node["hashicorp-vault"]["config"]["address"]
 
-default["openssl_source"]["openssl"]["version"] = "1.1.1k"
+default["openssl_source"]["openssl"]["version"] = "1.1.1n"
 default["openssl_source"]["openssl"]["abi_version"] = "1.1.1"
 default["openssl_source"]["openssl"]["prefix"] = "/opt/openssl-#{node["openssl_source"]["openssl"]["abi_version"]}"
 default["openssl_source"]["openssl"]["url"] = "https://www.openssl.org/source/openssl-#{node["openssl_source"]["openssl"]["version"]}.tar.gz"
-default["openssl_source"]["openssl"]["checksum"] = "892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5"
+default["openssl_source"]["openssl"]["checksum"] = "40dceb51a4f6a5275bde0e6bf20ef4b91bfc32ed57c0552e2e8e15463372b17a"
 default["openssl_source"]["openssl"]["configure_flags"] = [
   "--openssldir=/etc/ssl",
   "--libdir=lib",
@@ -94,16 +96,16 @@ default["openresty"]["configure_flags"] = [
 default["openresty"]["service"]["restart_on_update"] = false
 default["openresty"]["service"]["start_on_boot"] = false
 
-default["openresty"]["luarocks"]["version"] = "3.2.0"
+default["openresty"]["luarocks"]["version"] = "3.8.0"
 default["openresty"]["luarocks"]["url"] = "http://luarocks.org/releases/luarocks-#{node["openresty"]["luarocks"]["version"]}.tar.gz"
-default["openresty"]["luarocks"]["checksum"] = "66c1848a25924917ddc1901e865add8f19f2585360c44a001a03a8c234d3e796"
+default["openresty"]["luarocks"]["checksum"] = "56ab9b90f5acbc42eb7a94cf482e6c058a63e8a1effdf572b8b2a6323a06d923"
 
 default["openresty"]["luarocks"]["default_rocks"] = {
   "jumbleberry-auto-ssl" => "0.13.1-2",
   "jumbleberry-dogstatsd" => "1.0.1-1",
 }
 
-default["php"]["version"] = php_version = "7.3"
+default["php"]["version"] = php_version = "7.4"
 default["php"]["composer_download_path"] = "/tmp/composer-install.php"
 default["php"]["packages"] = {
   "php#{php_version}-fpm" => "*",
