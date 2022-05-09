@@ -73,6 +73,8 @@ nice                            = 0
 port                            = 3306
 socket                          = /var/run/mysqld/mysqld.sock
 
+default-character-set           = utf8mb4
+
 [mysqld]
 # Required Settings
 basedir                         = /usr
@@ -85,8 +87,12 @@ port                            = 3306
 skip_external_locking
 skip_name_resolve
 skip_innodb_doublewrite
+skip-character-set-client-handshake
 skip_log_bin
 socket                          = /var/run/mysqld/mysqld.sock
+
+collation-server                = utf8mb4_unicode_ci
+character-set-server            = utf8mb4
 
 # Enable for b/c with databases created in older MySQL/MariaDB versions (e.g. when using null dates)
 sql_mode                        = NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
