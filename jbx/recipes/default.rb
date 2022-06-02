@@ -122,13 +122,14 @@ template "#{node["jbx"]["path"]}/config/credentials.dev.json" do
 end
 
 # Seed the DB
+is_throwaway = node["jbx"]["branch"] == node["jbx"]["branch"].gsub(/[^0-9A-Za-z]/, "-") && node["jbx"]["branch"].length == 40 && node["jbx"]["path"] != "/var/www/jbx"
 execute "seed_dev_jb" do
   command "#{node["jbx"]["path"]}/command seed:fresh --load-dump --up --no-interaction"
   environment ({ "ENV" => node[:environment] })
   user node[:user]
   action :nothing
   notifies :run, "execute[touch #{db_seed_status}]", :immediately if node["jbx"]["path"] == "/var/www/jbx"
-  only_if { (node.attribute?(:is_ci) && node["jbx"]["path"] != "/var/www/jbx") || (node["environment"] == "dev" && node["jbx"]["path"] == "/var/www/jbx" && !::File.exist?(db_seed_status)) }
+  only_if { (node.attribute?(:is_ci) && !is_throwaway) || (node["environment"] == "dev" && node["jbx"]["path"] == "/var/www/jbx" && !::File.exist?(db_seed_status)) }
 end
 
 execute "touch #{db_seed_status}" do
