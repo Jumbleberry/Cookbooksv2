@@ -1,14 +1,3 @@
-node.default[:commit_hash] = "null"
-
-ruby_block "jbx_version" do
-  block do
-    %s(su #{node[:user]; git config --global --add safe.directory #{node["jbx"]["path"]})
-    commit_hash = %x(cd #{node["jbx"]["path"]}; git rev-parse HEAD)
-    node.default[:commit_hash] = "#{commit_hash.strip}"
-  end
-  action :run
-end
-
 include_recipe cookbook_name + "::dnsmasq"
 include_recipe cookbook_name + "::network"
 

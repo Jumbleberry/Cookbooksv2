@@ -48,7 +48,13 @@ end
 
 template "/etc/php/#{node["php"]["version"]}/fpm/pool.d/www.conf" do
   source "www.conf.erb"
-  variables(node["php"]["fpm"])
+  variables(
+    lazy {
+      node["php"]["fpm"].merge({
+        commit_hash: "#{node.run_state[:jbx_version]}"
+      })
+    }
+  )
   notifies :reload, "service[php#{node["php"]["version"]}-fpm.service]", :delayed
 end
 

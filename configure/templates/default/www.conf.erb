@@ -380,7 +380,7 @@ env[DD_PROFILING_ENABLED] = <%= (node[:datadog][:enable_profiling] || 0) && "tru
 env[DD_TRACE_ENABLED] = <%= (node[:datadog][:enable_trace_agent] || 0) && "true" || "false" %>
 env[DD_AGENT_HOST] = $HOSTNAME
 env[DD_SERVICE] = <%= node.read("datadog", "tags", "service") || "dev" %>
-env[DD_VERSION] = <%= (node["commit_hash"]) || "env[DD_VERSION] = lazy {node[commit_hash]}" %>
+env[DD_VERSION] = <%= @commit_hash %>
 
 ; Additional php.ini defines, specific to this pool of workers. These settings
 ; overwrite the values previously defined in the php.ini. The directives are the
