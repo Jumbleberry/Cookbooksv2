@@ -84,6 +84,16 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     action :nothing
   end
 
+  # Create stripe db
+  query = <<-EOH
+    CREATE DATABASE IF NOT EXISTS stripe;
+  EOH
+
+  execute "create_stripe_db" do
+    command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
+    only_if "echo 'show databases' | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
+  end
+
   # Create jbx user
   query = <<-EOH
     GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}'; \
@@ -108,6 +118,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     subscribes :restart, "replace_or_add[mysql.service]", :delayed
 
     notifies :run, "execute[set_root_password]", :immediate
+    notifies :run, "execute[create_stripe_db]", :immediate
     notifies :run, "execute[manage_mysql_settings]", :immediate
   end
 else
