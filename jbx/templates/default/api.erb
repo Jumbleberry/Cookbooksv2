@@ -79,7 +79,7 @@ server {
         fastcgi_param PATH_INFO         $fastcgi_path_info;
         fastcgi_param PATH_TRANSLATED   $document_root$fastcgi_path_info;
         fastcgi_param SCRIPT_FILENAME   $document_root$fastcgi_script_name;
-        fastcgi_param DD_VERSION	<%= "#{node.run_state[:jbx_version]}" %>;
+        fastcgi_param DD_VERSION	<%= node.read("run_state", "jbx_version") || node[:environment] %>;
         include                         fastcgi_params;
     }
 }
