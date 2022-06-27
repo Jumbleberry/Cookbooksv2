@@ -52,7 +52,7 @@ server {
 
     location ~ \.php$ {
 <% if node["environment"] == "prod" -%>
-        if ($http_origin ~* '[^\.]*dev[^\.]+\.[^\.]+$') {
+        if ($http_origin ~* '[^\.]*dev[^\.]*\.[^\.]+$') {
             return     403;
         }
 
