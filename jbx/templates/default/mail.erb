@@ -1,3 +1,5 @@
+<% @hostnames.each do |hostname|
+    instance_variable_set("@hostname", hostname) %>
 server {
     listen      80;
     server_name <%= @hostname %> www.<%= @hostname %>;
@@ -51,3 +53,4 @@ server {
         include                         fastcgi_params;
     }
 }
+<% end %>
