@@ -66,7 +66,7 @@ node["jbx"]["services"].each do |service|
   openresty_site service do
     template service + ".erb"
     variables ({
-      hostname: node["jbx"]["domains"][service],
+      hostnames: node["jbx"]["domains"][service].is_a?(String) ? [node["jbx"]["domains"][service]] : node["jbx"]["domains"][service],
       path: "/var/www/jbx",
       app: service,
     })

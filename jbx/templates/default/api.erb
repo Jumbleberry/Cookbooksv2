@@ -3,7 +3,8 @@ map $branch $api_dist_path {
     ~*([^.]+)$          /dist/$1/public;
     default             /public;
 }
-
+<% @hostnames.each do |hostname|
+     instance_variable_set("@hostname", hostname) %>
 server {
     listen      80;
     server_name <%= @hostname %>
@@ -40,10 +41,6 @@ server {
     
     <% end %>
     
-    if ($http_host = "www.<%= @hostname %>") {
-        return 301 $real_scheme://<%= @hostname %>$request_uri;
-    }
-    
     index       index.php;
     try_files   $api_dist_path/$uri $api_dist_path/$uri/ /index.php?_url=$uri&$args;
     
@@ -55,7 +52,7 @@ server {
 
     location ~ \.php$ {
 <% if node["environment"] == "prod" -%>
-        if ($http_origin ~* 'jumbledev\.com$') {
+        if ($http_origin ~* '[^\.]*dev[^\.]+\.[^\.]+$') {
             return     403;
         }
 
@@ -83,3 +80,4 @@ server {
         include                         fastcgi_params;
     }
 }
+<% end %>
