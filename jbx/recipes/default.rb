@@ -23,33 +23,35 @@ edit_resource(:openresty_site, "default") do
 end
 
 # SSL Keys
-cookbook_file "/etc/nginx/ssl/api.pem" do
-  mode "0644"
-  source node["environment"] + "/api.pem"
-  action :create
-  notifies :reload, "service[nginx.service]", :delayed
-  ignore_failure true
-end
+(node["jbx"]["certificates"].map { |k, v| v }.uniq! || []).each do |certificate|
+  cookbook_file "/etc/nginx/ssl/#{certificate}.pem" do
+    mode "0644"
+    source node["environment"] + "/#{certificate}.pem"
+    action :create
+    notifies :reload, "service[nginx.service]", :delayed
+    ignore_failure true
+  end
 
-template "/etc/nginx/ssl/api.key.tpl" do
-  source "cert.erb"
-  mode "0644"
-  variables({
-    app: "jbx",
-    domain: "api",
-  })
-  only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][:api].nil? }
-end
+  template "/etc/nginx/ssl/#{certificate}.key.tpl" do
+    source "cert.erb"
+    mode "0644"
+    variables({
+      app: "jbx",
+      domain: certificate,
+    })
+    only_if { (certs = Vault.logical.read("secret/data/#{node["environment"]}/jbx/cert")) && !certs.data[:data][certificate.to_sym].nil? }
+  end
 
-execute "consul-template api.key" do
-  sensitive true
-  command lazy {
-    "consul-template -once -template \"/etc/nginx/ssl/api.key.tpl:/etc/nginx/ssl/api.key\" " +
-      "-vault-addr \"#{node["hashicorp-vault"]["config"]["address"]}\" -vault-token \"#{node.run_state["VAULT_TOKEN"]}\""
-  }
-  environment ({ "ENV" => node[:environment] })
-  only_if { ::File.exist?("/etc/nginx/ssl/api.key.tpl") }
-  notifies :reload, "service[nginx.service]", :delayed
+  execute "consul-template #{certificate}.key" do
+    sensitive true
+    command lazy {
+      "consul-template -once -template \"/etc/nginx/ssl/#{certificate}.key.tpl:/etc/nginx/ssl/#{certificate}.key\" " +
+        "-vault-addr \"#{node["hashicorp-vault"]["config"]["address"]}\" -vault-token \"#{node.run_state["VAULT_TOKEN"]}\""
+    }
+    environment ({ "ENV" => node[:environment] })
+    only_if { ::File.exist?("/etc/nginx/ssl/#{certificate}.key.tpl") }
+    notifies :reload, "service[nginx.service]", :delayed
+  end
 end
 
 db_seed_status = ::File.join(node["openresty"]["source"]["state"], "jbx.dev_seed")
@@ -63,10 +65,14 @@ end
 
 # Create the service hosts
 node["jbx"]["services"].each do |service|
+  hostnames = node["jbx"]["domains"][service].is_a?(String) ? [node["jbx"]["domains"][service]] : node["jbx"]["domains"][service]
+  certificates = hostnames.map { |hostname| [hostname, node["jbx"]["certificates"][hostname]] }.to_h
+
   openresty_site service do
     template service + ".erb"
     variables ({
-      hostnames: node["jbx"]["domains"][service].is_a?(String) ? [node["jbx"]["domains"][service]] : node["jbx"]["domains"][service],
+      hostnames: hostnames,
+      certificates: certificates,
       path: "/var/www/jbx",
       app: service,
     })

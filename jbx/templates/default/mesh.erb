@@ -170,8 +170,11 @@ server {
 
     listen 8080 proxy_protocol reuseport;
     listen [::]:8080 proxy_protocol reuseport;
-    
-    <% ssl = File.file?("/etc/nginx/ssl/api.key") %>
+
+<% @hostnames.each do |hostname|
+     instance_variable_set("@hostname", hostname)
+     instance_variable_set("@certificate", @certificates[hostname])
+     ssl = File.file?("/etc/nginx/ssl/#{@certificate}.key") %>
     <% if (ssl) %>
     listen 443 ssl reuseport;
     listen [::]:443 ssl reuseport;
@@ -190,13 +193,14 @@ server {
     ssl_stapling_verify             on;
     ssl_dhparam                     /etc/nginx/dhparams.pem;
 
-    ssl_certificate                 /etc/nginx/ssl/api.pem;
-    ssl_certificate_key             /etc/nginx/ssl/api.key;
+    ssl_certificate                 /etc/nginx/ssl/<%= @certificate %>.pem;
+    ssl_certificate_key             /etc/nginx/ssl/<%= @certificate %>.key;
     
     ssl_certificate_by_lua_block {
         auto_ssl:ssl_certificate()
     }
-    <% end %>
+    <% break end %>
+<% end %>
 
     server_name                     ~^(?<subdomain>)(?<domain>[^\.]+(\.:)[^\.:]+)$
                                     ~^(?<subdomain>.*?(\.|:))(?<domain>[^\.]+(\.|:)[^\.:]+)$
