@@ -1,11 +1,9 @@
 ruby_block "jbx_version" do
   block do
-    %s(su #{node[:user]; git config --global --add safe.directory #{node["jbx"]["path"]})
-    commit_hash = %x(cd #{node["jbx"]["path"]}; git rev-parse HEAD)
+    commit_hash = `su #{node[:user]} -c "git config --global --add safe.directory '*'; cd #{node['jbx']['path']}; git rev-parse HEAD"`
     node.run_state[:jbx_version] = "#{commit_hash.strip}"
     Chef::Log.warn("#{node.run_state[:jbx_version]}")
   end
-  Chef::Log.warn("#{node.run_state[:jbx_version]}")
   action :run
 end
 
