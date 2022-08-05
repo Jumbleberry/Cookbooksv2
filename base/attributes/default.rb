@@ -57,7 +57,7 @@ default["hashicorp-vault"]["gems"] = {
 }
 default["hashicorp-vault"]["version"] = "1.10.0"
 default["hashicorp-vault"]["config"]["path"] = "/etc/vault/vault.json"
-default["hashicorp-vault"]["config"]["address"] = "https://vault.jumbleberry.com"
+default["hashicorp-vault"]["config"]["address"] = "https://vault.squaredance.io"
 
 default["consul"]["config"]["bind_addr"] = node["ipaddress"]
 default["consul"]["config"]["advertise_addr"] = node["ipaddress"]
