@@ -21,7 +21,7 @@ ruby_block "get_vault_token" do
     if node.attribute?(:ec2)
       if !defined?(node.run_state["VAULT_TOKEN"]) || node.run_state["VAULT_TOKEN"].nil?
         begin
-          login_command = "VAULT_ADDR=\"#{node["hashicorp-vault"]["config"]["address"]}\" vault login -token-only -method=aws header_value=vault.jumbleberry.com role=#{node["environment"]}-#{node["role"]}"
+          login_command = "VAULT_ADDR=\"#{node["hashicorp-vault"]["config"]["address"]}\" vault login -token-only -method=aws header_value=vault.squaredance.io role=#{node["environment"]}-#{node["role"]}"
           node.run_state["VAULT_TOKEN"] = shell_out(login_command).stdout
           Vault.token = node.run_state["VAULT_TOKEN"]
           Vault.auth_token.lookup_self
