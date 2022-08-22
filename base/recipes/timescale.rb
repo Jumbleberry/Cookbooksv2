@@ -31,13 +31,14 @@ package "pgloader" do
 end
 
 package "timescaledb-2-2.3.1-postgresql-13" do
-  options '-o Dpkg::Options::="--force-overwrite"'
+  options '-o Dpkg::Options::="--force-overwrite" --no-install-recommends'
   action :install
 end
 
 # define postgresql service
 service "postgresql.service" do
   service_name "postgresql"
+  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
 end
 
