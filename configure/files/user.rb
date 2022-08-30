@@ -1,5 +1,6 @@
 Ohai.plugin(:User) do
   provides "user"
+  depends "container"
   depends "user"
   depends "etc/passwd"
 
@@ -7,6 +8,8 @@ Ohai.plugin(:User) do
     if etc["passwd"].key?("vagrant")
       user("www-data")
     elsif etc["passwd"].key?("ubuntu")
+      user("www-data")
+    elsif container
       user("www-data")
     else
       user("root")

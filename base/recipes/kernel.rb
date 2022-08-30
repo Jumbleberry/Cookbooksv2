@@ -1,16 +1,16 @@
-node[cookbook_name]["kernel"].each_pair do |property, value|
+node[cookbook_name]["kernel"] || {}.each_pair do |property, value|
   sysctl_param "kernel.#{property}" do
     value value
   end
 end
 
-node[cookbook_name]["net"].each_pair do |property, value|
+node[cookbook_name]["net"] || {}.each_pair do |property, value|
   sysctl_param "net.#{property}" do
     value value
   end
 end
 
-node[cookbook_name]["vm"].each_pair do |property, value|
+node[cookbook_name]["vm"] || {}.each_pair do |property, value|
   sysctl_param "vm.#{property}" do
     value value
   end

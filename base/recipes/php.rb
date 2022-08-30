@@ -15,6 +15,7 @@ node["php"]["packages"].each do |pkg, version|
   unless pkg.include? "gearman"
     package "#{pkg}" do
       action :install
+      options "--no-install-recommends"
       version version
     end
   end
@@ -60,6 +61,7 @@ end
 # Register Php service
 service "php#{node["php"]["version"]}-fpm" do
   supports status: true, restart: true, reload: true, stop: true
+  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
 end
 

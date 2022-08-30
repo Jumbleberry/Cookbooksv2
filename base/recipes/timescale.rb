@@ -1,7 +1,9 @@
 # Install pgsql server
 execute "pgsql-install" do
   command <<-EOH
-    sudo sh -c "echo 'deb https://packagecloud.io/timescale/timescaledb/ubuntu/ `lsb_release -c -s` main' > /etc/apt/sources.list.d/timescaledb.list"
+    sudo sh -c "echo 'deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+    sudo sh -c "echo 'deb https://packagecloud.io/timescale/timescaledb/ubuntu/ $(lsb_release -cs) main' > /etc/apt/sources.list.d/timescaledb.list"
     wget --quiet -O - https://packagecloud.io/timescale/timescaledb/gpgkey | sudo apt-key add -
   EOH
   user "root"
@@ -12,7 +14,7 @@ apt_repository "timescale-ppa" do
   uri "ppa:timescale/timescaledb-ppa2"
 end
 
-apt_update "update-timescale" do
+apt_update "update-timescale-2" do
   frequency 86400
   action :periodic
 end
@@ -30,7 +32,7 @@ package "pgloader" do
   action :remove
 end
 
-package "timescaledb-2-2.3.1-postgresql-13" do
+package "timescaledb-2-postgresql-14" do
   options '-o Dpkg::Options::="--force-overwrite"'
   action :install
 end
@@ -38,6 +40,7 @@ end
 # define postgresql service
 service "postgresql.service" do
   service_name "postgresql"
+  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
 end
 

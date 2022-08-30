@@ -31,6 +31,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     nvme = "/#{node["nvme"]["name"]}/mysql"
 
     service "mysql" do
+      provider Chef::Provider::Service::Systemd
       action :nothing
     end
 

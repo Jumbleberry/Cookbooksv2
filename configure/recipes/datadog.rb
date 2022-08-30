@@ -93,7 +93,7 @@ if datadog_enabled
 
   if node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "enable")
     datadog_monitor "postgres" do
-      instances [{ "server" => "localhost", "port" => 5432, "user" => "root", "pass" => node["pgsql"]["root_password"], "dbname" => "local_timescale" }]
+      instances [{ "server" => "localhost", "port" => 5432, "user" => "root", "pass" => node["pgsql"]["root_password"], "dbname" => "timescale_dev" }]
       logs node["datadog"]["logs"]["postgresql"] || []
       action :add
       notifies :restart, "service[datadog-agent]", :delayed
