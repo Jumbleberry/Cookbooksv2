@@ -5,19 +5,21 @@ default[cookbook_name]["trusted_roots"] = ["rootCA.crt", "betwixtCA.crt"]
 default[cookbook_name]["kernel"]["shmmax"] = "201326592"
 default[cookbook_name]["kernel"]["shmall"] = "268435456"
 default[cookbook_name]["kernel"]["shmmni"] = "8192"
-default[cookbook_name]["net"]["core.somaxconn"] = "4096"
-default[cookbook_name]["net"]["core.rmem_max"] = "134217728"
-default[cookbook_name]["net"]["core.wmem_max"] = "134217728"
-default[cookbook_name]["net"]["core.default_qdisc"] = "fq"
-default[cookbook_name]["net"]["ipv4.tcp_wmem"] = "4096 87380 67108864"
-default[cookbook_name]["net"]["ipv4.tcp_rmem"] = "4096 65536 67108864"
-default[cookbook_name]["net"]["ipv4.tcp_max_syn_backlog"] = "8096"
-default[cookbook_name]["net"]["ipv4.tcp_tw_reuse"] = "1"
-default[cookbook_name]["net"]["ipv4.tcp_slow_start_after_idle"] = "0"
-default[cookbook_name]["net"]["ipv4.tcp_fin_timeout"] = "15"
-default[cookbook_name]["net"]["ipv4.tcp_mtu_probing"] = "0"
-default[cookbook_name]["net"]["ipv4.tcp_congestion_control"] = "bbr"
 default[cookbook_name]["vm"]["swappiness"] = "10"
+unless node.attribute?(:container)
+  default[cookbook_name]["net"]["core.somaxconn"] = "4096"
+  default[cookbook_name]["net"]["core.rmem_max"] = "134217728"
+  default[cookbook_name]["net"]["core.wmem_max"] = "134217728"
+  default[cookbook_name]["net"]["core.default_qdisc"] = "fq"
+  default[cookbook_name]["net"]["ipv4.tcp_wmem"] = "4096 87380 67108864"
+  default[cookbook_name]["net"]["ipv4.tcp_rmem"] = "4096 65536 67108864"
+  default[cookbook_name]["net"]["ipv4.tcp_max_syn_backlog"] = "8096"
+  default[cookbook_name]["net"]["ipv4.tcp_tw_reuse"] = "1"
+  default[cookbook_name]["net"]["ipv4.tcp_slow_start_after_idle"] = "0"
+  default[cookbook_name]["net"]["ipv4.tcp_fin_timeout"] = "15"
+  default[cookbook_name]["net"]["ipv4.tcp_mtu_probing"] = "0"
+  default[cookbook_name]["net"]["ipv4.tcp_congestion_control"] = "bbr"
+end
 
 default[cookbook_name]["initcwnd"] = "20"
 default[cookbook_name]["initrwnd"] = "20"
@@ -40,6 +42,9 @@ default["dnsmasq"]["dns"] = {
     "8.8.4.4",
   ],
 }
+unless node[:container]
+  default["dnsmasq"]["dns"]["user"] = "root"
+end
 default["dnsmasq"]["dns_options"] = %w{
   no-poll
   no-resolv

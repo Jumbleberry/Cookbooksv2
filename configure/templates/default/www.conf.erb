@@ -59,7 +59,7 @@ listen.group = www-data
 ;       - The pool processes will inherit the master process priority
 ;         unless it specified otherwise
 ; Default Value: no set
-process.priority = -19
+<%= node.attribute?(:container) ? ";" : "" -%>process.priority = -19
 
 ; Choose how the process manager will control the number of child processes.
 ; Possible Values:

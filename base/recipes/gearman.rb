@@ -11,6 +11,7 @@ end
 
 package "gearman" do
   action :install
+  options "--no-install-recommends"
   version node["gearman"]["version"]
 end
 
@@ -19,6 +20,7 @@ node["php"]["packages"].each do |pkg, version|
   if pkg.include? "gearman"
     package "#{pkg}" do
       action :install
+      options "--no-install-recommends"
       version version
     end
   end
@@ -88,6 +90,7 @@ end
 # Memcached seems to be sideloaded by gearrman; disable it
 service "memcached" do
   supports status: true, restart: true, reload: true, stop: true
+  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
 end
 

@@ -1,5 +1,8 @@
+include_recipe cookbook_name + "::container"
 include_recipe cookbook_name + "::dnsmasq"
-include_recipe cookbook_name + "::network"
+unless node.attribute?(:container)
+  include_recipe cookbook_name + "::network"
+end
 
 include_recipe "base::apt"
 include_recipe "ulimit"
