@@ -1,12 +1,3 @@
-ruby_block "jbx_version" do
-  block do
-    commit_hash = `su #{node[:user]} -c "git config --global --add safe.directory '*'; cd #{node['jbx']['path']}; git rev-parse HEAD"`
-    node.run_state[:jbx_version] = "#{commit_hash.strip}"
-    Chef::Log.warn("#{node.run_state[:jbx_version]}")
-  end
-  action :run
-end
-
 include_recipe "configure"
 
 require "vault"
@@ -61,25 +52,6 @@ edit_resource(:directory, node["openresty"]["source"]["state"]) do
   only_if { (!Chef::Config[:chef_server_url]) || (Chef::Config[:chef_server_url].include?("chefzero")) }
 end
 
-# Create the service hosts
-node["jbx"]["services"].each do |service|
-  hostnames = node["jbx"]["domains"][service].is_a?(String) ? [node["jbx"]["domains"][service]] : node["jbx"]["domains"][service]
-  certificates = hostnames.map { |hostname| [hostname, node["jbx"]["certificates"][hostname]] }.to_h
-
-  openresty_site service do
-    template service + ".erb"
-    variables ({
-      hostnames: hostnames,
-      certificates: certificates,
-      path: "/var/www/jbx",
-      app: service,
-    })
-    timing :delayed
-    action :enable
-    notifies :reload, "service[nginx.service]", :delayed
-  end
-end
-
 # Makes sure that the directory exists
 directory node["jbx"]["path"] do
   owner node[:user]
@@ -96,6 +68,38 @@ git "#{node["jbx"]["git-url"]}" do
   user node[:user]
   group node[:user]
   action node.attribute?(:ec2) ? :sync : :checkout
+end
+
+ruby_block "jbx_version" do
+  block do
+    commit_hash = `su #{node[:user]} -c "cd /var/www/jbx && git rev-parse HEAD"`
+    if (commit_hash && commit_hash.length)
+      node.run_state[:jbx_version] = commit_hash.strip[0..7]
+    end
+  end
+  action :run
+end
+
+# Create the service hosts
+node["jbx"]["services"].each do |service|
+  hostnames = node["jbx"]["domains"][service].is_a?(String) ? [node["jbx"]["domains"][service]] : node["jbx"]["domains"][service]
+  certificates = hostnames.map { |hostname| [hostname, node["jbx"]["certificates"][hostname]] }.to_h
+
+  openresty_site service do
+    template service + ".erb"
+    variables (lazy {
+      {
+        hostnames: hostnames,
+        certificates: certificates,
+        path: "/var/www/jbx",
+        app: service,
+        version: node.run_state[:jbx_version] || node[:environment],
+      }
+    })
+    timing :delayed
+    action :enable
+    notifies :reload, "service[nginx.service]", :delayed
+  end
 end
 
 consul_template_config "jbx.credentials.json" do
