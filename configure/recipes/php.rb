@@ -12,6 +12,7 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
   end
 
   if path.include? "fpm"
+    node.default["php"]["xdebug"]["client_host"] = node[:container] ? "host.docker.internal" : "10.0.2.2"
     template path + "/conf.d/20-xdebug.ini" do
       manage_symlink_source true
       source "xdebug.ini.erb"
