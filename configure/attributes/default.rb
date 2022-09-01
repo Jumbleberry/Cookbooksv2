@@ -25,8 +25,9 @@ default["openresty"]["open_file_cache"]["inactive"] = "5m"
 default["openresty"]["open_file_cache"]["valid"] = "5m"
 default["openresty"]["open_file_cache"]["min_uses"] = 2
 default["openresty"]["gzip_comp_level"] = 6
-default["openresty"]["user_id"] = 33
-default["openresty"]["group_id"] = 33
+# Set user/group to 1000 if it's not used by a different user already
+default["openresty"]["user_id"] = (node["etc"]["passwd"].reduce(nil) { |user, (key, val)| key != node["user"] && val["uid"] == 1000 ? key : user }) ? 33 : 1000
+default["openresty"]["group_id"] = (node["etc"]["group"].reduce(nil) { |group, (key, val)| key != node["user"] && val["gid"] == 1000 ? key : group }) ? 33 : 1000
 default["openresty"]["user_home"] = "/var/www"
 default["openresty"]["user_shell"] = "/bin/bash"
 
