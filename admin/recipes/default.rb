@@ -2,6 +2,8 @@ include_recipe "configure"
 
 require "vault"
 
+include_recipe cookbook_name + "::zend"
+
 # SSL Keys
 cookbook_file "/etc/nginx/ssl/admin.pem" do
   mode "0644"

@@ -22,5 +22,7 @@ end
 
 # Add an extra reboot for vagrant instances since the filesystem may not be ready on boot
 unless node.attribute?(:ec2)
-  execute "service gearman-manager restart"
+  execute "service gearman-manager restart" do
+    only_if node["configure"]["services"]["gearman"].include? "start"
+  end
 end

@@ -38,9 +38,9 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     # Backup mysql & disable apparmor as it wont allow reads from /nvme*
     execute "backup_mysql" do
       command <<-EOH
-        mv /var/lib/mysql #{bak}
-        sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
-        sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+        mv /var/lib/mysql #{bak} \
+          && sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/ \
+          && sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
       EOH
       notifies :stop, "service[mysql]", :before
       not_if { ::File.directory?(bak) }
@@ -86,9 +86,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
   end
 
   # Create stripe db
-  query = <<-EOH
-    CREATE DATABASE IF NOT EXISTS stripe;
-  EOH
+  query = "CREATE DATABASE IF NOT EXISTS stripe;"
 
   execute "create_stripe_db" do
     command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
@@ -97,9 +95,9 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
   # Create jbx user
   query = <<-EOH
-    GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}'; \
-    GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}'; \
-    DELETE FROM mysql.user WHERE user = 'root' AND password = ''; \
+    GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
+    GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
+    DELETE FROM mysql.user WHERE user = 'root' AND password = '';
     FLUSH PRIVILEGES;
     SET GLOBAL innodb_large_prefix=on;
     SET GLOBAL innodb_file_format=Barracuda;
