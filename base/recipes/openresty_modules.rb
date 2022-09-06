@@ -6,8 +6,8 @@ end
 
 execute "nginx_upstream_check_module" do
   command <<-EOH
-    rm -rf nginx_upstream_check_module-master \
-      && unzip nginx_upstream_check_module.zip
+    rm -rf nginx_upstream_check_module-master
+    unzip nginx_upstream_check_module.zip
   EOH
   cwd "/tmp"
   action :nothing

@@ -1,4 +1,4 @@
-execute "/opt/chef/embedded/bin/gem install nio4r:2.5.2 berkshelf:6.3.4" do
+execute "/opt/chef/embedded/bin/gem install nio4r:2.5.2 berkshelf:6.3.4 rubyzip:1.3.0" do
   user "root"
   not_if { ::File.exist?("/opt/chef/embedded/bin/berks") }
   notifies :create, "cookbook_file[berks]", :immediately

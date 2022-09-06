@@ -73,10 +73,10 @@ template "gearman-manager.service" do
   owner "root"
   group "root"
   mode "0755"
-  notifies :run, "execute[gearman systemcl daemon-reload]", :immediately
+  notifies :run, "execute[gearman systemctl daemon-reload]", :immediately unless node[:container]
 end
 
-execute "gearman systemcl daemon-reload" do
+execute "gearman systemctl daemon-reload" do
   command "systemctl daemon-reload"
   action :nothing
 end

@@ -3,7 +3,7 @@ include_recipe "consul-template"
 edit_resource(:template, "/etc/systemd/system/consul-template.service") do
   source "consul-template.service.erb"
   cookbook "base"
-  notifies :run, "execute[systemctl-daemon-reload]", :immediately if node["virtualization"]["system"] != "docker"
+  notifies :run, "execute[systemctl-daemon-reload]", :immediately unless node[:container]
   notifies :stop, "service[consul-template]", :immediately
 end
 

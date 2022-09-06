@@ -396,9 +396,10 @@ def configure
             bin_path: bin_path,
             user: current['user'],
             group: current['group'],
-            limit_nofile: descriptors
+            limit_nofile: descriptors,
+            service_name: service_name
           )
-          notifies :run, "execute[#{reload_name}]", :immediately
+          notifies :run, "execute[#{reload_name}]", :immediately unless node[:container]
         end
       end
     end

@@ -50,7 +50,7 @@ end
 
 template "/lib/systemd/system/php#{node["php"]["version"]}-fpm.service" do
   source "php-fpm.service.erb"
-  notifies :run, "execute[systemctl-reload]", :immediately if node["virtualization"]["system"] != "docker"
+  notifies :run, "execute[systemctl-reload]", :immediately unless node[:container]
 end
 
 execute "systemctl-reload" do
@@ -61,7 +61,6 @@ end
 # Register Php service
 service "php#{node["php"]["version"]}-fpm" do
   supports status: true, restart: true, reload: true, stop: true
-  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
 end
 

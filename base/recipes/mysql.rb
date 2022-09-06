@@ -68,6 +68,5 @@ end
 
 service "mysql" do
   supports status: true, restart: true, reload: true
-  provider Chef::Provider::Service::Systemd
   action :nothing
 end

@@ -19,6 +19,7 @@ if node["jbx"].attribute?(:consumers) && node["jbx"]["path"] == "/var/www/jbx"
           },
         }
       )
+      triggers_reload !node[:container]
       action [:create] + (node["configure"]["services"][service] || %i{stop disable})
       subscribes :restart, "execute[/bin/bash #{node["jbx"]["path"]}/deploy.sh]", :delayed if (node["configure"]["services"][service] || []).include?("start")
     end
