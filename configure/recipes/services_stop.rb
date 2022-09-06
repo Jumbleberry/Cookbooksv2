@@ -2,6 +2,10 @@ node["configure"]["services"].each do |service, status|
   node.override["configure"]["services"] = %i{stop disable}
 end if node["configure"]["services"]
 
+edit_resource(:service, "dnsmasq") do
+  action :nothing
+end
+
 edit_resource(:service, "php#{node["php"]["version"]}-fpm.service") do
   service_name "php#{node["php"]["version"]}-fpm"
   supports status: true, restart: true, reload: true
