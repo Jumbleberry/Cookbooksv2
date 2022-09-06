@@ -53,8 +53,9 @@ default["dnsmasq"]["dns_options"] = %w{
   no-negcache
 }
 
-default["redisio"]["package_install"] = false
-default["redisio"]["bypass_setup"] = false
+install_redis = node["recipes"].include?("configure::base") || node["recipes"].include?("base::redis")
+default["redisio"]["package_install"] = !install_redis
+default["redisio"]["bypass_setup"] = !install_redis
 default["redisio"]["version"] = "6.0.5"
 
 default["hashicorp-vault"]["gems"] = {
