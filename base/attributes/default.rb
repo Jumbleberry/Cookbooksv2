@@ -59,7 +59,7 @@ install_redis = node["recipes"].include?("configure::base") || node["recipes"].i
 default["redisio"]["package_install"] = !install_redis
 default["redisio"]["bypass_setup"] = !install_redis
 default["redisio"]["version"] = "6.0.5"
-override["redisio"]["job_control"] = "systemd"
+default["redisio"]["job_control"] = "systemd"
 
 default["hashicorp-vault"]["gems"] = {
   "vault" => "0.16.0",

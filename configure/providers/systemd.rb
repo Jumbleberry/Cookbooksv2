@@ -6,7 +6,7 @@ class Chef::Provider::Service::Systemd < Chef::Provider::Service::Simple
   include Chef::Mixin::Which
 
   provides :service, os: "linux" do |node|
-    Chef::Platform::ServiceHelpers.service_resource_providers.include?(:systemd)
+    node[:container] || Chef::Platform::ServiceHelpers.service_resource_providers.include?(:systemd)
   end
 
   attr_accessor :status_check_success

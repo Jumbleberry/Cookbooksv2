@@ -69,7 +69,7 @@ template "/etc/systemd/system/blog.service" do
     group: node[:user],
   })
   mode "0755"
-  notifies :run, "execute[blog systemctl daemon-reload]", :immediately unless node[:container]
+  notifies :run, "execute[blog systemctl daemon-reload]" unless node[:container]
 end
 
 execute "blog systemctl daemon-reload" do
@@ -79,6 +79,7 @@ end
 
 service "blog" do
   supports status: true, restart: true, reload: true
+  provider Chef::Provider::Service::Systemd
   action node["blog"]["enabled"] ? %i{enable start} : %i{disable stop}
 end
 

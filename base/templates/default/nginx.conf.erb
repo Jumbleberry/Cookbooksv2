@@ -1,0 +1,7 @@
+[program:nginx]
+command=<%= node['openresty']['binary'] %> -g "daemon off;"
+autostart=false
+autorestart=unexpected
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s_err.log
+exitcodes=0

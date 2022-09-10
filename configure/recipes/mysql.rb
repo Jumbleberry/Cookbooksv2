@@ -31,6 +31,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     nvme = "/#{node["nvme"]["name"]}/mysql"
 
     service "mysql" do
+      provider Chef::Provider::Service::Systemd
       action :nothing
     end
 
@@ -111,9 +112,9 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
   edit_resource(:service, "mysql.service") do
     # If MySQL is installed on NVMe, delay restart to ensure files are restored first
-    subscribes :restart, "template[/etc/mysql/my.cnf]", (File.directory?(bak) ? :delayed : :immediate) unless node[:container]
-    subscribes :restart, "execute[restore_mysql]", :immediate unless node[:container]
-    subscribes :restart, "replace_or_add[mysql.service]", :delayed unless node[:container]
+    subscribes :restart, "template[/etc/mysql/my.cnf]", (File.directory?(bak) ? :delayed : :immediate)
+    subscribes :restart, "execute[restore_mysql]", :immediate
+    subscribes :restart, "replace_or_add[mysql.service]", :delayed
 
     notifies :run, "execute[set_root_password]", :immediate
     notifies :run, "execute[create_stripe_db]", :immediate

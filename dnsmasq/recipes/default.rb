@@ -23,10 +23,6 @@ if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
     service "systemd-resolved" do
       action :nothing
     end
-  else
-    service "systemd-resolved" do
-      action [:stop, :disable]
-    end
   end
 end
 

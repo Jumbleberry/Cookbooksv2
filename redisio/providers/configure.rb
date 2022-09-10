@@ -397,7 +397,7 @@ def configure
             user: current['user'],
             group: current['group'],
             limit_nofile: descriptors,
-            service_name: service_name
+            server_name: server_name
           )
           notifies :run, "execute[#{reload_name}]", :immediately unless node[:container]
         end

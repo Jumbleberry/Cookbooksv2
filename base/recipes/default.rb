@@ -5,6 +5,7 @@ unless node.attribute?(:ec2)
   include_recipe cookbook_name + "::berks"
 end
 
+include_recipe cookbook_name + "::supervisor"
 include_recipe cookbook_name + "::ca_certs"
 include_recipe cookbook_name + "::dnsmasq"
 include_recipe cookbook_name + "::kernel"

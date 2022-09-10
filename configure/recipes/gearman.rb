@@ -1,5 +1,7 @@
 template "/etc/gearman-manager/environment" do
   source "gearman-environment.erb"
+  user "gearman"
+  group "gearman"
 end
 
 edit_resource(:service, "gearman-job-server.service") do
@@ -22,7 +24,10 @@ end
 
 # Add an extra reboot for vagrant instances since the filesystem may not be ready on boot
 unless node.attribute?(:ec2)
-  execute "service gearman-manager restart" do
-    only_if node["configure"]["services"]["gearman"].include? "start"
+  service "gearman-manager" do
+    supports status: true, restart: true, reload: true
+    provider Chef::Provider::Service::Systemd
+    action :restart
+    only_if { node["configure"]["services"]["gearman"].include? "start" }
   end
 end

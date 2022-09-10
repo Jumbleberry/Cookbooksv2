@@ -40,6 +40,7 @@ end
 # define postgresql service
 service "postgresql.service" do
   service_name "postgresql"
+  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
 end
 

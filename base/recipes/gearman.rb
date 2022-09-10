@@ -90,8 +90,8 @@ end
 # Memcached seems to be sideloaded by gearrman; disable it
 service "memcached" do
   supports status: true, restart: true, reload: true, stop: true
-  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
+  not_if { node[:container] }
 end
 
 # Add the cron helper libraries to the consul config folder
