@@ -11,7 +11,6 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     path "/lib/systemd/system/mysql.service"
     pattern ".*LimitNOFILE.*"
     line "LimitNOFILE = 100000"
-    notifies :run, "execute[mysql systemctl daemon-reload]", :immediately unless node[:container]
   end
 
   execute "mysql systemctl daemon-reload" do
@@ -76,6 +75,11 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
       command "[ -d /#{node["nvme"]["name"]} ] && [ ! -f #{nvme}/ibdata1 ] && mkdir -p #{nvme} && rsync -avh --ignore-errors #{bak}/ #{nvme}/ && service mysql restart"
       minute "*"
     end
+  else
+    service "mysql" do
+      provider Chef::Provider::Service::Systemd
+      action :start
+    end
   end
 
   query = "SET PASSWORD FOR 'root'@'localhost' = PASSWORD(\'#{node["mysql"]["root_password"]}\');"
@@ -114,7 +118,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     # If MySQL is installed on NVMe, delay restart to ensure files are restored first
     subscribes :restart, "template[/etc/mysql/my.cnf]", (File.directory?(bak) ? :delayed : :immediate)
     subscribes :restart, "execute[restore_mysql]", :immediate
-    subscribes :restart, "replace_or_add[mysql.service]", :delayed
+    subscribes :restart, "replace_or_add[mysql.service]", :delayed unless node[:container]
 
     notifies :run, "execute[set_root_password]", :immediate
     notifies :run, "execute[create_stripe_db]", :immediate
