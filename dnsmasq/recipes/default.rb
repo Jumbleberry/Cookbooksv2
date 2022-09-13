@@ -2,7 +2,7 @@ package "dnsmasq"
 user "dnsmasq"
 
 if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
-  unless node.attribute?(:container)
+  unless node[:container]
     directory "/etc/systemd/resolved.conf.d"
 
     file "Fix systemd-resolved conflict" do
