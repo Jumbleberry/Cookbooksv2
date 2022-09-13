@@ -1,0 +1,8 @@
+[program:postgresql]
+user=postgres
+command=/usr/lib/postgresql/14/bin/postgres -D /var/lib/postgresql/14/main -c config_file=/etc/postgresql/14/main/postgresql.conf
+autostart=false
+autorestart=unexpected
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s_err.log
+exitcodes=0

@@ -1,7 +1,7 @@
 cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins/"
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "default-jre", "gcc", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "python3", "python3-pip"]
+default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "python3", "python3-pip", "tar", "logrotate", "build-essential"]
 
 if (node["lsb"]["release"].to_i >= 20)
   default[cookbook_name]["packages"] += ["libncurses5", "libpython2-stdlib", "libpython2.7-minimal", "libpython2.7-stdlib", "libtinfo5", "python-is-python2", "python2", "python2-minimal", "python2.7", "python2.7-minimal"]
@@ -64,7 +64,7 @@ default["etc_environment"] = {
   "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
   "VAULT_TOKEN" => ENV["VAULT_TOKEN"] || "",
   "ENV" => node["environment"],
-  "GITHUB" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
+  "GITHUB_TOKEN" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
   "PHP_IDE_CONFIG" => "serverName=#{node["environment"]}",
 }
 

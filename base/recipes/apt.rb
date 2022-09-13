@@ -19,19 +19,16 @@ else
   include_recipe "apt::unattended-upgrades"
   execute "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure unattended-upgrades"
   execute "apt-mark hold unattended-upgrades"
+end
 
-  if node["lsb"]["release"].to_f < 18
-    execute "apt-mark hold 4.4.0-203-generic"
+if node[:configure][:update]
+  apt_update "update package list" do
+    frequency 86400
+    action :periodic
   end
 end
 
 if node["recipes"].include?("configure::base")
-  if node[:configure][:update]
-    execute "apt-get update" do
-      action :run
-    end
-  end
-
   if node[:configure][:upgrade]
     execute "DEBIAN_FRONTEND=noninteractive apt-get upgrade -yq" do
       action :run
