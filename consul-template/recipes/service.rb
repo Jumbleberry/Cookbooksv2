@@ -133,7 +133,7 @@ when 'systemd'
       options: options,
       environment: node['consul_template']['environment_variables']
     )
-    notifies :run, 'execute[systemctl-daemon-reload]', :immediately if node['virtualization']['system'] != 'docker'
+    notifies :run, 'execute[systemctl-daemon-reload]', :immediately unless node[:container]
     notifies :restart, 'service[consul-template]', :immediately
   end
 

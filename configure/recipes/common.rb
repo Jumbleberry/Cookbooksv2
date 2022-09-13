@@ -7,10 +7,10 @@ include_recipe cookbook_name + "::user"
 include_recipe cookbook_name + "::ipaddress"
 include_recipe cookbook_name + "::nvme"
 include_recipe cookbook_name + "::packages"
-include_recipe cookbook_name + "::clocksource"
 include_recipe "timezone_iii"
 include_recipe "timezone_iii::linux_generic"
 unless node.attribute?(:container)
+  include_recipe cookbook_name + "::clocksource"
   include_recipe "ntp"
 end
 

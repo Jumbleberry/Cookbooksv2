@@ -73,10 +73,10 @@ template "gearman-manager.service" do
   owner "root"
   group "root"
   mode "0755"
-  notifies :run, "execute[gearman systemcl daemon-reload]", :immediately
+  notifies :run, "execute[gearman systemctl daemon-reload]", :immediately unless node[:container]
 end
 
-execute "gearman systemcl daemon-reload" do
+execute "gearman systemctl daemon-reload" do
   command "systemctl daemon-reload"
   action :nothing
 end
@@ -90,8 +90,8 @@ end
 # Memcached seems to be sideloaded by gearrman; disable it
 service "memcached" do
   supports status: true, restart: true, reload: true, stop: true
-  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
+  not_if { node[:container] }
 end
 
 # Add the cron helper libraries to the consul config folder

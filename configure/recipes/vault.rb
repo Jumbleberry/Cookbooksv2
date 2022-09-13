@@ -32,7 +32,7 @@ ruby_block "get_vault_token" do
     else
       if !defined?(node.run_state["VAULT_TOKEN"]) || node.run_state["VAULT_TOKEN"].nil?
         begin
-          vault_token = Vault.auth.github(node["etc_environment"]["GITHUB"])
+          vault_token = Vault.auth.github(node["etc_environment"]["GITHUB_TOKEN"])
           node.run_state["VAULT_TOKEN"] = vault_token.auth.client_token
         rescue
           node.run_state["VAULT_TOKEN"] = nil

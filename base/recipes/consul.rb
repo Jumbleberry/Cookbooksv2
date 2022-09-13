@@ -8,6 +8,7 @@ end
 
 edit_resource(:service, "consul") do
   supports status: true, restart: true, reload: true, stop: true
+  provider Chef::Provider::Service::Systemd
   action %i{stop disable}
   notifies :run, "execute[clear-consul-state]", :immediate
 end

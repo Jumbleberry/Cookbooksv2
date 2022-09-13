@@ -24,6 +24,8 @@ end
 default[cookbook_name]["initcwnd"] = "20"
 default[cookbook_name]["initrwnd"] = "20"
 
+override["poise-service"]["provider"] = "systemd"
+
 default["apt"]["compile_time_update"] = true
 override["configure"]["update"] = true
 override["configure"]["upgrade"] = true
@@ -53,9 +55,11 @@ default["dnsmasq"]["dns_options"] = %w{
   no-negcache
 }
 
-default["redisio"]["package_install"] = false
-default["redisio"]["bypass_setup"] = false
+install_redis = node["recipes"].include?("configure::base") || node["recipes"].include?("base::redis")
+default["redisio"]["package_install"] = !install_redis
+default["redisio"]["bypass_setup"] = !install_redis
 default["redisio"]["version"] = "6.0.5"
+default["redisio"]["job_control"] = "systemd"
 
 default["hashicorp-vault"]["gems"] = {
   "vault" => "0.16.0",
@@ -72,6 +76,7 @@ default["consul_template"]["service_user"] = "www-data"
 default["consul_template"]["service_group"] = "www-data"
 default["consul_template"]["consul_addr"] = "127.0.0.1:8500"
 default["consul_template"]["vault_addr"] = node["hashicorp-vault"]["config"]["address"]
+override["consul_template"]["init_style"] = "systemd"
 
 default["openssl_source"]["openssl"]["version"] = "1.1.1n"
 default["openssl_source"]["openssl"]["abi_version"] = "1.1.1"

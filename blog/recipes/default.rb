@@ -69,10 +69,10 @@ template "/etc/systemd/system/blog.service" do
     group: node[:user],
   })
   mode "0755"
-  notifies :run, "execute[blog systemcl daemon-reload]", :immediately
+  notifies :run, "execute[blog systemctl daemon-reload]" unless node[:container]
 end
 
-execute "blog systemcl daemon-reload" do
+execute "blog systemctl daemon-reload" do
   command "systemctl daemon-reload"
   action :nothing
 end

@@ -19,7 +19,7 @@ if (node["lsb"]["release"].to_i < 18)
 
   # Install mysql server
   execute "mysql-install" do
-    command "(export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -y -q mysql-client-core-5.6 mysql-server-5.6 mysql-client-5.6)"
+    command "export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -yq mysql-client-core-5.6 mysql-server-5.6 mysql-client-5.6"
     user "root"
     notifies :stop, "service[mysql]", :immediately
     notifies :disable, "service[mysql]", :immediately
@@ -55,6 +55,14 @@ else
       provider Chef::Provider::Package::Dpkg if node["platform_family"] == "debian"
       action :nothing
     end
+  end
+
+  file "/usr/sbin/mysqld-debug" do
+    action :delete
+  end
+
+  execute "purge mysql" do
+    command "rm -f $(ls -1 /usr/bin/my{isam,sql}* | grep -v -P 'mysql(d.*|import)?$')"
   end
 end
 

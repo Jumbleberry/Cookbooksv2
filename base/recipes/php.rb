@@ -26,14 +26,14 @@ bash "php-spx" do
   user "root"
   cwd "/tmp"
   code <<-EOH
-    git clone https://github.com/NoiseByNorthwest/php-spx.git
-    cd php-spx
-    phpize
-    ./configure
-    make
-    sudo make install
-    cd /tmp
-    rm -rf /tmp/php-spx
+    git clone https://github.com/NoiseByNorthwest/php-spx.git \
+      && cd php-spx \
+      && phpize \
+      && ./configure \
+      && make \
+      && sudo make install \
+      && cd /tmp \
+      && rm -rf /tmp/php-spx
   EOH
   not_if { ::File.exist?("/etc/php/#{node["php"]["version"]}/mods-available/spx.ini") }
   notifies :create, "template[spx.ini]", :immediately
@@ -50,7 +50,7 @@ end
 
 template "/lib/systemd/system/php#{node["php"]["version"]}-fpm.service" do
   source "php-fpm.service.erb"
-  notifies :run, "execute[systemctl-reload]", :immediately if node["virtualization"]["system"] != "docker"
+  notifies :run, "execute[systemctl-reload]", :immediately unless node[:container]
 end
 
 execute "systemctl-reload" do
@@ -89,6 +89,7 @@ bash "install composer" do
     php composer-install.php
     mv composer.phar /usr/local/bin/composer
     chmod 0755 /usr/local/bin/composer
+    composer self-update --1
   EOL
   not_if { ::File.exist?("/usr/local/bin/composer") }
 end

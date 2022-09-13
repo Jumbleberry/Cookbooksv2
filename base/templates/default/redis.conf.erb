@@ -1,0 +1,8 @@
+[program:redis@<%= @server_name %>]
+user=<%= node["redisio"]["default_settings"]["user"] %>
+command=<%= node["redisio"]["bin_path"] %>/redis-server <%= node["redisio"]["default_settings"]["configdir"] %>/<%= @server_name %>.conf --daemonize no
+autostart=false
+autorestart=unexpected
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s_err.log
+exitcodes=0

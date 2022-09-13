@@ -30,12 +30,12 @@ nginx_path = ::File.join(
 bash "patch_openresty_source" do
   cwd ::File.dirname(src_filepath)
   code <<-EOH
-      tar zxf #{::File.basename(src_filepath)} -C #{::File.dirname(src_filepath)} &&
-      cd #{nginx_path} &&
-      patch -d . -p 1 < /tmp/nginx_upstream_check_module-master/check_1.16.1+.patch &&
-      patch -d . -p 1 < /tmp/proxy_protocol_xfwd.patch &&
-      cd #{::File.dirname(src_filepath)} &&
-      tar -czf #{::File.basename(src_file_name)}.tar.gz #{::File.basename(src_file_name)} &&
-      rm -rf #{::File.basename(src_file_name)}
+    tar zxf #{::File.basename(src_filepath)} -C #{::File.dirname(src_filepath)} \
+      && cd #{nginx_path} \
+      && patch -d . -p 1 < /tmp/nginx_upstream_check_module-master/check_1.16.1+.patch \
+      && patch -d . -p 1 < /tmp/proxy_protocol_xfwd.patch \
+      && cd #{::File.dirname(src_filepath)} \
+      && tar -czf #{::File.basename(src_file_name)}.tar.gz #{::File.basename(src_file_name)} \
+      && rm -rf #{::File.basename(src_file_name)}
   EOH
 end
