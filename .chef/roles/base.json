@@ -1,0 +1,10 @@
+{
+  "json_class": "Chef::Role",
+  "name": "base",
+  "description": "Base Role",
+  "env_run_lists": {
+    "dev": [
+      "recipe[configure::base]"
+    ]
+  }
+}
