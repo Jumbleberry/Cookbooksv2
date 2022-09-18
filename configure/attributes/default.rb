@@ -74,7 +74,7 @@ default["etc_environment"] = {
   "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
   "VAULT_TOKEN" => ENV["VAULT_TOKEN"] || "",
   "ENV" => node["environment"],
-  "GITHUB_TOKEN" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
+  "GITHUB_TOKEN" => ::File.exist?("/var/www/.github-token") ? IO.read("/var/www/.github-token").strip : (ENV["GITHUB_TOKEN"] || ""),
   "PHP_IDE_CONFIG" => "serverName=#{node["environment"]}",
 }
 
