@@ -1,4 +1,4 @@
-if node["environment"] == "dev"
+if node["environment"] == "dev" && (node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start"))
   # Copy config files
   cookbook_file "/etc/postgresql/14/main/pg_hba.conf" do
     source "pg_hba.conf"
@@ -30,6 +30,7 @@ if node["environment"] == "dev"
     command "psql -c \"CREATE USER root WITH PASSWORD '#{node["pgsql"]["root_password"]}' SUPERUSER\""
     user "postgres"
     not_if "psql -U postgres -c \"select * from pg_user\" | grep -c root", :user => "postgres"
+    notifies :start, "service[postgresql.service]", :before
   end
 
   # Create pgsql db 'timescale_dev' if it doesn't exist
@@ -37,6 +38,7 @@ if node["environment"] == "dev"
     command "psql -c \"CREATE DATABASE timescale_dev ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0\""
     user "postgres"
     not_if "psql -U postgres -lqt | grep -qw timescale_dev", :user => "postgres"
+    notifies :start, "service[postgresql.service]", :before
   end
 
   # conver the pgdb to timescaledb
