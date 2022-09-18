@@ -13,7 +13,6 @@ if node["environment"] == "dev" && (node["configure"]["services"]["postgresql"] 
     group "postgres"
     mode "0644"
     notifies :restart, "service[postgresql.service]", :immediate
-    notifies :run, "execute[convert-pgdb-to-timescaledb]", :delayed
   end
 
   # Disabled as "postgresql.conf" is already tuned based on this, and re-tuning will ensure an unnecessary update of the postgres.conf file
@@ -21,7 +20,6 @@ if node["environment"] == "dev" && (node["configure"]["services"]["postgresql"] 
   #   execute "tune-and-restart-pgsql" do
   #     command "sudo timescaledb-tune -yes -quiet"
   #     user "root"
-  #     notifies :reload, "service[postgresql.service]", :immediate
   #     only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
   #   end
 
@@ -45,6 +43,6 @@ if node["environment"] == "dev" && (node["configure"]["services"]["postgresql"] 
   execute "convert-pgdb-to-timescaledb" do
     command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION '2.7.2' CASCADE\" -d timescale_dev"
     user "postgres"
-    action :nothing
+    notifies :start, "service[postgresql.service]", :before
   end
 end
