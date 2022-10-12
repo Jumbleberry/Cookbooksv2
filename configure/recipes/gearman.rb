@@ -4,14 +4,16 @@ template "/etc/gearman-manager/environment" do
   group "gearman"
 end
 
+gearman_started = (node["configure"]["services"]["gearman"] || {}).include? "start"
+
 edit_resource(:service, "gearman-job-server.service") do
-  subscribes :restart, "template[/etc/default/gearman-job-server]", :delayed if node["configure"]["services"]["gearman"].include? "start"
+  subscribes :restart, "template[/etc/default/gearman-job-server]", :delayed if gearman_started
 end
 
 edit_resource(:service, "gearman-manager.service") do
-  subscribes :restart, "git[gearman-manager]", :delayed if node["configure"]["services"]["gearman"].include? "start"
-  subscribes :restart, "template[/etc/default/gearman-job-server]", :delayed if node["configure"]["services"]["gearman"].include? "start"
-  subscribes :restart, "template[/etc/gearman-manager/environment]", :delayed if node["configure"]["services"]["gearman"].include? "start"
+  subscribes :restart, "git[gearman-manager]", :delayed if gearman_started
+  subscribes :restart, "template[/etc/default/gearman-job-server]", :delayed if gearman_started
+  subscribes :restart, "template[/etc/gearman-manager/environment]", :delayed if gearman_started
 end
 
 template "/etc/default/gearman-job-server" do
@@ -28,6 +30,6 @@ unless node.attribute?(:ec2)
     supports status: true, restart: true, reload: true
     provider Chef::Provider::Service::Systemd
     action :restart
-    only_if { node["configure"]["services"]["gearman"].include? "start" }
+    only_if { gearman_started }
   end
 end
