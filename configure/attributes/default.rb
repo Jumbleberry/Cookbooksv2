@@ -58,6 +58,16 @@ default["php"]["xdebug"] = {
   "start_with_request" => "yes",
 }
 
+default["php"]["logrotate"] = true
+default["php"]["logrotate_days"] = 14
+default["php"]["logrotate_options"] = [ 
+  "missingok",
+  "delaycompress",
+  "notifempty",
+  "compress",
+  "sharedscripts"
+]
+
 default["gearman"]["retries"] = 1
 
 default["etc_environment"] = {

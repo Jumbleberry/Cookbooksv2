@@ -23,5 +23,14 @@ if node["jbx"].attribute?(:consumers) && node["jbx"]["path"] == "/var/www/jbx"
       action [:create] + (node["configure"]["services"][service] || %i{stop disable})
       subscribes :restart, "execute[/bin/bash #{node["jbx"]["path"]}/deploy.sh]", :delayed if (node["configure"]["services"][service] || []).include?("start")
     end
+
+    logrotate_app service do
+      path File.dirname(node["php"]["logfile"]) + "/#{service}.log"
+      enable node["php"]["logrotate"]
+      frequency "daily"
+      rotate node["php"]["logrotate_days"]
+      create "0644 #{node["user"]} adm"
+      options node["php"]["logrotate_options"]
+    end
   end
 end

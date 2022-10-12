@@ -34,10 +34,31 @@ node["php"]["fpm"]["conf_dirs"].each do |path|
   end
 end
 
+include_recipe 'logrotate'
+
+logrotate_app "php" do
+  path node["php"]["logfile"]
+  enable node["php"]["logrotate"]
+  frequency "daily"
+  rotate node["php"]["logrotate_days"]
+  create "0644 #{node["user"]} adm"
+  options node["php"]["logrotate_options"]
+end
+
 file node["php"]["xdebug"]["remote_log"] do
   owner node["user"]
   group node["user"]
   mode 0744
+  not_if { node["php"]["xdebug"]["remote_log"].empty? }
+end
+
+logrotate_app "xdebug" do
+  path node["php"]["xdebug"]["remote_log"]
+  enable node["php"]["logrotate"]
+  frequency "daily"
+  rotate node["php"]["logrotate_days"]
+  create "0644 #{node["user"]} adm"
+  options node["php"]["logrotate_options"]
   not_if { node["php"]["xdebug"]["remote_log"].empty? }
 end
 
