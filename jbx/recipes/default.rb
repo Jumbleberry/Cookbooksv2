@@ -119,7 +119,7 @@ consul_template_config "jbx.credentials.json" do
     command: "cd /var/www/jbx && /bin/bash deploy.sh && #{node["jbx"]["path"]}/application/cli/bin/bash ./migration.sh -c migrate -d all -o --no-interaction",
   }]
   action node["jbx"]["consul-template"] ? :create : :delete
-  only_if { ::File.exist?("/var/www/jbx/config/credentials.json.tpl") && node[:environment] == 'staging' }
+  only_if { (::File.exist?("/var/www/jbx/config/credentials.json.tpl") && node[:environment] == 'staging') }
 end
 
 execute "consul-template jbx.credentials.json" do
