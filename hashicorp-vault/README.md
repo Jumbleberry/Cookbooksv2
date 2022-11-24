@@ -1,43 +1,125 @@
 # hashicorp-vault cookbook
-[![Build Status](https://travis-ci.org/johnbellone/vault-cookbook.svg?branch=master)](https://travis-ci.org/johnbellone/vault-cookbook)
+
 [![Cookbook Version](https://img.shields.io/cookbook/v/hashicorp-vault.svg)](https://supermarket.chef.io/cookbooks/hashicorp-vault)
-[![Coverage](https://img.shields.io/codecov/c/github/johnbellone/vault-cookbook.svg)](https://codecov.io/github/johnbellone/vault-cookbook)
-[![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![CI State](https://github.com/sous-chefs/vault/workflows/ci/badge.svg)](https://github.com/sous-chefs/vault/actions?query=workflow%3Aci)
+[![OpenCollective](https://opencollective.com/sous-chefs/backers/badge.svg)](#backers)
+[![OpenCollective](https://opencollective.com/sous-chefs/sponsors/badge.svg)](#sponsors)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[Application cookbook][0] for installing and configuring [Hashicorp Vault][1].
+Install and configure Hashicorp Vault in server and agent mode.
 
-Vault is a tool, which when used properly, manages secure manage to
-secrets for your infrastructure.
+**Version 5.0.0 constitutes a major change and rewrite, please see [UPGRADING.md](./UPGRADING.md).**
 
-## Platform Support
+## Maintainers
+
+This cookbook is maintained by the Sous Chefs. The Sous Chefs are a community of Chef cookbook maintainers working together to maintain important cookbooks. If you’d like to know more please visit [sous-chefs.org](https://sous-chefs.org/) or come chat with us on the Chef Community Slack in [#sous-chefs](https://chefcommunity.slack.com/messages/C2V7B88SF).
+
+## Platforms
+
 The following platforms have been certified with integration tests
 using Test Kitchen:
 
-- CentOS (RHEL) 5.11, 6.8, 7.2
-- Ubuntu 12.04, 14.04, 16.04
+- Debian/Ubuntu
+- RHEL/CentOS and derivatives
+- Fedora and derivatives
 
-## Basic Usage
-This cookbook was designed from the ground up to make it dead simple
-to install and configure the [Vault daemon][1] as a system service
-using Chef. It highlights several of our best practices for developing
-reusable infrastructure at Bloomberg.
+## Requirements
 
-This cookbook provides three sets of
-[node attributes](attributes/default.rb) which can be used to fine
-tune the default recipe which installs and configures Vault. The
-values from these node attributes are fed directly into the custom
-resources.
+- Chef 14+
+- ark Community Cookbook (<https://supermarket.chef.io/cookbooks/ark>)
 
-This cookbook can be added to the run list of all of the nodes that
-you want to be part of the cluster. But the best way to use this is in
-a [wrapper cookbook][2] which sets up a backend, and potentially even
-TLS certificates. We provide an example [Vault Cluster cookbook][3]
-which uses our [Consul cookbook][4] for a highly-available
-storage solution.
+## Usage
 
-[0]: http://blog.vialstudios.com/the-environment-cookbook-pattern/#thelibrarycookbook
-[1]: https://www.vaultproject.io
-[2]: http://blog.vialstudios.com/the-environment-cookbook-pattern/#thewrappercookbook
-[3]: https://github.com/johnbellone/vault-cluster-cookbook
-[4]: https://github.com/johnbellone/consul-cookbook
-[5]: https://github.com/chef-cookbooks/chef-vault
+It is recommended to create a project or organization specific [wrapper cookbook](https://www.chef.io/blog/2013/12/03/doing-wrapper-cookbooks-right/) and add the desired custom resources to the run list of a node. Depending on your environment, you may have multiple roles that use different recipes from this cookbook. Adjust any attributes as desired.
+
+Example of a basic server configuration using Hashicorp HCL for configuration
+
+```ruby
+hashicorp_vault_install 'package' do
+  action :upgrade
+end
+
+hashicorp_vault_config_global 'vault' do
+  sensitive false
+  telemetry(
+    statsite_address: '127.0.0.1:8125',
+    disable_hostname: true
+  )
+
+  notifies :restart, 'hashicorp_vault_service[vault]', :delayed
+
+  action :create
+end
+
+hashicorp_vault_config_listener 'tcp' do
+  options(
+    'address' => '127.0.0.1:8200',
+    'cluster_address' => '127.0.0.1:8201',
+    'tls_cert_file' => '/opt/vault/tls/tls.crt',
+    'tls_key_file' => '/opt/vault/tls/tls.key',
+    'telemetry' => {
+      'unauthenticated_metrics_access' => false,
+    }
+  )
+
+  notifies :restart, 'hashicorp_vault_service[vault]', :delayed
+end
+
+hashicorp_vault_config_storage 'Test file storage' do
+  type 'file'
+  options(
+    'path' => '/opt/vault/data'
+  )
+
+  notifies :restart, 'hashicorp_vault_service[vault]', :delayed
+end
+
+hashicorp_vault_service 'vault' do
+  action %i(create enable start)
+end
+
+```
+
+## External Documentation
+
+- <https://www.vaultproject.io/docs/configuration>
+- <https://www.vaultproject.io/docs/agent>
+
+## Resources
+
+- [hashicorp_vault_config_auto_auth](documentation/hashicorp_vault_config_auto_auth.md)
+- [hashicorp_vault_config_entropy](documentation/hashicorp_vault_config_entropy.md)
+- [hashicorp_vault_config_global](documentation/hashicorp_vault_config_global.md)
+- [hashicorp_vault_config_listener](documentation/hashicorp_vault_config_listener.md)
+- [hashicorp_vault_config_seal](documentation/hashicorp_vault_config_seal.md)
+- [hashicorp_vault_config_service_registration](documentation/hashicorp_vault_config_service_registration.md)
+- [hashicorp_vault_config_storage](documentation/hashicorp_vault_config_storage.md)
+- [hashicorp_vault_config_template](documentation/hashicorp_vault_config_template.md)
+- [hashicorp_vault_config](documentation/hashicorp_vault_config.md)
+- [hashicorp_vault_install](documentation/hashicorp_vault_install.md)
+- [hashicorp_vault_service](documentation/hashicorp_vault_service.md)
+
+## Contributors
+
+This project exists thanks to all the people who [contribute.](https://opencollective.com/sous-chefs/contributors.svg?width=890&button=false)
+
+### Backers
+
+Thank you to all our backers!
+
+![https://opencollective.com/sous-chefs#backers](https://opencollective.com/sous-chefs/backers.svg?width=600&avatarHeight=40)
+
+### Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website.
+
+![https://opencollective.com/sous-chefs/sponsor/0/website](https://opencollective.com/sous-chefs/sponsor/0/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/1/website](https://opencollective.com/sous-chefs/sponsor/1/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/2/website](https://opencollective.com/sous-chefs/sponsor/2/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/3/website](https://opencollective.com/sous-chefs/sponsor/3/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/4/website](https://opencollective.com/sous-chefs/sponsor/4/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/5/website](https://opencollective.com/sous-chefs/sponsor/5/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/6/website](https://opencollective.com/sous-chefs/sponsor/6/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/7/website](https://opencollective.com/sous-chefs/sponsor/7/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/8/website](https://opencollective.com/sous-chefs/sponsor/8/avatar.svg?avatarHeight=100)
+![https://opencollective.com/sous-chefs/sponsor/9/website](https://opencollective.com/sous-chefs/sponsor/9/avatar.svg?avatarHeight=100)
