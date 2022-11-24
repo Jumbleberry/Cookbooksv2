@@ -50,7 +50,11 @@ module ConsulCookbook
       attribute(:acl_ttl, kind_of: String)
       attribute(:addresses, kind_of: [Hash, Mash])
       attribute(:advertise_addr, kind_of: String)
+      attribute(:advertise_addr_ipv4, kind_of: String)
+      attribute(:advertise_addr_ipv6, kind_of: String)
       attribute(:advertise_addr_wan, kind_of: String)
+      attribute(:advertise_addr_wan_ipv4, kind_of: String)
+      attribute(:advertise_addr_wan_ipv6, kind_of: String)
       attribute(:atlas_acl_token, kind_of: String)
       attribute(:atlas_infrastructure, kind_of: String)
       attribute(:atlas_join, equal_to: [true, false])
@@ -80,6 +84,7 @@ module ConsulCookbook
       attribute(:dns_config, kind_of: [Hash, Mash])
       attribute(:domain, kind_of: String)
       attribute(:enable_acl_replication, equal_to: [true, false])
+      attribute(:enable_additional_node_meta_txt, equal_to: [true, false])
       attribute(:enable_agent_tls_for_checks, equal_to: [true, false])
       attribute(:enable_central_service_config, equal_to: [true, false])
       attribute(:enable_debug, equal_to: [true, false])
@@ -99,8 +104,9 @@ module ConsulCookbook
       attribute(:log_file, kind_of: String)
       attribute(:log_level, equal_to: %w(INFO DEBUG WARN ERR))
       attribute(:log_rotate_duration, kind_of: String)
-      attribute(:log_rotate_bytes, kind_of: String)
+      attribute(:log_rotate_bytes, kind_of: Integer)
       attribute(:log_rotate_max_files, kind_of: Integer)
+      attribute(:metrics_prefix, kind_of: String)
       attribute(:node_id, kind_of: String)
       attribute(:node_name, kind_of: String)
       attribute(:node_meta, kind_of: [Hash, Mash])
@@ -127,7 +133,7 @@ module ConsulCookbook
       attribute(:retry_max, kind_of: Integer)
       attribute(:rejoin_after_leave, equal_to: [true, false])
       attribute(:segment, kind_of: String)
-      attribute(:segments, kind_of: [Hash, Mash])
+      attribute(:segments, kind_of: Array)
       attribute(:serf_lan, kind_of: String)
       attribute(:serf_wan, kind_of: String)
       attribute(:serf_lan_bind, kind_of: String)
@@ -139,7 +145,9 @@ module ConsulCookbook
       attribute(:start_join, kind_of: Array)
       attribute(:start_join_wan, kind_of: Array)
       attribute(:statsd_addr, kind_of: String)
+      attribute(:statsd_address, kind_of: String)
       attribute(:statsite_addr, kind_of: String)
+      attribute(:statsite_address, kind_of: String)
       attribute(:statsite_prefix, kind_of: String)
       attribute(:telemetry, kind_of: [Hash, Mash])
       attribute(:syslog_facility, kind_of: String)
@@ -174,7 +182,11 @@ module ConsulCookbook
           acl_ttl
           addresses
           advertise_addr
+          advertise_addr_ipv4
+          advertise_addr_ipv6
           advertise_addr_wan
+          advertise_addr_wan_ipv4
+          advertise_addr_wan_ipv6
           autopilot
           auto_encrypt
           bind_addr
@@ -193,6 +205,7 @@ module ConsulCookbook
           dns_config
           domain
           enable_acl_replication
+          enable_additional_node_meta_txt
           enable_central_service_config
           enable_debug
           enable_local_script_checks

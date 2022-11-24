@@ -40,7 +40,7 @@ module ConsulCookbook
                     archive_checksum: binary_checksum(node, resource))
       end
 
-      def action_create
+      action :create do
         notifying_block do
           directory join_path(options[:extract_to], new_resource.version) do
             mode '0755'
@@ -71,7 +71,7 @@ module ConsulCookbook
         end
       end
 
-      def action_remove
+      action :remove do
         notifying_block do
           directory join_path(options[:extract_to], new_resource.version) do
             action :delete
@@ -90,6 +90,7 @@ module ConsulCookbook
         when 'x86_64', 'amd64' then ['consul', resource.version, node['os'], 'amd64'].join('_')
         when /i\d86/ then ['consul', resource.version, node['os'], '386'].join('_')
         when /^arm/ then ['consul', resource.version, node['os'], 'arm'].join('_')
+        when 'aarch64' then ['consul', resource.version, node['os'], 'arm64'].join('_')
         else ['consul', resource.version, node['os'], node['kernel']['machine']].join('_')
         end.concat('.zip')
       end

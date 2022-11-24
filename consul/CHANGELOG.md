@@ -1,5 +1,94 @@
 # Change Log
 
+## 4.8.0 - *2021-09-28*
+
+- Added `advertise_addr_wan_ipv4` and `advertise_addr_wan_ipv6` attributes
+
+## 4.7.0 - *2021-08-29*
+
+- Added `enable_additional_node_meta_txt` attributes
+
+## 4.6.0 - *2021-08-29*
+
+- Exclude Chef Infra Client >= 17.0 until Poise support has been removed
+- resolved cookstyle error: Policyfile.rb:2:1 warning: `Chef/Deprecations/PolicyfileCommunitySource`
+- Standardise files with files in sous-chefs/repo-management
+
+## 4.5.1 - *2021-06-01*
+
+- Standardise files with files in sous-chefs/repo-management
+
+## 4.5.0 - *2021-03-31*
+
+- Added `advertise_addr_ipv4` and `advertise_addr_ipv6` attributes
+
+## 4.4.0 - *2021-03-16*
+
+- Added the ability to define open file limit for the consul service
+
+## 4.3.2 - *2021-02-11*
+
+- Proper error messages when installing diplomat for issues such as #583
+
+## 4.3.1 - *2020-12-21*
+
+- Added the renamed parameters from consul 1.0.0:
+  - `metrics_prefix`
+  - `statsd_address`
+  - `statsite_address`
+
+## 4.0.7 2020-11-12
+
+- Changed type of log_rotate_bytes to Integer.
+
+## [4.0.6](https://github.com/sous-chefs/consul/tree/v4.0.6) (2020-10-01)
+
+- Support binary download for linux arm64
+
+## [4.0.5](https://github.com/sous-chefs/consul/tree/v4.0.5) (2020-08-31)
+
+- Change segments to Array type #549
+
+## [4.0.4](https://github.com/sous-chefs/consul/tree/v4.0.4) (2020-08-31)
+
+- Disable broken tests and suites and fix client suite
+- Update kitchen.yml to our standards and default to current channel
+- Add testing for Ubuntu 20.04
+- Fix Dokken configuration for CentOS 8 and Ubuntu 16.04
+- Enable enforce_idempotency checks
+- Remove support for CentOS 6, Ubuntu < 16.04
+- Only set `name` if the parameters are not an array #568
+
+## [4.0.3](https://github.com/sous-chefs/consul/tree/v4.0.3) (2020-07-20)
+
+- resolved cookstyle error: libraries/consul_installation_binary.rb:43:7 refactor: `ChefModernize/ActionMethodInResource`
+- resolved cookstyle error: libraries/consul_installation_binary.rb:74:7 refactor: `ChefModernize/ActionMethodInResource`
+- resolved cookstyle error: libraries/consul_installation_git.rb:37:7 refactor: `ChefModernize/ActionMethodInResource`
+- resolved cookstyle error: libraries/consul_installation_git.rb:65:7 refactor: `ChefModernize/ActionMethodInResource`
+- resolved cookstyle error: libraries/consul_installation_package.rb:40:7 refactor: `ChefModernize/ActionMethodInResource`
+- resolved cookstyle error: libraries/consul_installation_package.rb:51:7 refactor: `ChefModernize/ActionMethodInResource`
+- Standardise files with files in sous-chefs/repo-management
+- Add documentation subfolder
+
+## [4.0.2](https://github.com/sous-chefs/consul/tree/v4.0.2) (2020-06-02)
+
+- resolved cookstyle error: libraries/consul_service_windows.rb:16:7 refactor: `ChefModernize/IncludingMixinShelloutInResources`
+
+## [4.0.1](https://github.com/sous-chefs/consul/tree/v4.0.1) (2020-05-05)
+
+- resolved cookstyle error: libraries/consul_acl.rb:109:11 convention: `Style/RedundantReturn`
+- resolved cookstyle error: libraries/consul_policy.rb:122:11 convention: `Style/RedundantReturn`
+- resolved cookstyle error: libraries/consul_role.rb:119:11 convention: `Style/RedundantReturn`
+- resolved cookstyle error: libraries/consul_token.rb:141:11 convention: `Style/RedundantReturn`
+- resolved cookstyle error: libraries/helpers.rb:19:7 refactor: `ChefStyle/UnnecessaryOSCheck`
+
+## [v4.0.0](https://github.com/sous-chefs/consul/tree/v4.0.0) (2020-03-30)
+
+- Eliminates the need for the windows cookbook.
+- Update Linux testing versions.
+- Set minimum Chef version to 13.4.
+- Update dokken testing to Chef 14.
+
 ## [v3.3.1](https://github.com/sous-chefs/consul/tree/v3.3.1) (2020-02-03)
 
 - Fix undefined method 'join_path' errors

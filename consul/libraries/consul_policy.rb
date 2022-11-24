@@ -87,9 +87,9 @@ module ConsulCookbook
       def configure_diplomat
         begin
           require 'diplomat'
-        rescue LoadError
+        rescue LoadError => e
           raise 'The diplomat gem is required; ' \
-                'include recipe[consul::client_gem] to install.'
+                "include recipe[consul::client_gem] to install, details: #{e}"
         end
         Diplomat.configure do |config|
           config.url = new_resource.url
@@ -119,7 +119,7 @@ module ConsulCookbook
         try_count = 1
 
         begin
-          return yield try_count
+          yield try_count
         rescue Diplomat::UnknownStatus
           try_count += 1
 

@@ -34,9 +34,9 @@ Out of the box the following platforms are certified to work and are
 tested using our [Test Kitchen][8] configuration. Additional platforms
 _may_ work, but your mileage may vary.
 
-- RHEL/CentOS 5.11, 6.8, 7.3
-- Ubuntu 12.04, 14.04, 16.04
-- Debian 7.11, 8.7
+- RHEL/CentOS 7 & 8
+- Ubuntu 16.04, 18.04 & 20.04
+- Debian 9 & 10
 - Windows Server 2012 R2
 
 ### Client
@@ -193,7 +193,9 @@ as necessary.
 
 The `consul_acl` resource requires the [Diplomat Ruby API][16] gem to be
 installed and available to Chef before using the resource. This can be
-accomplished by including `consul::client_gem` recipe in your run list.
+accomplished by including `consul::client_gem` recipe in your run list. If you
+are using Chef Infra Client 15.8+ you will need to make sure you are using at
+least version 2.2.6 of the diplomat gem.
 
 In order to make the resource idempotent and only notify when necessary, the
 `id` field is always required (defaults to the name of the resource).
