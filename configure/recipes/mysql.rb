@@ -98,7 +98,6 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
   query = <<-EOH
     GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
     GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
-    DELETE FROM mysql.user WHERE user = 'root' AND password = '';
     FLUSH PRIVILEGES;
     SET GLOBAL innodb_large_prefix=on;
     SET GLOBAL innodb_file_format=Barracuda;

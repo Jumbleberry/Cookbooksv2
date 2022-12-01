@@ -1,74 +1,39 @@
-# Set mysql server default password
-execute "mysql-default-password" do
-  command "echo \"mysql-server-5.6 mysql-server/mysql_password password #{node["mysql"]["root_password"]}\" | debconf-set-selections"
-  user "root"
+# Install mysql server
+execute "mysql-install" do
+  command <<-EOH
+    { \
+      echo "mysql-server-5.7 mysql-server-5.7/mysql_password password '#{node["mysql"]["root_password"]}'"; \
+      echo "mysql-server-5.7 mysql-server-5.7/mysql_password_again password '#{node["mysql"]["root_password"]}'"; \
+      echo "mysql-server-5.7 mysql-server-5.7/data-dir select ''"; \
+      echo "mysql-server-5.7 mysql-server-5.7/root-pass password '#{node["mysql"]["root_password"]}'"; \
+      echo "mysql-server-5.7 mysql-server-5.7/re-root-pass password '#{node["mysql"]["root_password"]}'"; \
+      echo "mysql-server-5.7 mysql-server-5.7/remove-test-db select true"; \
+    } | debconf-set-selections \
+      && DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.7 mysql-server;
+    
+    mkdir -p /var/lib/mysql /var/run/mysqld \
+	    && chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
+  EOH
+  ignore_failure true
+  notifies :edit, "replace_or_add[mysql-dpkg-configure]", :immediately
+  notifies :stop, "service[mysql]", :immediately unless node[:container]
+  notifies :disable, "service[mysql]", :immediately unless node[:container]
 end
-execute "mysql-default-password-again" do
-  command "echo \"mysql-server-5.6 mysql-server/mysql_password_again password #{node["mysql"]["root_password"]}\" | debconf-set-selections"
-  user "root"
+
+replace_or_add "mysql-dpkg-configure" do
+  path "/var/lib/dpkg/status"
+  pattern ".*install ok half-configured$"
+  line "Status: install ok installed"
+  replace_only true
+  action :nothing
 end
 
-if (node["lsb"]["release"].to_i < 18)
-  # Add the universe repository to help with dependency resolution
-  apt_repository "trusty-universe" do
-    uri "http://archive.ubuntu.com/ubuntu"
-    components ["universe"]
-    distribution "trusty"
-    action :add
-  end
+file "/usr/sbin/mysqld-debug" do
+  action :delete
+end
 
-  # Install mysql server
-  execute "mysql-install" do
-    command "export DEBIAN_FRONTEND=\"noninteractive\"; sudo -E apt-get install -yq mysql-client-core-5.6 mysql-server-5.6 mysql-client-5.6"
-    user "root"
-    notifies :stop, "service[mysql]", :immediately
-    notifies :disable, "service[mysql]", :immediately
-  end
-else
-  package_arch = case node['kernel']['machine']
-    when 'x86_64', 'amd64' then 'amd64'
-    when 'aarch64', 'arm64' then 'aarch64'
-    when 'i386' then 'i386'
-    else node['kernel']['machine']
-  end
-  package_url = "https://downloads.mysql.com/archives/get/p/23/file/mysql-server_5.6.51-1debian9_#{package_arch}.deb-bundle.tar"
-  package_file = "/tmp/mysql-5.6.51.deb"
-
-  remote_file "mysql_download" do
-    path package_file + ".tar"
-    source package_url
-    not_if { ::File.exist?(package_file) }
-    notifies :run, "execute[mysql_untar]", :immediately
-    notifies :install, "package[mysql-common]", :immediately
-    notifies :install, "package[mysql-community-client]", :immediately
-    notifies :install, "package[mysql-client]", :immediately
-    notifies :install, "package[mysql-community-server]", :immediately
-    notifies :install, "package[mysql-server]", :immediately
-    notifies :stop, "service[mysql]", :immediately
-    notifies :disable, "service[mysql]", :immediately
-  end
-
-  execute "mysql_untar" do
-    command "tar -xvf #{package_file}.tar"
-    cwd "/tmp"
-    action :nothing
-  end
-
-  ["mysql-common", "mysql-community-client", "mysql-client", "mysql-community-server", "mysql-server"].each do |p|
-    package p do
-      source "/tmp/#{p}_5.6.51-1debian9_#{package_arch}.deb"
-      provider Chef::Provider::Package::Dpkg if node["platform_family"] == "debian"
-      action :nothing
-    end
-  end
-
-  file "/usr/sbin/mysqld-debug" do
-    action :delete
-  end
-
-  execute "purge mysql" do
-    command "rm -f $(ls -1 /usr/bin/my{isam,sql}* | grep -v -P 'mysql(d.*|import)?$')"
-  end
+bash "purge mysql" do
+  code "rm -f $(ls -1 /usr/bin/my{isam,sql}* | grep -v -P 'mysql(d.*|import)?$')"
 end
 
 service "mysql" do

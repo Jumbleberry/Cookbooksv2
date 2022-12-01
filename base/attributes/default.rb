@@ -156,6 +156,3 @@ default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.gi
 default["nodejs"]["install_method"] = "binary"
 default["nodejs"]["version"] = "14.17.4"
 default["nodejs"]["binary"]["checksum"] = "c69671c89d0faa47b64bd5f37079e4480852857a9a9366ee86cdd8bc9670074a"
-
-default["mysql"]["root_password"] = "root"
-default["pgsql"]["root_password"] = "root"
