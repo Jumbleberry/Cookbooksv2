@@ -43,9 +43,14 @@ service "postgresql.service" do
 end
 
 if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
+  arch = case node['kernel']['machine']
+    when 'aarch64', 'arm64' then 'arm64'
+    else 'amd64'
+  end
+
   cookbook_file "/usr/local/bin/pgloader" do
     mode "0755"
-    source "pgloader"
+    source "pgloader_#{arch}"
   end
 else
   include_recipe cookbook_name + "::pgloader"
