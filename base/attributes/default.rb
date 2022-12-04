@@ -1,6 +1,6 @@
 cookbook_name = "base"
 
-default[cookbook_name]["trusted_roots"] = ["rootCA.crt", "betwixtCA.crt"]
+default[cookbook_name]["trusted_roots"] = ["rootCA.crt", "betwixtCA.crt", "proxyman.crt"]
 
 default[cookbook_name]["kernel"]["shmmax"] = "201326592"
 default[cookbook_name]["kernel"]["shmall"] = "268435456"
