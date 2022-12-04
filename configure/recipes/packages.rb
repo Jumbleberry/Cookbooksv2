@@ -1,6 +1,12 @@
 node[cookbook_name]["ppas"].each_with_index do |ppa, index|
-  apt_repository "core-ppa-#{index + 1}" do
-    uri ppa
+  unless node[:container]
+    execute "core-ppa-#{index + 1}" do
+      command "add-apt-repository #{ppa}"      
+    end
+  else
+    apt_repository "core-ppa-#{index + 1}" do
+      uri ppa
+    end
   end
 end
 
