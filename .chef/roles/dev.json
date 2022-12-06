@@ -1,11 +1,11 @@
 {
-  "json_class": "Chef::Role",
-  "name": "dev",
-  "description": "Dev Role",
-  "env_run_lists": {
-    "dev": [
-      "recipe[jbx]",
-      "recipe[admin]"
-    ]
-  }
+    "json_class": "Chef::Role",
+    "name": "dev",
+    "description": "Dev Role",
+    "env_run_lists": {
+        "dev": [
+          "recipe[jbx]",
+          "recipe[admin]"
+        ]
+    }
 }

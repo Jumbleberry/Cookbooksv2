@@ -3,8 +3,8 @@
   "name": "base",
   "description": "Base Role",
   "env_run_lists": {
-    "dev": [
-      "recipe[configure::base]"
-    ]
+      "dev": [
+        "recipe[configure::base]"
+      ]
   }
 }
