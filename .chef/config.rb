@@ -1,14 +1,15 @@
 current_dir                     = File.dirname(__FILE__)
+chef_env                        = File.basename(File.realpath(__dir__ + "/../")) == "cookbooks" ? current_dir : "/vagrant/cookbooks/.chef"
 
 environment                     "dev"
 local_mode                      true
 chef_zero.enabled               true
 file_cache_path                 "#{current_dir}/local-mode-cache/chef"
 file_backup_path                "#{current_dir}/local-mode-cache/backup"
-cookbook_path                   ["#{current_dir}/../"]
-environment_path                ["#{current_dir}/environments"]
-node_path                       ["#{current_dir}/nodes"]
-role_path                       ["#{current_dir}/roles"]
+cookbook_path                   ["#{chef_env}/../"]
+environment_path                ["#{chef_env}/environments"]
+node_path                       ["#{chef_env}/nodes"]
+role_path                       ["#{chef_env}/roles"]
 listen                          false
 no_lazy_load                    true
 rest_timeout                    60
