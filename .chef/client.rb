@@ -1,12 +1,16 @@
 current_dir                     = File.dirname(__FILE__)
-chef_env                        = File.basename(File.realpath(__dir__ + "/../")) == "cookbooks" ? current_dir : "/vagrant/cookbooks/.chef"
+chef_env                        = File.exist?(__dir__ + "/environments") ? current_dir : "/vagrant/cookbooks/.chef"
 
 environment                     "dev"
 local_mode                      true
 chef_zero.enabled               true
 file_cache_path                 "#{current_dir}/local-mode-cache/chef"
 file_backup_path                "#{current_dir}/local-mode-cache/backup"
-cookbook_path                   ["#{chef_env}/../"]
+cookbook_path                   case __dir__
+    when /vagrant-chef/ then ["/vagrant/cookbooks"]
+    when /packer-chef-solo/ then ["#{current_dir}/cookbooks-0"]
+    else ["#{current_dir}/../"]
+end
 environment_path                ["#{chef_env}/environments"]
 node_path                       ["#{chef_env}/nodes"]
 role_path                       ["#{chef_env}/roles"]
