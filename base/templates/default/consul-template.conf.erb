@@ -1,6 +1,6 @@
 [program:consul-template]
 user=<%= node["consul_template"]["service_user"] %>
-command=/bin/bash -c 'source /etc/environment && <%= @command %> <%= @options %>'
+command=/bin/bash -c 'set -a && source /etc/environment && <%= @command %> <%= @options %>'
 stopsignal=INT
 autostart=false
 autorestart=unexpected

@@ -1,4 +1,6 @@
 ohai_plugin "nvme" do
+  name "nvme"
+  plugin_name Chef::VERSION.to_i <= 12 ? "nvme_12" : "nvme_14"
   path node["configure"]["plugin_path"]
   compile_time true
 end

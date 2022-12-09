@@ -1,12 +1,11 @@
 cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins/"
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "python3", "python3-pip", "tar", "logrotate", "build-essential"]
+default[cookbook_name]["ppas"] = ["ppa:deadsnakes/ppa"]
+default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "default-jre", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "libpython3.8-stdlib"]
 
 if (node["lsb"]["release"].to_i >= 20)
-  default[cookbook_name]["packages"] += ["libncurses5", "libpython2-stdlib", "libpython2.7-minimal", "libpython2.7-stdlib", "libtinfo5", "python-is-python2", "python2", "python2-minimal", "python2.7", "python2.7-minimal"]
-elsif (node["lsb"]["release"].to_i >= 18)
-  default[cookbook_name]["packages"] += ["libpython-stdlib", "libpython2.7-minimal", "libpython2.7-stdlib", "python", "python-minimal", "python2.7", "python2.7-minimal"]
+  default[cookbook_name]["packages"] += ["libncurses5", "libtinfo5"]
 end
 
 default["nodejs"]["npm_packages"] = []
@@ -74,7 +73,7 @@ default["etc_environment"] = {
   "VAULT_ADDR" => node["hashicorp-vault"]["config"]["address"],
   "VAULT_TOKEN" => ENV["VAULT_TOKEN"] || "",
   "ENV" => node["environment"],
-  "GITHUB_TOKEN" => ::File.exist?("/vagrant/www/.github-token") ? IO.read("/vagrant/www/.github-token").strip : "",
+  "GITHUB_TOKEN" => ::File.exist?("/var/www/.github-token") ? IO.read("/var/www/.github-token").strip : (ENV["GITHUB_TOKEN"] || ""),
   "PHP_IDE_CONFIG" => "serverName=#{node["environment"]}",
 }
 
@@ -93,3 +92,6 @@ default["datadog"]["trace_env"] = node["environment"]
 
 default["datadog"]["tags"] = {}
 default["datadog"]["logs"] = {}
+
+default["mysql"]["root_password"] = "root"
+default["pgsql"]["root_password"] = "root"
