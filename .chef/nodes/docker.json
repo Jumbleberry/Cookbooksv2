@@ -1,0 +1,7 @@
+{
+  "name": "docker",
+  "chef_environment": "dev",
+  "run_list": [
+    "role[dev]"
+  ]
+}

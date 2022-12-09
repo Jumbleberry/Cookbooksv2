@@ -14,7 +14,7 @@ cookbook_file "#{user_home_dir}/.ssh/config" do
   action :create
 end
 
-if node.attribute?(:ec2)
+if node.attribute?(:ec2) || !::File.exist?("#{user_home_dir}/.ssh/jumbleberry-github")
   template "#{user_home_dir}/.ssh/jumbleberry-github.tpl" do
     source "jumbleberry-github.tpl.erb"
     mode "0600"

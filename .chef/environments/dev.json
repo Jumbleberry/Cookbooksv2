@@ -1,0 +1,162 @@
+{
+    "name": "development",
+    "description": "",
+    "json_class": "Chef::Environment",
+    "chef_type": "environment",
+    "default_attributes": {
+        "user": "www-data",
+        "environment": "dev",
+        "role": "jbx",
+        "tz": "America\/Toronto",
+        "apt": {
+            "unattended_upgrades": {
+                "enable": false
+            }
+        },
+        "redisio": {
+            "version": "6.0.5"
+        },
+        "gearman": {
+            "host": "0.0.0.0",
+            // "mysql": {},
+            "retries": 1
+        },
+        "mysql": {
+            "root_password": "root"
+        },
+        "pgsql": {
+            "root_password": "root"
+        },
+        "ulimit": {
+            "users": {
+                "root": {
+                    "filehandle_limit": 65565
+                },
+                "www-data": {
+                    "filehandle_limit": 65565
+                }
+            }
+        },
+        "consul": {
+            "version": "1.11.5",
+            "datacenter": "local",
+            "config": {
+                "server": true,
+                "bootstrap_expect": 1,
+                "client_addr": "0.0.0.0",
+                "ui": true,
+                "config_dir": "\/etc\/consul\/conf.d",
+                "recursors": [
+                    "127.0.0.1",
+                    "1.1.1.1",
+                    "1.0.0.1",
+                    "8.8.8.8",
+                    "8.8.4.4"
+                ],
+                "dns_config": {
+                    "allow_stale": true,
+                    "max_stale": "87600h",
+                    "service_ttl": {
+                        "*": "30s"
+                    }
+                },
+                "telemetry": {
+                    "dogstatsd_addr": "127.0.0.1:8125"
+                },
+                "enable_local_script_checks": true,
+                "performance": {
+                    "raft_multiplier": 5,
+                    "rpc_hold_timeout": "10s"
+                },
+                "retry_join": [
+                    "provider=aws tag_key=consul tag_value=vagrant"
+                ]
+            }
+        },
+        "datadog": {
+            "agent_major_version": 7,
+            "api_key": "<API_KEY>",
+            "application_key": "<APP_KEY>",
+            "agent_enable": false,
+            "agent_start": false,
+            "enable_profiling": false,
+            "enable_process_agent": false,
+            "enable_trace_agent": false,
+            "enable_logs_agent": false
+        },
+        "dnsmasq": {
+            "dns": {
+                "server": [
+                    "/consul/127.0.0.1#8600",
+                    "/amazonaws.com/169.254.169.253",
+                    "/amazonaws.com/1.1.1.1",
+                    "/amazonaws.com/8.8.8.8",
+                    "/jumble.dev/10.0.2.3",
+                    "1.1.1.1",
+                    "1.0.0.1",
+                    "8.8.8.8",
+                    "8.8.4.4"
+                ],
+                "local-ttl": 300,
+                "min-cache-ttl": 300
+            }
+        },
+        "php": {
+            "version": "7.4",
+            "fpm": {
+                "display_errors": "On",
+                "max_children": "60",
+                "start_servers": "5",
+                "min_spare_servers": "5",
+                "max_spare_servers": "10"
+            },
+            "logfile": "\/var\/log\/php\/error.log"
+        },
+        "configure": {
+            "services": {
+                "sshd": ["enable", "start"],
+                "dnsmasq": ["enable", "start"],
+                "datadog": ["disable", "stop"],
+                "nginx": ["enable", "start"],
+                "consul": ["enable", "start"],
+                "consul-template": ["enable", "start"],
+                "php": ["enable", "start"],
+                "gearman": ["disable", "stop"],
+                "redis": ["enable", "start"],
+                "mysql": ["enable", "start"],
+                "postgresql": ["enable", "start"],
+                "jbx-clickstream": ["disable", "stop"],
+                "jbx-trackingattribution": ["disable", "stop"]
+            }
+        },
+        "jbx": {
+            "services": [
+                "api",
+                "mesh",
+                "mail"
+            ],
+            "consumers": {
+                "jbx-clickstream": "clickstream.properties",
+                "jbx-trackingattribution": "trackingattribution.properties"
+            },
+            "path": "\/var\/www\/jbx",
+            "git-url": "git@github.com:Jumbleberry\/JBX.git",
+            "branch": "main",
+            "domains": {
+                "api": ["api.jumble.dev", "api.squaredance.dev"],
+                "mesh": ["mesh.jumble.dev", "mesh.squaredance.dev"],
+                "mail": ["mail.jumble.dev", "mail.squaredance.dev"]
+            },
+            "gearman": false,
+            "consul-template": true
+        },
+        "admin": {
+            "path": "\/var\/www\/admin",
+            "git-url": "git@github.com:Jumbleberry\/Admin.git",
+            "branch": "master",
+            "domain": "admin.jumble.dev",
+            "enabled": true,
+            "consul-template": true
+        }
+    }
+}

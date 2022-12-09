@@ -1,4 +1,4 @@
-if node["environment"] == "dev"
+if node["environment"] == "dev" && (node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start"))
   # Copy config files
   cookbook_file "/etc/postgresql/14/main/pg_hba.conf" do
     source "pg_hba.conf"
@@ -13,7 +13,6 @@ if node["environment"] == "dev"
     group "postgres"
     mode "0644"
     notifies :restart, "service[postgresql.service]", :immediate
-    notifies :run, "execute[convert-pgdb-to-timescaledb]", :delayed
   end
 
   # Disabled as "postgresql.conf" is already tuned based on this, and re-tuning will ensure an unnecessary update of the postgres.conf file
@@ -21,7 +20,6 @@ if node["environment"] == "dev"
   #   execute "tune-and-restart-pgsql" do
   #     command "sudo timescaledb-tune -yes -quiet"
   #     user "root"
-  #     notifies :reload, "service[postgresql.service]", :immediate
   #     only_if { node["configure"]["services"]["postgresql"] && (node["configure"]["services"]["postgresql"].include? "start") }
   #   end
 
@@ -30,6 +28,7 @@ if node["environment"] == "dev"
     command "psql -c \"CREATE USER root WITH PASSWORD '#{node["pgsql"]["root_password"]}' SUPERUSER\""
     user "postgres"
     not_if "psql -U postgres -c \"select * from pg_user\" | grep -c root", :user => "postgres"
+    notifies :start, "service[postgresql.service]", :before
   end
 
   # Create pgsql db 'timescale_dev' if it doesn't exist
@@ -37,12 +36,13 @@ if node["environment"] == "dev"
     command "psql -c \"CREATE DATABASE timescale_dev ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0\""
     user "postgres"
     not_if "psql -U postgres -lqt | grep -qw timescale_dev", :user => "postgres"
+    notifies :start, "service[postgresql.service]", :before
   end
 
   # conver the pgdb to timescaledb
   execute "convert-pgdb-to-timescaledb" do
     command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION '2.7.2' CASCADE\" -d timescale_dev"
     user "postgres"
-    action :nothing
+    notifies :start, "service[postgresql.service]", :before
   end
 end

@@ -11,6 +11,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     path "/lib/systemd/system/mysql.service"
     pattern ".*LimitNOFILE.*"
     line "LimitNOFILE = 100000"
+    notifies :run, "execute[mysql systemctl daemon-reload]", :immediate unless node[:container]
   end
 
   execute "mysql systemctl daemon-reload" do
@@ -75,18 +76,13 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
       command "[ -d /#{node["nvme"]["name"]} ] && [ ! -f #{nvme}/ibdata1 ] && mkdir -p #{nvme} && rsync -avh --ignore-errors #{bak}/ #{nvme}/ && service mysql restart"
       minute "*"
     end
-  else
-    service "mysql" do
-      provider Chef::Provider::Service::Systemd
-      action :start
-    end
   end
 
   query = "SET PASSWORD FOR 'root'@'localhost' = PASSWORD(\'#{node["mysql"]["root_password"]}\');"
   execute "set_root_password" do
     command "echo \"#{query}\" | mysql -uroot"
     only_if "echo 'show databases' | mysql -uroot mysql;"
-    action :nothing
+    notifies :start, "service[mysql.service]", :before
   end
 
   # Create stripe db
@@ -95,13 +91,13 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
   execute "create_stripe_db" do
     command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
     only_if "echo 'show databases' | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
+    notifies :start, "service[mysql.service]", :before
   end
 
   # Create jbx user
   query = <<-EOH
     GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
     GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
-    DELETE FROM mysql.user WHERE user = 'root' AND password = '';
     FLUSH PRIVILEGES;
     SET GLOBAL innodb_large_prefix=on;
     SET GLOBAL innodb_file_format=Barracuda;
@@ -112,17 +108,18 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
   execute "manage_mysql_settings" do
     command "echo \"#{query}\" | mysql -uroot -p#{node["mysql"]["root_password"]}"
     only_if "echo 'show databases' | mysql -uroot -p#{node["mysql"]["root_password"]} mysql;"
+    notifies :start, "service[mysql.service]", :before
   end
 
   edit_resource(:service, "mysql.service") do
+    service_name "mysql"
+
     # If MySQL is installed on NVMe, delay restart to ensure files are restored first
     subscribes :restart, "template[/etc/mysql/my.cnf]", (File.directory?(bak) ? :delayed : :immediate)
     subscribes :restart, "execute[restore_mysql]", :immediate
     subscribes :restart, "replace_or_add[mysql.service]", :delayed unless node[:container]
 
-    notifies :run, "execute[set_root_password]", :immediate
-    notifies :run, "execute[create_stripe_db]", :immediate
-    notifies :run, "execute[manage_mysql_settings]", :immediate
+    action node["configure"]["services"]["mysql"]
   end
 else
   cron "Backup MySQL NVMe" do

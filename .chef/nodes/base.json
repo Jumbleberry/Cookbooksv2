@@ -1,0 +1,7 @@
+{
+  "name": "base",
+  "chef_environment": "base",
+  "run_list": [
+    "role[base]"
+  ]
+}
