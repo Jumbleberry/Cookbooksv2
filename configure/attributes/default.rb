@@ -2,15 +2,7 @@ cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins/"
 default[cookbook_name]["ppas"] = ["ppa:deadsnakes/ppa"]
-<<<<<<< HEAD
-<<<<<<< HEAD
 default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "default-jre", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "libpython3.8-stdlib"]
-=======
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "libpython3.8-stdlib"]
->>>>>>> 2fb4bae (Remove python2, add python3.8)
-=======
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "default-jre", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "libpython3.8-stdlib"]
->>>>>>> d821589 (Add JRE)
 
 if (node["lsb"]["release"].to_i >= 20)
   default[cookbook_name]["packages"] += ["libncurses5", "libtinfo5"]
