@@ -78,7 +78,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     end
   end
 
-  query = "SET PASSWORD FOR 'root'@'localhost' = PASSWORD(\'#{node["mysql"]["root_password"]}\');"
+  query = "SET PASSWORD FOR 'root'@'localhost' = \'#{node["mysql"]["root_password"]}\';"
   execute "set_root_password" do
     command "echo \"#{query}\" | mysql -uroot"
     only_if "echo 'show databases' | mysql -uroot mysql;"
@@ -96,13 +96,14 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
   # Create jbx user
   query = <<-EOH
-    GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
-    GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
+    UPDATE mysql.user SET Host='%' WHERE Host='localhost' AND User='root';
+    CREATE USER IF NOT EXISTS jbx;
     FLUSH PRIVILEGES;
-    SET GLOBAL innodb_large_prefix=on;
-    SET GLOBAL innodb_file_format=Barracuda;
+    GRANT ALL ON *.* TO 'root'@'%';
+    GRANT ALL ON *.* TO 'jbx'@'%';
+    FLUSH PRIVILEGES;
     SET GLOBAL event_scheduler=on;
-    SET GLOBAL sql_mode='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+    SET GLOBAL sql_mode='NO_ENGINE_SUBSTITUTION';
   EOH
 
   execute "manage_mysql_settings" do

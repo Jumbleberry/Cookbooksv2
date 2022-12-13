@@ -95,7 +95,7 @@ collation-server                = utf8mb4_unicode_ci
 character-set-server            = utf8mb4
 
 # Enable for b/c with databases created in older MySQL/MariaDB versions (e.g. when using null dates)
-sql_mode                        = NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+sql_mode                        = NO_ENGINE_SUBSTITUTION
 
 tmpdir                          = /tmp
 user                            = mysql
@@ -112,8 +112,6 @@ innodb_log_file_size            = <%= ((node["memory"]["total"][/\d*/].to_i / 10
 innodb_stats_on_metadata        = 0
 innodb_doublewrite              = 0
 
-innodb_large_prefix             = 1 # Added to address DEV-488
-innodb_file_format              = Barracuda # Added to address DEV-488
 innodb_log_files_in_group       = 2
 
 #innodb_temp_data_file_path     = ibtmp1:64M:autoextend:max:20G # Control the maximum size for the ibtmp1 file
@@ -124,9 +122,6 @@ innodb_read_io_threads          = 64
 innodb_write_io_threads         = 64
 
 # MyISAM Settings
-query_cache_limit               = 0    # UPD - Option supported by MariaDB & up to MySQL 5.7, remove this line on MySQL 8.x
-query_cache_size                = 0    # UPD - Option supported by MariaDB & up to MySQL 5.7, remove this line on MySQL 8.x
-query_cache_type                = 0    # Option supported by MariaDB & up to MySQL 5.7, remove this line on MySQL 8.x
 
 key_buffer_size                 = 0M   # UPD
 
