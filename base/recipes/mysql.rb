@@ -45,12 +45,12 @@ end
 execute "mysql-install" do
   command <<-EOH
   { \
-    echo "mysql-server-8.0 mysql-server-8.0/mysql_password password '#{node["mysql"]["root_password"]}'"; \
-    echo "mysql-server-8.0 mysql-server-8.0/mysql_password_again password '#{node["mysql"]["root_password"]}'"; \
-    echo "mysql-server-8.0 mysql-server-8.0/data-dir select ''"; \
-    echo "mysql-server-8.0 mysql-server-8.0/root-pass password '#{node["mysql"]["root_password"]}'"; \
-    echo "mysql-server-8.0 mysql-server-8.0/re-root-pass password '#{node["mysql"]["root_password"]}'"; \
-    echo "mysql-server-8.0 mysql-server-8.0/remove-test-db select true"; \
+    echo "mysql-server mysql-server/mysql_password password '#{node["mysql"]["root_password"]}'"; \
+    echo "mysql-server mysql-server/mysql_password_again password '#{node["mysql"]["root_password"]}'"; \
+    echo "mysql-server mysql-server/data-dir select ''"; \
+    echo "mysql-server mysql-server/root-pass password '#{node["mysql"]["root_password"]}'"; \
+    echo "mysql-server mysql-server/re-root-pass password '#{node["mysql"]["root_password"]}'"; \
+    echo "mysql-server mysql-server/remove-test-db select true"; \
   } | debconf-set-selections \
   && DEBIAN_FRONTEND=noninteractive apt-get install -yq apt-utils mysql-server;
   mkdir -p /var/lib/mysql /var/run/mysqld \
