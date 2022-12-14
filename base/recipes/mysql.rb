@@ -1,7 +1,13 @@
+arch = case node['kernel']['machine']
+when 'aarch64', 'arm64' then 'arm64'
+else 'amd64'
+end
+
 apt_repository "mysql-ppa" do
   uri "http://ports.ubuntu.com/ubuntu-ports"
   distribution "focal"
   components ["main", "restricted"]
+  only_if  { '#{arch}' == "arm64" }
 end
 
 package "mysql-server-8.0" do

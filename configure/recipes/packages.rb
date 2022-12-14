@@ -1,3 +1,17 @@
+arch = case node['kernel']['machine']
+when 'aarch64', 'arm64' then 'arm64'
+else 'amd64'
+end
+
+## Remove MYSQL repo while ubuntu version < 20.04
+apt_repository "mysql-ppa" do
+  uri "http://ports.ubuntu.com/ubuntu-ports"
+  distribution "focal"
+  components ["main", "restricted"]
+  action :remove
+  only_if  { '#{arch}' == "arm64" }
+end
+
 node[cookbook_name]["ppas"].each_with_index do |ppa, index|
   unless node[:container]
     execute "core-ppa-#{index + 1}" do
