@@ -3,6 +3,14 @@ when 'aarch64', 'arm64' then 'arm64'
 else 'amd64'
 end
 
+package "mysql-server-5.7" do
+  action :remove
+end
+
+package "mysql-server-8.0" do
+  action :remove
+end
+
 apt_repository "mysql" do
   uri "http://ports.ubuntu.com/ubuntu-ports"
   distribution "focal"
@@ -27,14 +35,6 @@ apt_repository "mysql" do
   only_if  { "#{arch}" == "amd64" }
 end
 
-package "mysql-server-5.7" do
-  action :remove
-end
-
-package "mysql-server-8.0" do
-  action :remove
-end
-
 execute "mysql-install" do
   command <<-EOH
   { \
@@ -45,7 +45,7 @@ execute "mysql-install" do
     echo "mysql-server-8.0 mysql-server-8.0/re-root-pass password '#{node["mysql"]["root_password"]}'"; \
     echo "mysql-server-8.0 mysql-server-8.0/remove-test-db select true"; \
   } | debconf-set-selections \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -yq apt-utils mysql-server-8.0 mysql-server;
+  && DEBIAN_FRONTEND=noninteractive apt-get install -yq apt-utils mysql-server-8.0;
   mkdir -p /var/lib/mysql /var/run/mysqld \
   && chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
   EOH
@@ -98,10 +98,3 @@ service "mysql" do
   provider Chef::Provider::Service::Systemd
   action :nothing
 end
-
-# apt_repository "mysql-ppa" do
-#   uri "http://ports.ubuntu.com/ubuntu-ports"
-#   distribution "focal"
-#   components ["main", "restricted"]
-#   action :remove
-# end
