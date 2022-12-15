@@ -3,18 +3,32 @@ when 'aarch64', 'arm64' then 'arm64'
 else 'amd64'
 end
 
-apt_repository "mysql-ppa" do
+apt_repository "mysql" do
   uri "http://ports.ubuntu.com/ubuntu-ports"
   distribution "focal"
   components ["main", "restricted"]
   only_if  { "#{arch}" == "arm64" }
 end
 
-apt_repository "mysql-ppa" do
-  uri "http://repo.mysql.com/apt/ubuntu/"
+apt_repository "mysql" do
+  uri 'http://repo.mysql.com/apt/ubuntu/'
   distribution "bionic"
-  components ["mysql-8.0", "mysql-tools", "mysql-apt-config"]
+  components ['mysql-8.0', 'mysql-tools', 'mysql-apt-config']
+  cache_rebuild true
   only_if  { "#{arch}" == "amd64" }
+end
+apt_repository "mysql" do
+  uri 'http://repo.mysql.com/apt/ubuntu/'
+  distribution "bionic"
+  components ['mysql-8.0']
+  cache_rebuild true
+  key '467B942D3A79BD29'
+  deb_src true
+  only_if  { "#{arch}" == "amd64" }
+end
+
+package "mysql-server-5.7" do
+  action :remove
 end
 
 package "mysql-server-8.0" do

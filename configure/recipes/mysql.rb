@@ -25,6 +25,14 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     source "my.cnf.erb"
     mode "0644"
   end
+    
+  directory '/var/log/mysql' do
+    recursive true
+    owner "mysql"
+    group "mysql"
+    mode "0755"
+    action :create
+  end
 
   bak = "/var/lib/mysql.bak"
   if node.attribute?(:nvme)
@@ -54,6 +62,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
       action :create
     end
 
+
     link "/var/lib/mysql" do
       to nvme
       owner "mysql"
@@ -78,7 +87,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
     end
   end
 
-  query = "SET PASSWORD FOR 'root'@'localhost' = \'#{node["mysql"]["root_password"]}\';"
+  query = "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '#{node["mysql"]["root_password"]}';"
   execute "set_root_password" do
     command "echo \"#{query}\" | mysql -uroot"
     only_if "echo 'show databases' | mysql -uroot mysql;"
