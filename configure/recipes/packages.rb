@@ -9,7 +9,7 @@ apt_repository "mysql-ppa" do
   distribution "focal"
   components ["main", "restricted"]
   action :remove
-  only_if  { '#{arch}' == "arm64" }
+  only_if  {"#{arch}" == "arm64" }
 end
 
 node[cookbook_name]["ppas"].each_with_index do |ppa, index|

@@ -7,14 +7,14 @@ apt_repository "mysql-ppa" do
   uri "http://ports.ubuntu.com/ubuntu-ports"
   distribution "focal"
   components ["main", "restricted"]
-  only_if  { '#{arch}' == "arm64" }
+  only_if  { "#{arch}" == "arm64" }
 end
 
 apt_repository "mysql-ppa" do
   uri "http://repo.mysql.com/apt/ubuntu/"
   distribution "bionic"
   components ["mysql-8.0", "mysql-tools", "mysql-apt-config"]
-  only_if  { '#{arch}' == "amd64" }
+  only_if  { "#{arch}" == "amd64" }
 end
 
 package "mysql-server-8.0" do
@@ -39,7 +39,7 @@ execute "mysql-install" do
   notifies :edit, "replace_or_add[mysql-dpkg-configure]", :immediately
   notifies :stop, "service[mysql]", :immediately unless node[:container]
   notifies :disable, "service[mysql]", :immediately unless node[:container]
-  only_if  { '#{arch}' == "arm64" }
+  only_if  { "#{arch}" == "arm64" }
 end
 
 execute "mysql-install" do
@@ -60,7 +60,7 @@ execute "mysql-install" do
   notifies :edit, "replace_or_add[mysql-dpkg-configure]", :immediately
   notifies :stop, "service[mysql]", :immediately unless node[:container]
   notifies :disable, "service[mysql]", :immediately unless node[:container]
-  only_if  { '#{arch}' == "amd64" }
+  only_if  { "#{arch}" == "amd64" }
 end
 
 replace_or_add "mysql-dpkg-configure" do
