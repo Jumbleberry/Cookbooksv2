@@ -61,3 +61,21 @@ edit_resource(:template, "/etc/environment") do
     }
   })
 end
+
+unless node.attribute?(:ec2)
+  cron_d "renew_vault_token" do
+    command <<-EOH
+set -a \
+  && source /etc/environment \
+  && vault token renew || ( \
+    sed -i "s/^VAULT_TOKEN.*/VAULT_TOKEN=\\"$(vault login -token-only -method=github token=$GITHUB_TOKEN)\\"/" /etc/environment \
+        && supervisorctl restart consul-template \
+  )
+EOH
+    shell "/bin/bash"
+    path ENV['PATH']
+    minute "*"
+    user "root"
+    action :create
+  end
+end
