@@ -8,6 +8,11 @@ if node[:container]
     command "/usr/bin/supervisord -c /etc/supervisor/supervisord.conf"
     not_if "ps aux | grep [s]upervisord"
   end
+    
+  # Cron
+  template "/etc/supervisor/conf.d/cron.conf" do
+    source "cron.conf.erb"
+  end
 
   # Dnsmasq
   template "/etc/supervisor/conf.d/dnsmasq.conf" do
