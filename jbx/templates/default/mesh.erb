@@ -609,7 +609,7 @@ server {
             
             -- Further processing on encrypted/decrypted arguments for safety
             local encrypted         = ngx.decode_args(ngx.var.decrypted_args or "") or {}
-            local restricted        = { "_url", "md5", "rhid", "rsid", "origin", "referer", "cookie", "accept" }
+            local restricted        = { "_url", "md5", "rhid", "rsid", "did", "origin", "referer", "cookie", "accept", "s" }
 
             local event             = (encrypted["event"] or args["event"] or "purchase"):lower()
             
