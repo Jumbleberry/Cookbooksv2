@@ -57,6 +57,7 @@ default["php"]["xdebug"] = {
   "start_with_request" => "yes",
 }
 
+default["php"]["logfile"] = "/var/log/php/error.log"
 default["php"]["logrotate"] = true
 default["php"]["logrotate_days"] = 14
 default["php"]["logrotate_options"] = [ 
