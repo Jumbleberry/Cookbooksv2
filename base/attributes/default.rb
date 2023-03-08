@@ -31,7 +31,7 @@ override["configure"]["update"] = true
 override["configure"]["upgrade"] = true
 
 default["datadog"]["histogram_aggregates"] = "max, avg"
-default["datadog"]["tracer"]["version"] = "0.72.0"
+default["datadog"]["tracer"]["version"] = "0.84.0"
 
 default["dnsmasq"]["dns"] = {
   "all-servers" => nil,
