@@ -1,7 +1,7 @@
 git "pgloader" do
   destination "/usr/local/share/pgloader"
-  repository "https://github.com/dimitri/pgloader.git"
-  revision "759777ae0818e9c198ff4dda016546193ce33f81"
+  repository "https://github.com/Jumbleberry/pgloader.git"
+  revision "master"
   depth 1
   action :checkout
   notifies :run, "execute[/usr/bin/make pgloader]", :immediately
