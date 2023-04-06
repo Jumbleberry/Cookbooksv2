@@ -64,10 +64,11 @@ if node[:container]
   end
   #Kinesis
   (node["jbx"]["consumers"]).each do |service, config|
-    template "/etc/supervisor/conf.d/kinesis@#{service}.conf" do
+    template "/etc/supervisor/conf.d/kinesis-#{service}.conf" do
       source "kinesis.conf.erb"
       variables(
-        service: service
+        service: service,
+        config: config
       )
     end
   end
