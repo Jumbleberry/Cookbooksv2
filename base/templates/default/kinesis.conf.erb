@@ -1,0 +1,7 @@
+[program:kinesis-<%= @service.sub('jbx-', '') %>]
+command=/usr/bin/java -cp "/var/www/jbx/application/modules/consumer/jars/*" software.amazon.kinesis.multilang.MultiLangDaemon --properties-file /var/www/jbx/application/modules/consumer/config/<%= @service.sub('jbx-', '') %>.properties
+autostart=true
+autorestart=unexpected
+stdout_logfile=/var/log/supervisor/kinesis-<%= @service %>.log
+stderr_logfile=/var/log/supervisor/kinesis-<%= @service %>_err.log
+exitcodes=0

@@ -62,6 +62,15 @@ if node[:container]
   template "/etc/supervisor/conf.d/gearman-manager.conf" do
     source "gearman-manager.conf.erb"
   end
+  #Kinesis
+  (node["jbx"]["consumers"]).each do |service, config|
+    template "/etc/supervisor/conf.d/kinesis@#{service}.conf" do
+      source "kinesis.conf.erb"
+      variables(
+        service: service
+      )
+    end
+  end
 
   # Nginx
   template "/etc/supervisor/conf.d/nginx.conf" do
