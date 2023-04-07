@@ -126,7 +126,8 @@
                 "mysql": ["enable", "start"],
                 "postgresql": ["enable", "start"],
                 "jbx-clickstream": ["disable", "stop"],
-                "jbx-trackingattribution": ["disable", "stop"]
+                "jbx-trackingattribution": ["disable", "stop"],
+                "jbx-segment": ["disable", "stop"]
             }
         },
         "jbx": {
@@ -137,7 +138,8 @@
             ],
             "consumers": {
                 "jbx-clickstream": "clickstream.properties",
-                "jbx-trackingattribution": "trackingattribution.properties"
+                "jbx-trackingattribution": "trackingattribution.properties",
+                "jbx-segment": "segment.properties"
             },
             "path": "\/var\/www\/jbx",
             "git-url": "git@github.com:Jumbleberry\/JBX.git",
