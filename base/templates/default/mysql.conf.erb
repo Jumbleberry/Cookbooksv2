@@ -1,7 +1,7 @@
 [program:mysql]
 user=mysql
 command=/usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/bin/mysqld_safe
-startsecs=5
+startsecs=10
 autostart=false
 autorestart=unexpected
 stdout_logfile=/var/log/supervisor/%(program_name)s.log
