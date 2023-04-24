@@ -106,7 +106,9 @@ innodb_buffer_pool_instances    = <%= ((node["memory"]["total"][/\d*/].to_i / (1
 innodb_buffer_pool_size         = <%= ((node["memory"]["total"][/\d*/].to_i / 1024) * (node.attribute?(:ec2) ? 0.25 : 0.10)).to_i %>M # Use up to 10-25% of RAM
 innodb_file_per_table           = 1
 innodb_flush_log_at_trx_commit  = 0
-innodb_flush_method             = O_DIRECT
+innodb_flush_neighbors          = 0
+innodb_flush_log_at_timeout     = 3
+innodb_flush_method             = O_DSYNC
 innodb_log_buffer_size          = <%= ((node["memory"]["total"][/\d*/].to_i / 1024) * (node.attribute?(:ec2) ? 0.25 : 0.10) * 0.20).to_i %>M # Use up to 20% of buffer pool size
 innodb_log_file_size            = <%= ((node["memory"]["total"][/\d*/].to_i / 1024) * (node.attribute?(:ec2) ? 0.25 : 0.10) * 0.20).to_i %>M # Use up to 20% of buffer pool size
 innodb_stats_on_metadata        = 0
