@@ -60,12 +60,12 @@ default["php"]["xdebug"] = {
 default["php"]["logfile"] = "/var/log/php/error.log"
 default["php"]["logrotate"] = true
 default["php"]["logrotate_days"] = 14
-default["php"]["logrotate_options"] = [ 
+default["php"]["logrotate_options"] = [
   "missingok",
   "delaycompress",
   "notifempty",
   "compress",
-  "sharedscripts"
+  "sharedscripts",
 ]
 
 default["gearman"]["retries"] = 1
@@ -96,3 +96,4 @@ default["datadog"]["logs"] = {}
 
 default["mysql"]["root_password"] = "root"
 default["pgsql"]["root_password"] = "root"
+default["timescaledb"] = { "version" => "2.10.3" }

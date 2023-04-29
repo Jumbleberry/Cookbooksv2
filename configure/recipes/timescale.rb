@@ -39,10 +39,18 @@ if node["environment"] == "dev" && (node["configure"]["services"]["postgresql"] 
     notifies :start, "service[postgresql.service]", :before
   end
 
-  # conver the pgdb to timescaledb
+  # convert the pgdb to timescaledb
   execute "convert-pgdb-to-timescaledb" do
-    command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION '2.9.3' CASCADE\" -d timescale_dev"
+    command "psql -Xc \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION '#{node["timescaledb"]["version"]}' CASCADE\" -d timescale_dev"
     user "postgres"
     notifies :start, "service[postgresql.service]", :before
+  end
+
+  # upgrade timescale
+  execute "upgrade-timescaledb" do
+    command "psql -Xc \"ALTER EXTENSION timescaledb UPDATE TO '#{node["timescaledb"]["version"]}'\" -d timescale_dev"
+    user "postgres"
+    notifies :restart, "service[postgresql.service]", :immediate
+    not_if "psql -c \"SELECT installed_version FROM pg_available_extensions where name = 'timescaledb'\" -d timescale_dev | grep '#{node["timescaledb"]["version"]}'", :user => "postgres"
   end
 end
