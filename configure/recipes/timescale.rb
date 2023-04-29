@@ -41,7 +41,7 @@ if node["environment"] == "dev" && (node["configure"]["services"]["postgresql"] 
 
   # conver the pgdb to timescaledb
   execute "convert-pgdb-to-timescaledb" do
-    command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION '2.7.2' CASCADE\" -d timescale_dev"
+    command "psql -c \"CREATE EXTENSION IF NOT EXISTS timescaledb VERSION '2.9.3' CASCADE\" -d timescale_dev"
     user "postgres"
     notifies :start, "service[postgresql.service]", :before
   end
