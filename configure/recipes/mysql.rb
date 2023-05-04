@@ -69,7 +69,8 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
     cron "Backup MySQL NVMe" do
       command "[ -f #{nvme}/ibdata1 ] && (rsync -avh --delete #{nvme}/ #{bak}/ || rsync -avh --ignore-errors --delete #{nvme}/ #{bak}/)"
-      minute "*/15"
+      minute "0"
+      hour "4,12"
     end
 
     cron "Restore MySQL NVMe" do
