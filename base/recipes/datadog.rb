@@ -1,8 +1,13 @@
 include_recipe "datadog::dd-agent"
 
+arch = case node["kernel"]["machine"]
+  when "aarch64", "arm64" then "arm64"
+  else "amd64"
+  end
+
 version = node["datadog"]["tracer"]["version"]
 remote_file "datadog-php-tracer" do
-  source "https://github.com/DataDog/dd-trace-php/releases/download/#{version}/datadog-php-tracer_#{version}_amd64.deb"
+  source "https://github.com/DataDog/dd-trace-php/releases/download/#{version}/datadog-php-tracer_#{version}_#{arch}.deb"
   path "/usr/local/bin/datadog-php-tracer-#{version}.deb"
   owner "root"
   group "root"
