@@ -6,6 +6,12 @@ if node["environment"] != "prod"
   order_by = node.read("jbx", "phpunit", "order_by") || "default"
   order_by = order_by + (order_by == "defects" ? " --stop-on-failure" : "")
 
+  # kills any zombie phpunit executions
+  execute "phpunit cleanup" do
+    command "kill -9 $(ps -u root -o comm,pid,etimes | awk '/^phpunit/ {if ($3 > 900) { print $2}}')"
+    ignore_failure true
+  end
+
   execute "phpunit" do
     command <<-EOH
       #{node["jbx"]["path"]}/command github:check --shasum #{branch} &
