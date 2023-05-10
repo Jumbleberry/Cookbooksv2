@@ -162,7 +162,7 @@ execute "database-migrations" do
   command "/bin/bash ./migration.sh -c migrate -d all -o --no-interaction"
   timeout 86400
   action :nothing
-  only_if { node.attribute?(:ec2) }
+  only_if { node.attribute?(:ec2) && !node.attribute?(:is_ci) }
 end
 
 # Run the deploy script
