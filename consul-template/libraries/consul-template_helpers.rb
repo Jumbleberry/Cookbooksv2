@@ -1,7 +1,7 @@
 class Chef::Recipe::ConsulTemplateHelpers
   class << self
     def install_checksum(node)
-      node["consul_template"]["checksums"].fetch(install_version(node))
+      node["consul_template"]["checksums"].fetch(install_version(node) + install_extension)
     end
 
     def install_extension
@@ -22,7 +22,11 @@ class Chef::Recipe::ConsulTemplateHelpers
     private
 
     def install_arch(machine_arch)
-      machine_arch =~ /x86_64/ ? "amd64" : "386"
+      case machine_arch
+      when "aarch64", "arm64" then "arm64"
+      when "amd64", "x86_64" then "amd64"
+      else "386"
+      end
     end
 
     # returns windows friendly version of the provided path,

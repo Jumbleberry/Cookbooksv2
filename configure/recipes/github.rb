@@ -1,4 +1,4 @@
-#
+require "vault"
 user_home_dir = node["openresty"]["user_home"]
 
 directory "#{user_home_dir}/.ssh" do
