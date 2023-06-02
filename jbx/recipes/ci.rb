@@ -12,12 +12,20 @@ if node["environment"] != "prod"
     ignore_failure true
   end
 
+
+  cleanup = ""
+  # If this is a single-commit ci build, delete the db & dist after running
+  if (branch == node["jbx"]["branch"] && branch.length == 40 && node["jbx"]["path"].start_with?("/var/www/jbx/dist/"))
+    cleanup = "rm -rf #{Shellwords.escape(node["jbx"]["path"])};"
+  end
+
   execute "phpunit" do
     command <<-EOH
       #{node["jbx"]["path"]}/command github:check --shasum #{branch} &
       (\
-        #{node["jbx"]["path"]}/phpunit --log-junit /tmp/#{random_id}.xml --cache-result --cache-result-file /tmp/#{branch}.cache --order-by #{order_by} > /tmp/#{random_id}.txt; \
+        DROP=1 #{node["jbx"]["path"]}/phpunit --log-junit /tmp/#{random_id}.xml --cache-result --cache-result-file /tmp/#{branch}.cache --order-by #{order_by} > /tmp/#{random_id}.txt; \
         #{node["jbx"]["path"]}/command github:check --shasum #{branch} --junit /tmp/#{random_id}.xml --phpunit /tmp/#{random_id}.txt; \
+        #{cleanup} \
       ) &
     EOH
     environment ({ "ENV" => node[:environment] })
