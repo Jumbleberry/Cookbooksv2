@@ -115,7 +115,6 @@ innodb_stats_on_metadata        = 0
 innodb_doublewrite              = 0
 
 innodb_large_prefix             = 1 # Added to address DEV-488
-innodb_file_format              = Barracuda # Added to address DEV-488
 innodb_log_files_in_group       = 2
 
 #innodb_temp_data_file_path     = ibtmp1:64M:autoextend:max:20G # Control the maximum size for the ibtmp1 file
@@ -170,9 +169,9 @@ sort_buffer_size                = 1M    # UPD
 # to be overriden (also see comment next to open_files_limit).
 # E.g. for MySQL 5.7, please check: https://dev.mysql.com/doc/refman/5.7/en/using-systemd.html
 # and for MariaDB check: https://mariadb.com/kb/en/library/systemd/
-table_definition_cache          = 50000 # UPD
-table_open_cache                = 50000 # UPD
-open_files_limit                = 100000 # UPD - This can be 2x to 3x the table_open_cache value or match the system's
+table_definition_cache          = 32713 # UPD
+table_open_cache                = 32713 # UPD
+open_files_limit                = 65565 # UPD - This can be 2x to 3x the table_open_cache value or match the system's
                                         # open files limit usually set in /etc/sysctl.conf or /etc/security/limits.conf
                                         # In systemd managed systems this limit must also be set in:
                                         # /etc/systemd/system/mysqld.service.d/override.conf (for MySQL 5.7+) and

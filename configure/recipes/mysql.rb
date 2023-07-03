@@ -88,8 +88,10 @@ if node["environment"] == "dev" && (node["configure"]["services"]["mysql"] && (n
 
   # Create jbx user
   query = <<-EOH
-    GRANT ALL ON *.* TO 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
-    GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
+    CREATE USER IF NOT EXISTS 'jbx'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
+    GRANT ALL ON *.* TO 'jbx'@'%';
+    CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '#{node["mysql"]["root_password"]}';
+    GRANT ALL ON *.* TO 'root'@'%';
     FLUSH PRIVILEGES;
     SET GLOBAL innodb_large_prefix=on;
     SET GLOBAL innodb_file_format=Barracuda;
