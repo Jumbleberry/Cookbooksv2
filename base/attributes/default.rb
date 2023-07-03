@@ -55,6 +55,15 @@ default["dnsmasq"]["dns_options"] = %w{
   no-negcache
 }
 
+default["mysql"] = {
+  "version" => "5.7.42",
+  "root_password" => "root",
+}
+default["timescaledb"] = {
+  "version" => "2.10.3",
+}
+default["pgsql"]["root_password"] = "root"
+
 install_redis = node["recipes"].include?("configure::base") || node["recipes"].include?("base::redis")
 default["redisio"]["package_install"] = !install_redis
 default["redisio"]["bypass_setup"] = !install_redis

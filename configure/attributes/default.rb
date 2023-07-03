@@ -93,7 +93,3 @@ default["datadog"]["trace_env"] = node["environment"]
 
 default["datadog"]["tags"] = {}
 default["datadog"]["logs"] = {}
-
-default["mysql"]["root_password"] = "root"
-default["pgsql"]["root_password"] = "root"
-default["timescaledb"] = { "version" => "2.10.3" }
