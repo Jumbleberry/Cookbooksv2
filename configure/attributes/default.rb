@@ -2,7 +2,7 @@ cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins/"
 default[cookbook_name]["ppas"] = ["ppa:deadsnakes/ppa"]
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "default-jre", "awscli", "sbcl", "libsqlite3-dev", "gawk", "freetds-dev", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "libpython3.8-stdlib"]
+default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "default-jre", "awscli", "sbcl", "libsqlite3-dev", "gawk", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "libpython3.8-stdlib"]
 
 if (node["lsb"]["release"].to_i >= 20)
   default[cookbook_name]["packages"] += ["libncurses5", "libtinfo5"]
@@ -33,7 +33,7 @@ default["openresty"]["user_shell"] = "/bin/bash"
 default["openresty"]["try_aio"] = node.attribute?(:ec2)
 
 default["php"]["fpm"]["display_errors"] = "Off"
-default["php"]["fpm"]["listen"] = "/var/run/php7-fpm.sock"
+default["php"]["fpm"]["listen"] = "/var/run/php8-fpm.sock"
 default["php"]["fpm"]["pm"] = "dynamic"
 default["php"]["fpm"]["max_children"] = "300"
 default["php"]["fpm"]["start_servers"] = "60"
@@ -43,7 +43,7 @@ default["php"]["fpm"]["max_requests"] = "0"
 default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib:/usr/share/php/zf1/library"
 default["php"]["fpm"]["process_control_timeout"] = 5
 
-php_version = node["php"]["version"] || "7.4"
+php_version = node["php"]["version"]
 default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
 default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#{php_version}/fpm"]
 

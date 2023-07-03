@@ -115,7 +115,7 @@ default["openresty"]["luarocks"]["default_rocks"] = {
   "jumbleberry-dogstatsd" => "1.0.1-1",
 }
 
-default["php"]["version"] = php_version = "7.4"
+default["php"]["version"] = php_version = "8.2"
 default["php"]["composer_download_path"] = "/tmp/composer-install.php"
 default["php"]["packages"] = {
   "php#{php_version}-fpm" => "*",

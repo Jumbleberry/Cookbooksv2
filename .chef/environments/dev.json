@@ -102,7 +102,6 @@
             }
         },
         "php": {
-            "version": "7.4",
             "fpm": {
                 "display_errors": "On",
                 "max_children": "60",
