@@ -5,6 +5,23 @@ apt_repository "php-ppa" do
   components ["main"]
 end
 
+unless ENV.fetch("FREEXIAN_TOKEN", "").empty?
+  execute "php-apt-repository" do
+    cwd "/tmp"
+    command <<-EOH
+    wget http://php.freexian.com/public/freexian-archive-keyring.deb && sudo dpkg -i freexian-archive-keyring.deb \
+      && sudo wget http://php.freexian.com/public/archive-key.gpg -O /etc/apt/trusted.gpg.d/freexian-archive-php.gpg \
+      && apt install -yq --allow-unauthenticated freexian-archive-keyring
+  EOH
+  end
+
+  apt_repository "freexian" do
+    uri "http://php.freexian.com/c/squaredance-#{ENV["FREEXIAN_TOKEN"]}"
+    distribution node["lsb"]["codename"]
+    components ["main"]
+  end
+end
+
 apt_update "update-php" do
   frequency 86400
   action :periodic
