@@ -1,0 +1,16 @@
+{
+    "json_class": "Chef::Role",
+    "name": "php8",
+    "description": "PHP 8 Role",
+    "override_attributes": {
+        "php": {
+            "version": "8.2"
+        }
+    },
+    "env_run_lists": {
+        "dev": [
+            "recipe[jbx]",
+            "recipe[admin]"
+        ]
+    }
+}
