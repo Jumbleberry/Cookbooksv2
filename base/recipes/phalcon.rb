@@ -36,9 +36,10 @@ cookbook_file "zephir.phar" do
 end
 
 # Install Phalcon
+phalcon_branch = node["php"]["version"].to_i >= 8 ? "3.4.x_php8" : "3.4.x"
 execute "phalcon" do
   command <<-EOH
-    git clone --depth 1 --branch 3.4.x_php8 https://github.com/Jumbleberry/Phalcon.git cphalcon \
+    git clone --depth 1 --branch #{phalcon_branch} https://github.com/Jumbleberry/Phalcon.git cphalcon \
       && cd cphalcon \
       && /usr/local/bin/zephir fullclean \
       && ZEPHIR_RELEASE=1 CFLAGS="-march=native -O3 -fvisibility=hidden -fomit-frame-pointer -flto -DPHALCON_RELEASE -DZEPHIR_RELEASE=1" /usr/local/bin/zephir build --no-dev \
