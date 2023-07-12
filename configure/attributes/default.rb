@@ -32,8 +32,9 @@ default["openresty"]["user_shell"] = "/bin/bash"
 
 default["openresty"]["try_aio"] = node.attribute?(:ec2)
 
+php_version = node["php"]["version"]
 default["php"]["fpm"]["display_errors"] = "Off"
-default["php"]["fpm"]["listen"] = "/var/run/php8-fpm.sock"
+default["php"]["fpm"]["listen"] = "/var/run/php#{php_version.to_i}-fpm.sock"
 default["php"]["fpm"]["pm"] = "dynamic"
 default["php"]["fpm"]["max_children"] = "300"
 default["php"]["fpm"]["start_servers"] = "60"
@@ -43,7 +44,6 @@ default["php"]["fpm"]["max_requests"] = "0"
 default["php"]["fpm"]["include_path"] = ".:/usr/share/php:/var/www/lib:/usr/share/php/zf1/library"
 default["php"]["fpm"]["process_control_timeout"] = 5
 
-php_version = node["php"]["version"]
 default["php"]["fpm"]["mods_dirs"] = ["/etc/php/#{php_version}/mods-available"]
 default["php"]["fpm"]["conf_dirs"] = ["/etc/php/#{php_version}/cli", "/etc/php/#{php_version}/fpm"]
 
