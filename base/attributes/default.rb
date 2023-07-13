@@ -163,5 +163,6 @@ default["phalcon"]["version"] = case node["lsb"]["release"].to_i
 default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.git"
 
 default["nodejs"]["install_method"] = "binary"
-default["nodejs"]["version"] = "14.17.4"
-default["nodejs"]["binary"]["checksum"] = "c69671c89d0faa47b64bd5f37079e4480852857a9a9366ee86cdd8bc9670074a"
+default["nodejs"]["version"] = "18.16.1"
+default['nodejs']['binary']['checksum']['linux_x64'] = '59582f51570d0857de6333620323bdeee5ae36107318f86ce5eca24747cabf5b'
+default['nodejs']['binary']['checksum']['linux_arm64'] = '555b5c521e068acc976e672978ba0f5b1a0c030192b50639384c88143f4460bc'
