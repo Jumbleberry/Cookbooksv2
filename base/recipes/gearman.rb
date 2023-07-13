@@ -1,3 +1,10 @@
+apt_repository "focal-archive" do
+  uri "http://cz.archive.ubuntu.com/ubuntu"
+  distribution "focal"
+  components ["main"]
+  only_if { node["lsb"]["release"].to_i > 20 }
+end
+
 apt_repository "gearman-ppa" do
   uri "ppa:ondrej/pkg-gearman"
   distribution node["lsb"]["release"].to_i <= 20 ? node["lsb"]["codename"] : "focal"
