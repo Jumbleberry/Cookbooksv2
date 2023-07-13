@@ -2,7 +2,7 @@ cookbook_name = "configure"
 
 default[cookbook_name]["plugin_path"] = "/etc/chef/ohai_plugins/"
 default[cookbook_name]["ppas"] = ["ppa:deadsnakes/ppa"]
-default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "default-jre", "awscli", "sbcl", "libsqlite3-dev", "gawk", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "libpython3.8-stdlib"]
+default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "redis-tools", "libpcre3-dev", "gcc", "default-jre", "awscli", "sbcl", "libsqlite3-dev", "gawk", "libzip-dev", "tar", "logrotate", "build-essential", "python3", "python3-pip", "python3.8", "python3.8-distutils", "libpython3.8-stdlib"]
 
 if (node["lsb"]["release"].to_i >= 20)
   default[cookbook_name]["packages"] += ["libncurses5", "libtinfo5"]

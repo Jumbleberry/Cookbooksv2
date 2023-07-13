@@ -1,6 +1,6 @@
 apt_repository "gearman-ppa" do
   uri "ppa:ondrej/pkg-gearman"
-  distribution node["lsb"]["codename"]
+  distribution node["lsb"]["release"].to_i <= 20 ? node["lsb"]["codename"] : "focal"
   components ["main"]
 end
 

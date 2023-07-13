@@ -41,8 +41,10 @@ arch = case node["kernel"]["machine"]
   else "amd64"
   end
 
-execute "dpkg -i #{cookbook_files}/libevent-core-2.1-6_#{arch}.deb;" do
-  not_if "dpkg -S libevent-core-2.1-6 | grep '^libevent-core-2.1-6'"
+["libevent-core-2.1-6", "libssl1.1_1.1.1f"].each do |pkg|
+  execute "dpkg -i #{cookbook_files}/#{pkg}_#{arch}.deb;" do
+    not_if "dpkg -S #{pkg} | grep '^#{pkg}'"
+  end
 end
 ["mysql-client-core", "mysql-client", "mysql-server-core", "mysql-server"].each do |pkg|
   execute "DEBIAN_FRONTEND=noninteractive dpkg -i #{cookbook_files}/#{pkg}-#{node["mysql"]["version"]}_#{arch}.deb || true" do
@@ -58,7 +60,7 @@ file "/usr/sbin/mysqld-debug" do
   action :delete
 end
 
-bash "purge mysql" do
+bash "purge mysql utils" do
   code "rm -f $(ls -1 /usr/bin/my{isam,sql}* | grep -v -P 'mysql(d.*|import)?$')"
 end
 
