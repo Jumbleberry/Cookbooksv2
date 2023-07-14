@@ -41,7 +41,8 @@ arch = case node["kernel"]["machine"]
   else "amd64"
   end
 
-["libevent-core-2.1-6", "libssl1.1_1.1.1f"].each do |pkg|
+dependencies = node["lsb"]["release"].to_i >= 22 ? ["libevent-core-2.1-6", "libssl1.1_1.1.1f"] : ["libevent-core-2.1-6"]
+dependencies.each do |pkg|
   execute "dpkg -i #{cookbook_files}/#{pkg}_#{arch}.deb;" do
     not_if "dpkg -S #{pkg} | grep '^#{pkg}'"
   end
