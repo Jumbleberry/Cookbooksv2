@@ -378,7 +378,6 @@ env[ENV] = $ENV
 env[DD_ENV] = $ENV
 env[DD_PROFILING_ENABLED] = <%= (node[:datadog][:enable_profiling] || 0) && "true" || "false" %>
 env[DD_TRACE_ENABLED] = <%= (node[:datadog][:enable_trace_agent] || 0) && "true" || "false" %>
-env[DD_AGENT_HOST] = $HOSTNAME
 env[DD_SERVICE] = <%= node.read("datadog", "tags", "service") || "dev" %>
 
 ; Additional php.ini defines, specific to this pool of workers. These settings

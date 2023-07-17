@@ -51,7 +51,7 @@ default["php"]["xdebug"] = {
   "mode" => "debug",
   "client_host" => "10.0.2.2",
   "client_port" => 9003,
-  "remote_log" => "/var/log/xdebug.log",
+  "log" => "/var/log/xdebug.log",
   "max_nesting_level" => 1000,
   "idekey" => "PHPSTORM",
   "start_with_request" => "yes",
@@ -90,6 +90,12 @@ default["datadog"]["enable_process_agent"] = false
 default["datadog"]["enable_trace_agent"] = false
 default["datadog"]["enable_logs_agent"] = false
 default["datadog"]["trace_env"] = node["environment"]
+
+default["datadog"]['extra_config']['apm_config'] = {
+  "filter_tags" => {
+    "reject" => ["http.url_details.path:/thisthingisnotathing"]
+  }
+}
 
 default["datadog"]["tags"] = {}
 default["datadog"]["logs"] = {}
