@@ -88,6 +88,11 @@ if node[:container]
     source "postgresql.conf.erb"
   end
 
+  # Datadog
+  template "/etc/supervisor/conf.d/datadog.conf" do
+    source "datadog.conf.erb"
+  end
+
   execute "supervisorctl update" do
     command "/usr/bin/supervisorctl update"
     action :nothing

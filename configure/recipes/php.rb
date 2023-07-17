@@ -45,21 +45,21 @@ logrotate_app "php" do
   options node["php"]["logrotate_options"]
 end
 
-file node["php"]["xdebug"]["remote_log"] do
+file node["php"]["xdebug"]["log"] do
   owner node["user"]
   group node["user"]
   mode 0744
-  not_if { node["php"]["xdebug"]["remote_log"].empty? }
+  not_if { node["php"]["xdebug"]["log"].empty? }
 end
 
 logrotate_app "xdebug" do
-  path node["php"]["xdebug"]["remote_log"]
+  path node["php"]["xdebug"]["log"]
   enable node["php"]["logrotate"]
   frequency "daily"
   rotate node["php"]["logrotate_days"]
   create "0644 #{node["user"]} adm"
   options node["php"]["logrotate_options"]
-  not_if { node["php"]["xdebug"]["remote_log"].empty? }
+  not_if { node["php"]["xdebug"]["log"].empty? }
 end
 
 replace_or_add "php-fpm process_control_timeout" do
