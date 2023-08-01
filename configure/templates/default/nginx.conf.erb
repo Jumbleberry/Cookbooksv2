@@ -47,6 +47,9 @@ http {
   keepalive_timeout       <%= node['openresty']['keepalive_timeout'] %>;
   <% end %>
 
+  # Allow underscore in headers
+  underscores_in_headers on;
+
   server_names_hash_bucket_size <%= node['openresty']['server_names_hash_bucket_size'] %>;
   types_hash_max_size     <%= node['openresty']['types_hash_max_size'] %>;
   types_hash_bucket_size  <%= node['openresty']['types_hash_bucket_size'] %>;
