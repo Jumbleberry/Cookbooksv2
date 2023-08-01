@@ -55,6 +55,9 @@ http {
   keepalive_timeout  <%= node['openresty']['keepalive_timeout'] %>;
   <% end %>
 
+  # Allow undersocer in headers
+  underscores_in_headers on;
+
   gzip  <%= node['openresty']['gzip'] %>;
   <% if node['openresty']['gzip'] == "on" %>
   gzip_http_version <%= node['openresty']['gzip_http_version'] %>;
