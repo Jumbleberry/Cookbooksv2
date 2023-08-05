@@ -611,7 +611,7 @@ server {
             local encrypted         = ngx.decode_args(ngx.var.decrypted_args or "") or {}
             local restricted        = { "_url", "md5", "rhid", "rsid", "did", "origin", "referer", "cookie", "accept", "s" }
 
-            local event             = (encrypted["event"] or args["event"] or "purchase"):lower()
+            local event             = (encrypted["event"] or args["event"] or ((args["v"] or args["oi"]) and "init") or "purchase"):lower()
             
             -- If rhid/event is set it's not safe to forward on to HP or we could get duplicates
             if ngx.var.upstream:match("hp") ~= nil and (args["rhid"] ~= nil or encrypted["rhid"] ~= nil or event ~= "purchase") then
@@ -1010,7 +1010,7 @@ server {
     set                                 $upstream hp-ndp;
     set_by_lua_block $upstream {
         local args  = safe_url_args(ngx.req.get_uri_args() or {})
-        local event = (args["event"] or "purchase"):lower()
+        local event = (args["event"] or ((args["v"] or args["oi"]) and "init") or "purchase"):lower()
         local hit   = parse_tracking_cookie(cookie_to_headers("uid" .. (tonumber(args["sid"]) or "")))
         args["hid"] = empty_to_nil(args["hid"]) or hit["hid"]
 
