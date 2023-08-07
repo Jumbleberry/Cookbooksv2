@@ -196,9 +196,11 @@ server {
     ssl_certificate                 /etc/nginx/ssl/<%= @certificate %>.pem;
     ssl_certificate_key             /etc/nginx/ssl/<%= @certificate %>.key;
     
+    <% if (node['environment'] != 'dev') %>
     ssl_certificate_by_lua_block {
         auto_ssl:ssl_certificate()
     }
+    <% end %>
     <% break end %>
 <% end %>
 
