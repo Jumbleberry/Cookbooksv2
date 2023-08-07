@@ -1,5 +1,5 @@
 [program:dnsmasq]
-command=/usr/sbin/dnsmasq -d -k
+command=/usr/sbin/dnsmasq -d -k -u dnsmasq -7 /etc/dnsmasq.d --local-service
 autostart=true
 autorestart=true
 stopasgroup=true

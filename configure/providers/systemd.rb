@@ -81,7 +81,7 @@ class Chef::Provider::Service::Systemd < Chef::Provider::Service::Simple
       Chef::Log.debug("#{new_resource} already running, not starting")
     else
       if docker?
-        shell_out("#{supervisorctl_path} start #{new_resource.service_name}")
+        shell_out("#{supervisorctl_path} start #{new_resource.service_name}:*")
       elsif new_resource.start_command
         super
       else
@@ -96,7 +96,7 @@ class Chef::Provider::Service::Systemd < Chef::Provider::Service::Simple
       Chef::Log.debug("#{new_resource} not running, not stopping")
     else
       if docker?
-        shell_out("#{supervisorctl_path} stop #{new_resource.service_name}")
+        shell_out("#{supervisorctl_path} stop #{new_resource.service_name}:*")
       elsif new_resource.stop_command
         super
       else
@@ -108,7 +108,7 @@ class Chef::Provider::Service::Systemd < Chef::Provider::Service::Simple
 
   def restart_service
     if docker?
-      shell_out("#{supervisorctl_path} restart #{new_resource.service_name}")
+      shell_out("#{supervisorctl_path} restart #{new_resource.service_name}:*")
     elsif new_resource.restart_command
       super
     else
@@ -119,7 +119,7 @@ class Chef::Provider::Service::Systemd < Chef::Provider::Service::Simple
 
   def reload_service
     if docker?
-      shell_out("#{supervisorctl_path} restart #{new_resource.service_name}")
+      shell_out("#{supervisorctl_path} restart #{new_resource.service_name}:*")
     elsif new_resource.reload_command
       super
     else
@@ -173,7 +173,7 @@ class Chef::Provider::Service::Systemd < Chef::Provider::Service::Simple
 
   def is_active?
     if docker?
-      shell_out("#{supervisorctl_path} status #{new_resource.service_name}").stdout.include?("RUNNING")
+      shell_out("#{supervisorctl_path} status #{new_resource.service_name}:*").stdout.include?("RUNNING")
     else
       options, args = get_systemctl_options_args
       shell_out("#{systemctl_path} #{args} is-active #{new_resource.service_name} --quiet", options).exitstatus == 0
