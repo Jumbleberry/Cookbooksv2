@@ -175,11 +175,12 @@ http {
   # Banned user agents
   ##
   map $http_user_agent $block_ua {
-    default               0;
-    '~*Google-Read-Aloud' 1;
-    '~*Jorgee'            1;
-    '~*Headless'          1;
-    'Mozilla/5.0'         1;
+    default                             0;
+    '~*facebookexternalhit'             1;
+    '~*Google-Read-Aloud'               1;
+    '~*Jorgee'                          1;
+    '~*Headless'                        1;
+    'Mozilla/5.0'                       1;
     'Mozilla/4.0 (compatible; Synapse)' 1;
     'Chrome/88.0.4298.0 Safari/537.36'  1; # Headless Chrome
   }
