@@ -71,12 +71,13 @@ default["redisio"]["version"] = "6.0.5"
 default["redisio"]["job_control"] = "systemd"
 
 default["hashicorp-vault"]["gems"] = {
-  "vault" => "0.16.0",
+  "vault" => "0.17.0",
 }
-default["hashicorp-vault"]["version"] = "1.10.0"
+default["hashicorp-vault"]["version"] = "1.14.1"
 default["hashicorp-vault"]["config"]["path"] = "/etc/vault/vault.json"
 default["hashicorp-vault"]["config"]["address"] = "https://vault.squaredance.io"
 
+default["consul"]["version"] = "1.16.1"
 default["consul"]["config"]["bind_addr"] = node["ipaddress"]
 default["consul"]["config"]["advertise_addr"] = node["ipaddress"]
 default["consul"]["config"]["advertise_addr_wan"] = node["ipaddress"]
@@ -153,12 +154,6 @@ default["php"]["packages"] = {
 default["gearman"]["version"] = "1.1.*"
 default["gearman"]["manager"]["repository"] = "https://github.com/Jumbleberry/GearmanManager.git"
 default["gearman"]["manager"]["revision"] = "1.1"
-
-default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
-default["phalcon"]["version"] = case node["lsb"]["release"].to_i
-  when 16, 18 then "3.4.5-1+php7.3"
-  else "3.4.5-5+ubuntu#{node["lsb"]["release"]}.1+deb.sury.org+1"
-  end
 
 default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.git"
 
