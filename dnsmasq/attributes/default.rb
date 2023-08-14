@@ -1,3 +1,4 @@
+default['dnsmasq']['version'] = '2.89'
 default['dnsmasq']['enable_dhcp'] = false
 default['dnsmasq']['dhcp'] = {}
 default['dnsmasq']['dhcp_options'] = []
