@@ -38,7 +38,6 @@
             }
         },
         "consul": {
-            "version": "1.11.5",
             "datacenter": "local",
             "config": {
                 "server": true,
@@ -102,7 +101,6 @@
             }
         },
         "php": {
-            "version": "7.4",
             "fpm": {
                 "display_errors": "On",
                 "max_children": "60",

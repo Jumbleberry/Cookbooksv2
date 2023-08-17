@@ -55,6 +55,15 @@ default["dnsmasq"]["dns_options"] = %w{
   no-negcache
 }
 
+default["mysql"] = {
+  "version" => "5.7.42",
+  "root_password" => "root",
+}
+default["timescaledb"] = {
+  "version" => "2.10.3",
+}
+default["pgsql"]["root_password"] = "root"
+
 install_redis = node["recipes"].include?("configure::base") || node["recipes"].include?("base::redis")
 default["redisio"]["package_install"] = !install_redis
 default["redisio"]["bypass_setup"] = !install_redis
@@ -62,12 +71,13 @@ default["redisio"]["version"] = "6.0.5"
 default["redisio"]["job_control"] = "systemd"
 
 default["hashicorp-vault"]["gems"] = {
-  "vault" => "0.16.0",
+  "vault" => "0.17.0",
 }
-default["hashicorp-vault"]["version"] = "1.10.0"
+default["hashicorp-vault"]["version"] = "1.14.1"
 default["hashicorp-vault"]["config"]["path"] = "/etc/vault/vault.json"
 default["hashicorp-vault"]["config"]["address"] = "https://vault.squaredance.io"
 
+default["consul"]["version"] = "1.16.1"
 default["consul"]["config"]["bind_addr"] = node["ipaddress"]
 default["consul"]["config"]["advertise_addr"] = node["ipaddress"]
 default["consul"]["config"]["advertise_addr_wan"] = node["ipaddress"]
@@ -115,7 +125,7 @@ default["openresty"]["luarocks"]["default_rocks"] = {
   "jumbleberry-dogstatsd" => "1.0.1-1",
 }
 
-default["php"]["version"] = php_version = "7.4"
+default["php"]["version"] = php_version = ENV.fetch("PHP_VERSION", "8.2")
 default["php"]["composer_download_path"] = "/tmp/composer-install.php"
 default["php"]["packages"] = {
   "php#{php_version}-fpm" => "*",
@@ -145,14 +155,9 @@ default["gearman"]["version"] = "1.1.*"
 default["gearman"]["manager"]["repository"] = "https://github.com/Jumbleberry/GearmanManager.git"
 default["gearman"]["manager"]["revision"] = "1.1"
 
-default["phalcon"]["install_script"] = "https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh"
-default["phalcon"]["version"] = case node["lsb"]["release"].to_i
-  when 16, 18 then "3.4.5-1+php7.3"
-  else "3.4.5-5+ubuntu#{node["lsb"]["release"]}.1+deb.sury.org+1"
-  end
-
 default["phalcon"]["devtools"] = "https://github.com/phalcon/phalcon-devtools.git"
 
 default["nodejs"]["install_method"] = "binary"
-default["nodejs"]["version"] = "14.17.4"
-default["nodejs"]["binary"]["checksum"] = "c69671c89d0faa47b64bd5f37079e4480852857a9a9366ee86cdd8bc9670074a"
+default["nodejs"]["version"] = "18.16.1"
+default['nodejs']['binary']['checksum']['linux_x64'] = '59582f51570d0857de6333620323bdeee5ae36107318f86ce5eca24747cabf5b'
+default['nodejs']['binary']['checksum']['linux_arm64'] = '555b5c521e068acc976e672978ba0f5b1a0c030192b50639384c88143f4460bc'

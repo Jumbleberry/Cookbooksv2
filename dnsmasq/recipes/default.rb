@@ -1,6 +1,18 @@
 package "dnsmasq"
 user "dnsmasq"
 
+arch = case node["kernel"]["machine"]
+  when "aarch64", "arm64" then "arm64"
+  else "amd64"
+  end
+
+cookbook_file "/usr/sbin/dnsmasq" do
+  mode "0755"
+  source "dnsmasq-#{node["dnsmasq"]["version"]}-#{arch}"
+  atomic_update true
+  action :create
+end
+
 if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
   unless node[:container]
     directory "/etc/systemd/resolved.conf.d"

@@ -977,7 +977,8 @@ cli_server.color = On
 ;iconv.output_encoding =
 
 [intl]
-;intl.default_locale =
+intl.default_locale = en_US.UTF-8
+
 ; This directive allows you to produce PHP errors when some error
 ; happens within intl functions. The value is the level of the error produced.
 ; Default is 0, which does not produce any errors.
@@ -1765,10 +1766,10 @@ ldap.max_links = -1
 
 [opcache]
 ; Determines if Zend OPCache is enabled
-opcache.enable=<% if node['environment'] != 'dev' -%>1<% else -%>0<% end -%>
+opcache.enable=<% if node['environment'] != 'dev' || @sapi.include?("cli") -%>1<% else -%>0<% end -%>
 
 ; Determines if Zend OPCache is enabled for the CLI version of PHP
-;opcache.enable_cli=0
+opcache.enable_cli=1
 
 ; The OPcache shared memory storage size.
 opcache.memory_consumption=256
@@ -1814,7 +1815,7 @@ opcache.enable_file_override=1
 
 ; A bitmask, where each bit enables or disables the appropriate OPcache
 ; passes
-;opcache.optimization_level=0xffffffff
+opcache.optimization_level=0x7FFEBFFF
 
 ;opcache.inherited_hack=1
 ;opcache.dups_fix=0
@@ -1829,7 +1830,7 @@ opcache.enable_file_override=1
 
 ; Allows exclusion of large files from being cached. By default all files
 ; are cached.
-opcache.max_file_size=5120000
+opcache.max_file_size=16777216
 
 ; Check the cache checksum each N requests.
 ; The default value of "0" means that the checks are disabled.
@@ -1883,13 +1884,22 @@ opcache.consistency_checks=0
 
 ; Enables or disables copying of PHP code (text segment) into HUGE PAGES.
 ; This should improve performance, but requires appropriate OS configuration.
-;opcache.huge_code_pages=1
+opcache.huge_code_pages=1
 
 ; Validate cached file permissions.
 opcache.validate_permission=0
 
 ; Prevent name collisions in chroot'ed environment.
 opcache.validate_root=0
+
+; Opcache Preload File
+opcache.preload=<%= @sapi.include?("fpm") && ::File.exist?(@preload) ? @preload : '' %>
+opcache.preload_user=www-data
+
+[apcu]
+apc.enabled=1
+apc.enable_cli=1
+apc.serializer=igbinary
 
 [curl]
 ; A default value for the CURLOPT_CAINFO option. This is required to be an
@@ -1917,3 +1927,25 @@ opcache.validate_root=0
 ; Local Variables:
 ; tab-width: 4
 ; End:
+
+[datadog]
+datadog.trace.amqp_enabled          = 0
+datadog.trace.cakephp_enabled       = 0
+datadog.trace.codeigniter_enabled   = 0
+datadog.trace.eloquent_enabled      = 0
+datadog.trace.laminas_enabled       = 0
+datadog.trace.laravel_enabled       = 0
+datadog.trace.laravelqueue_enabled  = 0
+datadog.trace.lumen_enabled         = 0
+datadog.trace.mongo_enabled         = 0
+datadog.trace.mongodb_enabled       = 0
+datadog.trace.mysqli_enabled        = 0
+datadog.trace.nette_enabled         = 0
+datadog.trace.phpredis_enabled      = 0
+datadog.trace.roadrunner_enabled    = 0
+datadog.trace.sqlsrv_enabled        = 0
+datadog.trace.slim_enabled          = 0
+datadog.trace.symfony_enabled       = 0
+datadog.trace.wordpress_enabled     = 0
+datadog.trace.yii_enabled           = 0
+datadog.trace.zendframework_enabled = 0
