@@ -504,11 +504,13 @@ server {
             end
 
             local args          = safe_url_args(ngx.req.get_uri_args() or {})
+            args["sid"]         = (args["sid"] or ""):match("0*(%d+)") or args["sid"]
             args["transid"]     = (args["transid"] or ""):len() > 0 and args["transid"] or nil
 
             -- Treat routes that generate clicks as "Init" events, to prevent simultaneous click generation
             args["md5"]         = ngx.md5(
                 (args["hid"] or "") ..
+                (args["eid"] or "") ..
                 (args["transid"] or "") ..
                 ((args["v"] or args["oi"]) and "init" or args["event"] or "n/a"):lower()
             )
