@@ -15,27 +15,13 @@
   "dependencies": {
     "build-essential": ">= 0.0.0"
   },
-  "recommendations": {
-
-  },
-  "suggestions": {
-
-  },
-  "conflicting": {
-
-  },
-  "providing": {
-
-  },
-  "replacing": {
-
-  },
-  "attributes": {
-
-  },
-  "groupings": {
-
-  },
+  "recommendations": {},
+  "suggestions": {},
+  "conflicting": {},
+  "providing": {},
+  "replacing": {},
+  "attributes": {},
+  "groupings": {},
   "recipes": {
     "jemalloc": "Installs and configures the jemalloc library"
   },
@@ -43,13 +29,7 @@
   "source_url": "",
   "issues_url": "",
   "privacy": false,
-  "chef_versions": [
-
-  ],
-  "ohai_versions": [
-
-  ],
-  "gems": [
-
-  ]
+  "chef_versions": [],
+  "ohai_versions": [],
+  "gems": []
 }
