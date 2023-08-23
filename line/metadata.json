@@ -15,15 +15,9 @@
     "amazon": ">= 0.0.0",
     "windows": ">= 0.0.0"
   },
-  "dependencies": {
-
-  },
-  "providing": {
-
-  },
-  "recipes": {
-
-  },
+  "dependencies": {},
+  "providing": {},
+  "recipes": {},
   "version": "2.5.0",
   "source_url": "https://github.com/sous-chefs/line",
   "issues_url": "https://github.com/sous-chefs/line/issues",
@@ -33,10 +27,6 @@
       ">= 12.13.37"
     ]
   ],
-  "ohai_versions": [
-
-  ],
-  "gems": [
-
-  ]
+  "ohai_versions": [],
+  "gems": []
 }
