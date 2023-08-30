@@ -728,7 +728,7 @@ server {
         local upstream_statuses = ngx_re.split(ngx.var.upstream_status or ngx.status, ", ") or {}
         
         local upstream_names    = { ["127.0.0.1:8001"] = "hydra", ["127.0.0.1:8002"] = "hp", ["127.0.0.1:8003"] = "ndp" }
-        local safe_args         = { "sid", "rel" }
+        local safe_args         = { "rel" }
         local na                = "N/A"
 
         local host              = (ngx.var.domain and ((ngx.var.subdomain or "").. ngx.var.domain)) or nil
