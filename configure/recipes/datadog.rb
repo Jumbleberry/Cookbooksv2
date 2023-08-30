@@ -1,4 +1,4 @@
-node.default["datadog"]["tags"]["environment"] = node["environment"]
+node.default["datadog"]["tags"]["environment"] = (node["environment"].include?("prod") ? "production" : node["environment"])
 node.default["datadog"]["tags"]["service"] = (node.read("opsworks", "instance", "role") || ["dev"]).join("|")
 
 datadog_enabled = node["configure"]["services"]["datadog"] && (node["configure"]["services"]["datadog"].include? "start")
