@@ -60,7 +60,7 @@ default["mysql"] = {
   "root_password" => "root",
 }
 default["timescaledb"] = {
-  "version" => "2.10.3",
+  "version" => "2.11.2",
 }
 default["pgsql"]["root_password"] = "root"
 
