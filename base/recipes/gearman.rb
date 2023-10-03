@@ -3,12 +3,14 @@ apt_repository "focal-archive" do
   distribution "focal"
   components ["main"]
   only_if { node["lsb"]["release"].to_i > 20 }
+  retries 5
 end
 
 apt_repository "gearman-ppa" do
   uri "ppa:ondrej/pkg-gearman"
   distribution node["lsb"]["release"].to_i <= 20 ? node["lsb"]["codename"] : "focal"
   components ["main"]
+  retries 5
 end
 
 apt_update "update-gearman" do

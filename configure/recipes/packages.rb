@@ -6,6 +6,7 @@ node[cookbook_name]["ppas"].each_with_index do |ppa, index|
   else
     apt_repository "core-ppa-#{index + 1}" do
       uri ppa
+      retries 5
     end
   end
 end

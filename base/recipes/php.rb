@@ -3,6 +3,7 @@ apt_repository "php-ppa" do
   uri "ppa:ondrej/php"
   distribution node["lsb"]["codename"]
   components ["main"]
+  retries 5
 end
 
 unless ENV.fetch("FREEXIAN_TOKEN", "").empty?
@@ -19,6 +20,7 @@ unless ENV.fetch("FREEXIAN_TOKEN", "").empty?
     uri "http://php.freexian.com/c/squaredance-#{ENV["FREEXIAN_TOKEN"]}"
     distribution node["lsb"]["codename"]
     components ["main"]
+    retries 5
   end
 end
 

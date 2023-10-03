@@ -13,6 +13,7 @@ end
 apt_repository "timescale-ppa" do
   uri "ppa:timescale/timescaledb-ppa2"
   distribution "focal"
+  retries 5
 end
 
 apt_update "update-timescale-2" do
