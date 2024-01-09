@@ -34,7 +34,7 @@ package "pgloader" do
   action :remove
 end
 
-execute 'DEBIAN_FRONTEND=noninteractive apt-get install -yq timescaledb-2-loader-postgresql-14 timescaledb-2-postgresql-14 -o Dpkg::Options::="--force-overwrite"'
+execute "DEBIAN_FRONTEND=noninteractive apt-get install -yq timescaledb-2-#{node["timescaledb"]["version"]}-postgresql-14 -o Dpkg::Options::='--force-overwrite'"
 
 # define postgresql service
 service "postgresql.service" do
@@ -44,10 +44,10 @@ service "postgresql.service" do
 end
 
 if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
-  arch = case node['kernel']['machine']
-    when 'aarch64', 'arm64' then 'arm64'
-    else 'amd64'
-  end
+  arch = case node["kernel"]["machine"]
+    when "aarch64", "arm64" then "arm64"
+    else "amd64"
+    end
 
   cookbook_file "/usr/local/bin/pgloader" do
     mode "0755"

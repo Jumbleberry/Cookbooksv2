@@ -2,7 +2,7 @@ apt_repository "focal-archive" do
   uri "http://cz.archive.ubuntu.com/ubuntu"
   distribution "focal"
   components ["main"]
-  only_if { node["lsb"]["release"].to_i > 20 }
+  only_if { node["lsb"]["release"].to_i == 20 }
   retries 5
 end
 
