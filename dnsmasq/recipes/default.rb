@@ -8,7 +8,7 @@ arch = case node["kernel"]["machine"]
 
 cookbook_file "/usr/sbin/dnsmasq" do
   mode "0755"
-  source "dnsmasq-#{node["dnsmasq"]["version"]}-#{arch}"
+  source "dnsmasq-#{node["dnsmasq"]["version"]}-#{arch}" + (node["lsb"]["release"].to_i >= 20 ? "-20+" : "")
   atomic_update true
   action :create
 end
@@ -19,7 +19,7 @@ if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
 
     file "Fix systemd-resolved conflict" do
       path "/etc/systemd/resolved.conf.d/dnsmasq.conf"
-      content node["platform_version"].to_i >= 20 ? "[Resolve]\nDNSStubListener=no" : "[Resolve]\nDNS=127.0.0.1"
+      content node["lsb"]["release"].to_i >= 20 ? "[Resolve]\nDNSStubListener=no" : "[Resolve]\nDNS=127.0.0.1"
       notifies :restart, "service[systemd-resolved]", :immediately
     end
 
