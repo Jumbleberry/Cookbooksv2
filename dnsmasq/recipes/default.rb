@@ -8,7 +8,7 @@ arch = case node["kernel"]["machine"]
 
 cookbook_file "/usr/sbin/dnsmasq" do
   mode "0755"
-  source "dnsmasq-#{node["dnsmasq"]["version"]}-#{arch}" + (node["lsb"]["release"].to_i >= 20 ? "-20+" : "")
+  source "dnsmasq-#{node["dnsmasq"]["version"]}-#{arch}-#{node["lsb"]["release"]}"
   atomic_update true
   action :create
 end
