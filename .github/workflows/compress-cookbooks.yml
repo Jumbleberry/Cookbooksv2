@@ -1,0 +1,19 @@
+name: Compress Cookbooks
+
+on: [push]
+jobs:
+  compress:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Compress Cookbooks
+        run: tar -czvf cookbooks.tar.gz .
+      - name: Commit and push
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add cookbooks.tar.gz
+          git commit -m 'update compressed cookbooks'
+          git push
