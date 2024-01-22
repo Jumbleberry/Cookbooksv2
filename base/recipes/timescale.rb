@@ -49,9 +49,9 @@ if platform?("ubuntu") && node["lsb"]["release"].to_i >= 18
     else "amd64"
     end
 
-  cookbook_file "/usr/local/bin/pgloader" do
+  remote_file "/usr/local/bin/pgloader" do
     mode "0755"
-    source "pgloader_#{arch}"
+    source "https://miscfile-staging.s3.amazonaws.com/chef/base/pgloader_#{arch}"
   end
 else
   include_recipe cookbook_name + "::pgloader"

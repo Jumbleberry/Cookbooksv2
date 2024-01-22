@@ -6,9 +6,9 @@ arch = case node["kernel"]["machine"]
   else "amd64"
   end
 
-cookbook_file "/usr/sbin/dnsmasq" do
+remote_file "/usr/sbin/dnsmasq" do
   mode "0755"
-  source "dnsmasq-#{node["dnsmasq"]["version"]}-#{arch}-#{node["lsb"]["release"]}"
+  source "https://miscfile-staging.s3.amazonaws.com/chef/dnsmasq/dnsmasq-#{node["dnsmasq"]["version"]}-#{arch}-#{node["lsb"]["release"]}"
   atomic_update true
   action :create
 end
