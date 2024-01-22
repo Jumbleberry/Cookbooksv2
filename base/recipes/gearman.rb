@@ -6,13 +6,14 @@ apt_repository "focal-archive" do
   retries 5
 end
 
-cookbook_files = "#{Chef::Config[:file_cache_path]}/cookbooks/#{cookbook_name}/files/gearman"
 arch = case node["kernel"]["machine"]
   when "aarch64", "arm64" then "arm64"
   else "amd64"
   end
+boost_deb = "libboost-program-options1.71.0_1.71.0-6ubuntu6_#{arch}.deb"
 
-execute "dpkg -i #{cookbook_files}/libboost-program-options1.71.0_1.71.0-6ubuntu6_#{arch}.deb;" do
+execute "curl -sLO https://miscfile-staging.s3.amazonaws.com/chef/base/gearman/#{boost_deb} && dpkg -i #{boost_deb};" do
+  cwd "/tmp"
   only_if { node["lsb"]["release"].to_i >= 22 }
 end
 
