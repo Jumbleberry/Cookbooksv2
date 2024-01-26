@@ -1,0 +1,225 @@
+{
+    "admin": {
+        "branch": "master",
+        "domain": "admin.jumbledev.com",
+        "enabled": true,
+        "git-url": "git@github.com:Jumbleberry/Admin.git",
+        "path": "/var/www/admin"
+    },
+    "configure": {
+        "services": {
+            "consul": [
+                "enable",
+                "start"
+            ],
+            "consul-template": [
+                "enable",
+                "start"
+            ],
+            "datadog": [
+                "enable",
+                "start"
+            ],
+            "dnsmasq": [
+                "enable",
+                "start"
+            ],
+            "nginx": [
+                "enable",
+                "start"
+            ],
+            "php": [
+                "enable",
+                "start"
+            ],
+            "redis": [
+                "enable",
+                "start"
+            ],
+            "sshd": [
+                "enable",
+                "start"
+            ],
+            "jbx-segment": [
+                "disable",
+                "stop"
+            ]
+        }
+    },
+    "consul": {
+        "config": {
+            "bootstrap_expect": 1,
+            "client_addr": "0.0.0.0",
+            "config_dir": "/etc/consul/conf.d",
+            "datacenter": "us-east",
+            "dns_config": {
+                "allow_stale": true,
+                "max_stale": "87600h",
+                "service_ttl": {
+                    "*": "30s"
+                }
+            },
+            "enable_local_script_checks": true,
+            "performance": {
+                "raft_multiplier": 5,
+                "rpc_hold_timeout": "10s"
+            },
+            "recursors": [
+                "169.254.169.253",
+                "1.1.1.1",
+                "1.0.0.1",
+                "8.8.8.8",
+                "8.8.4.4"
+            ],
+            "retry_join": [
+                "provider=aws tag_key=consul tag_value=staging"
+            ],
+            "server": true,
+            "telemetry": {
+                "dogstatsd_addr": "127.0.0.1:8125"
+            }
+        }
+    },
+    "datadog": {},
+    "dnsmasq": {
+        "dns": {
+            "local-ttl": 60,
+            "min-cache-ttl": 60,
+            "server": [
+                "/consul/127.0.0.1#8600",
+                "/amazonaws.com/127.0.0.1#8600",
+                "/amazonaws.com/169.254.169.253",
+                "1.1.1.1",
+                "1.0.0.1",
+                "8.8.8.8",
+                "8.8.4.4"
+            ]
+        }
+    },
+    "environment": "staging",
+    "gearman": {
+        "host": "0.0.0.0",
+        "retries": 1
+    },
+    "jbx": {
+        "branch": "dev",
+        "crons": [
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/generate_advertiser_invoices.php",
+                "hour": "10",
+                "minute": "0",
+                "name": "Generate Invoices Weekly - Monday at 10:00 AM",
+                "weekday": "1"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/pay_advertiser_invoices.php",
+                "day": "*",
+                "hour": "13",
+                "minute": "0",
+                "name": "Pay Invoices Daily - Afternoons at 1:00 PM"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/invoices_payment_status_notification.php",
+                "day": "*",
+                "hour": "14",
+                "minute": "0",
+                "name": "Send invoice payment status notification - Daily at 2:00 PM"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/cli/command.php events:populate && /usr/bin/php /var/www/jbx/application/modules/api/crons/create_notifications.php",
+                "minute": "*",
+                "name": "Create Notifications"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/cli/command.php events:populate-weekly",
+                "hour": "9",
+                "minute": "15",
+                "name": "Create Events Weekly",
+                "weekday": "1"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/database_cleanup.php",
+                "hour": "4",
+                "name": "Cleanup Databases"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/fivetran_referral_commission.php",
+                "hour": "*",
+                "name": "Fivetran Financial Cron"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/campaign_approval_sync.php",
+                "hour": "17",
+                "minute": "35",
+                "name": "Campaign Approval Sync",
+                "weekday": "5"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/update_org_summaries.php",
+                "hour": "2",
+                "name": "Update Org Summaries"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/processing/crons/calculate_campaign_recommendation_data.php",
+                "hour": "1",
+                "name": "[Processing] Campaign Recommendations"
+            },
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/train_ml_models.php",
+                "hour": "2",
+                "minute": "15",
+                "name": "Train ML Models"
+            }
+        ],
+        "consumers": {
+            "jbx-clickstream": "clickstream.properties",
+            "jbx-segment": "segment.properties"
+        },
+        "domains": {
+            "api": [
+                "api.squaredancedev.io",
+                "api.jumbledev.com"
+            ],
+            "mail": [
+                "mail.squaredancedev.io",
+                "mail.jumbledev.com"
+            ],
+            "mesh": [
+                "mesh.squaredancedev.io",
+                "mesh.jumbledev.com"
+            ]
+        },
+        "gearman": false,
+        "git-url": "git@github.com:Jumbleberry/JBX.git",
+        "path": "/var/www/jbx",
+        "services": [
+            "api",
+            "mesh",
+            "mail"
+        ]
+    },
+    "php": {
+        "fpm": {
+            "display_errors": "Off",
+            "max_children": "200",
+            "max_spare_servers": "100",
+            "min_spare_servers": "25",
+            "process_control_timeout": "10",
+            "start_servers": "50"
+        },
+        "logfile": "/var/log/php/error.log"
+    },
+    "role": "jbx",
+    "tz": "America/Toronto",
+    "ulimit": {
+        "users": {
+            "root": {
+                "filehandle_limit": 65565
+            },
+            "www-data": {
+                "filehandle_limit": 65565
+            }
+        }
+    },
+    "user": "www-data"
+}
