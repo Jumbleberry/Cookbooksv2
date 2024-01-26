@@ -1,4 +1,4 @@
-name: Compress Cookbooks
+name: Upload Cookbooks & Configs to S3
 
 on: [push]
 jobs:
@@ -18,5 +18,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Upload to S3
-        run: aws s3 cp ${{ github.workspace }}/../cookbooks.tar.gz s3://ssm.jumbledev.com/${{ github.ref_name	}}/cookbooks.tar.gz
+        run: |
+          aws s3 cp ${{ github.workspace }}/../cookbooks.tar.gz s3://ssm.jumbledev.com/${{ github.ref_name	}}/cookbooks.tar.gz
+          aws s3 cp ${{ github.workspace }}/.chef/environments s3://ssm.jumbledev.com/${{ github.ref_name	}}/environments --recursive
 
