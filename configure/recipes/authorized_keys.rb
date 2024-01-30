@@ -5,13 +5,7 @@ node[cookbook_name]["authorized_keys"].each do |name, user|
   end
 end
 
-default = node["etc"]["passwd"].key?("vagrant") ? ["vagrant"] : ["ubuntu"]
-users = node[cookbook_name]["authorized_keys"].select { |key, val| val[:sudo] || false }.map { |key, val| val[:user] }
-group "modify sudoers" do
-  group_name "sudo"
-  members default + users
-  action :modify
-end
+include_recipe "sudo"
 
 node[cookbook_name]["authorized_keys"].each do |name, user|
   if user["key"]
