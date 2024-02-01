@@ -1,0 +1,11 @@
+{
+    "agent_enable": true,
+    "agent_major_version": 7,
+    "agent_start": true,
+    "api_key": "${datadogApiKey}",
+    "application_key": "${datadogApplicationKey}",
+    "collect_ec2_tags": false,
+    "enable_logs_agent": false,
+    "enable_process_agent": true,
+    "enable_trace_agent": false
+}
