@@ -6,6 +6,11 @@ default[cookbook_name]["authorized_keys"] = {
     "keytype": "ssh-rsa",
     "user": "ian",
   },
+  "hussain.abbas@squaredance.io": {
+    "key": "AAAAC3NzaC1lZDI1NTE5AAAAIEcmjIhPJCF1TqgL/13iQ1qbBXQ80Kp4xv02DzHUvdHB",
+    "keytype": "ssh-ed25519",
+    "user": "hussain",
+  },
   "pablo.canales@squaredance.io": {
     "key": "AAAAB3NzaC1yc2EAAAADAQABAAACAQDatpmYFUiDSKdDmOl7KMeDKxWK6XHDPBAf5Mb+SLfuIgX5d9PGljZ8dQevc6+e+CrC5jL26HKdmqz99QYMg9GgrsHVdgZi8DoGtu1+womgrsGuUemFusGifJ6cFchRHUcBCum3qHXM9BzxR3hPC3MHV7kIk82k04fUW/9cC2V2Ve+9EMf5O+EJijhM9pVF7hfVX5ExbMERaSDpY9nSp9NzI6Cym3aotxBIU45YmpGxCfNrVU0IXylYglhH6cgJz0xbgs73eim1Z1LTHviLzcnUBmwJ76cUMSwOM77yyFAebBAi9HI9GJPyJsxlTsO8dL8Y9o7Ihh6aP/WCxGlp+xtzdgGSL4QaLXJXfQgG3Jcu33TV+dF3EGm9j8t6e1HymcRUMDhrrBvXvFTMrFl1298pdhd0VJ+p4/WNxozETXl3/b1mLxv9FfCP4/gW9hPGp07I+dlTmTiuKBPIyKBRaJa7JWgDcoqX11H7tiDFcaNmeaATh5M3MvWHdCgqN1bbGBqrEuwKlJrXtpKOnl4ksOWf9TbOyxWw56NrIDiMBF/agfZb+BJEQMqbCQ1MZ7ppYhsm/vyCJ9lt5NLm5KO48zIy1x6hobr7P0Kgzdha6FRnyVv6Om42MU83qLsR73/h+oBbjyGqi9C5sojl3UMWIE0Sek78vExYU82IoCSHRyQL/w==",
     "keytype": "ssh-rsa",
@@ -19,7 +24,7 @@ default[cookbook_name]["authorized_keys"] = {
   "di.liu@squaredance.io": {
     "key": "AAAAC3NzaC1lZDI1NTE5AAAAIJxuRjse/4WQRfOCZzCpd9IPXQkJnXiCZVLAJcd8RFji",
     "keytype": "ssh-ed25519",
-    "user": "di",
+    "user": "dil",
   },
   "yixin.li@squaredance.io": {
     "user": "yixin",
@@ -31,7 +36,7 @@ default[cookbook_name]["authorized_keys"] = {
 
 default_user = node["etc"]["passwd"].key?("vagrant") ? "vagrant" : "ubuntu"
 default["authorization"]["sudo"] = default["authorization"]["sudo"].merge({
-  "users": [default_user, "ian", "pablo", "nicholas", "di"],
+  "users": [default_user, "ian", "hussain", "pablo", "nicholas", "dil"],
   "passwordless": "true",
   "sudoers_defaults": [
     "env_reset",
