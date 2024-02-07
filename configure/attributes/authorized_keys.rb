@@ -27,6 +27,8 @@ default[cookbook_name]["authorized_keys"] = {
     "user": "dil",
   },
   "yixin.li@squaredance.io": {
+    "key": "AAAAC3NzaC1lZDI1NTE5AAAAIBrzDEPXm8WCuz6E05u75Z8V5laWPt9mMZM+65EnD0z/",
+    "keytype": "ssh-ed25519",
     "user": "yixin",
   },
   "ramanvir.sodhi@squaredance.io": {
