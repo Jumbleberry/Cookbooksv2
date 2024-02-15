@@ -29,7 +29,7 @@
     "issues_url": "https://github.com/sous-chefs/postgresql/issues",
     "chef_version": [
         [
-            ">= 13.8"
+            ">= 12.1"
         ]
     ],
     "ohai_version": []

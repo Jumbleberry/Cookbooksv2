@@ -7,7 +7,7 @@ description       'Installs and configures postgresql for clients or servers'
 version           '7.1.9'
 source_url        'https://github.com/sous-chefs/postgresql'
 issues_url        'https://github.com/sous-chefs/postgresql/issues'
-chef_version      '>= 13.8'
+chef_version      '>= 12.1'
 
 %w(ubuntu debian fedora amazon redhat centos scientific oracle).each do |os|
   supports os
