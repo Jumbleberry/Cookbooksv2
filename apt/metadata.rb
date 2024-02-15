@@ -10,4 +10,4 @@ supports 'debian'
 
 source_url 'https://github.com/chef-cookbooks/apt'
 issues_url 'https://github.com/chef-cookbooks/apt/issues'
-chef_version '>= 13.3'
+chef_version '>= 12.1'

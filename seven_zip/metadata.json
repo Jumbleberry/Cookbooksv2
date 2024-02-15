@@ -24,7 +24,7 @@
     "issues_url": "https://github.com/windowschefcookbooks/seven_zip/issues",
     "chef_version": [
         [
-            ">= 13.0"
+            ">= 12.1"
         ]
     ],
     "ohai_version": []
