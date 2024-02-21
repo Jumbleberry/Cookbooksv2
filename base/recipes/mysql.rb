@@ -35,7 +35,6 @@ replace_or_add "mysql-dpkg-configure" do
   action :nothing
 end
 
-cookbook_files = "#{Chef::Config[:file_cache_path]}/cookbooks/#{cookbook_name}/files/mysql"
 arch = case node["kernel"]["machine"]
   when "aarch64", "arm64" then "arm64"
   else "amd64"
@@ -43,12 +42,15 @@ arch = case node["kernel"]["machine"]
 
 dependencies = node["lsb"]["release"].to_i >= 22 ? ["libevent-core-2.1-6", "libssl1.1_1.1.1f"] : ["libevent-core-2.1-6"]
 dependencies.each do |pkg|
-  execute "dpkg -i #{cookbook_files}/#{pkg}_#{arch}.deb;" do
+  execute "curl -sLO https://miscfile-staging.s3.amazonaws.com/chef/base/mysql/#{pkg}_#{arch}.deb && dpkg -i #{pkg}_#{arch}.deb" do
+    cwd "/tmp"
     not_if "dpkg -S #{pkg} | grep '^#{pkg}'"
   end
 end
 ["mysql-client-core", "mysql-client", "mysql-server-core", "mysql-server"].each do |pkg|
-  execute "DEBIAN_FRONTEND=noninteractive dpkg -i #{cookbook_files}/#{pkg}-#{node["mysql"]["version"]}_#{arch}.deb || true" do
+  package = "#{pkg}-#{node["mysql"]["version"]}_#{arch}.deb"
+  execute "curl -sLO https://miscfile-staging.s3.amazonaws.com/chef/base/mysql/#{package} && (DEBIAN_FRONTEND=noninteractive dpkg -i #{package} || true)" do
+    cwd "/tmp"
     not_if "dpkg -S #{pkg}- | grep '^#{pkg}-#{node["mysql"]["version"].to_i}'"
     notifies :run, "execute[mysql-configure]", :before if pkg == "mysql-server"
     notifies :edit, "replace_or_add[mysql-dpkg-configure]", :immediately if pkg == "mysql-server"

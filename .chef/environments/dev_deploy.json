@@ -1,0 +1,176 @@
+{
+    "configure": {
+        "services": {
+            "consul": [
+                "enable",
+                "start"
+            ],
+            "consul-template": [
+                "enable",
+                "start"
+            ],
+            "datadog": [
+                "enable",
+                "start"
+            ],
+            "dnsmasq": [
+                "enable",
+                "start"
+            ],
+            "kinesis": [
+                "disable",
+                "stop"
+            ],
+            "mysql": [
+                "enable",
+                "start"
+            ],
+            "nginx": [
+                "enable",
+                "start"
+            ],
+            "php": [
+                "enable",
+                "start"
+            ],
+            "postgresql": [
+                "enable",
+                "start"
+            ],
+            "redis": [
+                "enable",
+                "start"
+            ],
+            "sshd": [
+                "enable",
+                "start"
+            ]
+        }
+    },
+    "consul": {
+        "config": {
+            "bootstrap_expect": 1,
+            "client_addr": "0.0.0.0",
+            "config_dir": "/etc/consul/conf.d",
+            "datacenter": "us-east",
+            "dns_config": {
+                "allow_stale": true,
+                "max_stale": "87600h",
+                "service_ttl": {
+                    "*": "30s"
+                }
+            },
+            "enable_local_script_checks": true,
+            "performance": {
+                "raft_multiplier": 5,
+                "rpc_hold_timeout": "10s"
+            },
+            "recursors": [
+                "169.254.169.253",
+                "1.1.1.1",
+                "1.0.0.1",
+                "8.8.8.8",
+                "8.8.4.4"
+            ],
+            "retry_join": [
+                "provider=aws tag_key=consul tag_value=dev"
+            ],
+            "server": true,
+            "telemetry": {
+                "dogstatsd_addr": "127.0.0.1:8125"
+            }
+        }
+    },
+    "datadog": {},
+    "dnsmasq": {
+        "dns": {
+            "local-ttl": 60,
+            "min-cache-ttl": 60,
+            "server": [
+                "/consul/127.0.0.1#8600",
+                "/amazonaws.com/127.0.0.1#8600",
+                "/amazonaws.com/169.254.169.253",
+                "1.1.1.1",
+                "1.0.0.1",
+                "8.8.8.8",
+                "8.8.4.4"
+            ]
+        }
+    },
+    "environment": "dev",
+    "gearman": {
+        "host": "0.0.0.0",
+        "retries": 1
+    },
+    "jbx": {
+        "branch": "dev",
+        "credentials": {
+            "databases": {
+                "jbx": {
+                    "persistent": false
+                }
+            },
+            "raygun": "m2AU6etbjR4YwDK7Mw4Hvw"
+        },
+        "crons": [
+            {
+                "command": "/usr/bin/php /var/www/jbx/application/modules/api/crons/database_cleanup.php",
+                "hour": "4",
+                "name": "Cleanup Databases"
+            },
+            {
+                "command": "find /var/www/jbx/dist/* -maxdepth 1 ! -name dev -mtime +30 -type d -exec rm -rf {} \\;",
+                "hour": "4",
+                "name": "Cleanup Application Distributions"
+            }
+        ],
+        "domains": {
+            "api": [
+                "api.squaredancedev.io",
+                "api.jumbledev.com"
+            ],
+            "mail": [
+                "mail.squaredancedev.io",
+                "mail.jumbledev.com"
+            ],
+            "mesh": [
+                "mesh.squaredancedev.io",
+                "mesh.jumbledev.com"
+            ]
+        },
+        "gearman": false,
+        "git-url": "git@github.com:Jumbleberry/JBX.git",
+        "path": "/var/www/jbx",
+        "services": [
+            "api",
+            "mesh"
+        ],
+        "consumers": {
+            "jbx-clickstream": "clickstream.properties"
+        }
+    },
+    "php": {
+        "fpm": {
+            "display_errors": "Off",
+            "max_children": "160",
+            "max_spare_servers": "80",
+            "min_spare_servers": "40",
+            "process_control_timeout": "10",
+            "start_servers": "40"
+        },
+        "logfile": "/var/log/php/error.log"
+    },
+    "role": "jbx",
+    "tz": "America/Toronto",
+    "ulimit": {
+        "users": {
+            "root": {
+                "filehandle_limit": 65565
+            },
+            "www-data": {
+                "filehandle_limit": 65565
+            }
+        }
+    },
+    "user": "www-data"
+}

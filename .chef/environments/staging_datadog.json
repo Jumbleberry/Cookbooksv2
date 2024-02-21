@@ -1,0 +1,64 @@
+{
+	"agent_enable": true,
+	"agent_major_version": 7,
+	"agent_start": true,
+	"api_key": "${datadogApiKey}",
+	"application_key": "${datadogApplicationKey}",
+	"collect_ec2_tags": false,
+	"enable_logs_agent": true,
+	"enable_process_agent": true,
+	"enable_trace_agent": true,
+	"logs": {
+		"nginx": [
+			{
+				"path": "/var/log/nginx/*.log",
+				"service": "jbx",
+				"source": "nginx",
+				"type": "file"
+			}
+		],
+		"php": [
+			{
+				"path": "/var/log/php8.2-fpm.log",
+				"service": "jbx",
+				"source": "php_fpm",
+				"type": "file"
+			},
+			{
+				"path": "/var/log/php/error.log",
+				"service": "jbx",
+				"source": "php_fpm",
+				"tags": [
+					"custom_status:error"
+				],
+				"type": "file"
+			},
+			{
+				"path": "/var/log/xdebug.log",
+				"service": "jbx",
+				"source": "php_fpm",
+				"type": "file"
+			}
+		],
+		"python": [
+			{
+				"path": "/var/log/messenger/*.log",
+				"service": "messenger",
+				"source": "python",
+				"type": "file"
+			}
+		]
+	},
+	"non_local_traffic": true,
+	"system_probe": {
+		"enabled": false
+	},
+	"trace_env": "staging",
+	"extra_config": {
+		"apm_config": {
+			"ignore_resources": [
+				"GET /v2/org/?/campaign/?/funnel/?/setup"
+			]
+		}
+	}
+}
