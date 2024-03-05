@@ -26,6 +26,10 @@ package "timescaledb-postgresql-12" do
   notifies :stop, "service[postgresql.service]", :before
 end
 
+package "timescaledb-2-postgresql-14" do
+  action :remove
+end
+
 package "timescaledb-loader-postgresql-12" do
   action :remove
 end
@@ -34,7 +38,7 @@ package "pgloader" do
   action :remove
 end
 
-execute "DEBIAN_FRONTEND=noninteractive apt-get install -yq timescaledb-2-#{node["timescaledb"]["version"]}-postgresql-14 -o Dpkg::Options::='--force-overwrite'"
+execute "DEBIAN_FRONTEND=noninteractive apt-get install -yq timescaledb-2-postgresql-14='#{node["timescaledb"]["version"]}*' -o Dpkg::Options::='--force-overwrite'"
 
 # define postgresql service
 service "postgresql.service" do
