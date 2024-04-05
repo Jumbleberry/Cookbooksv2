@@ -38,7 +38,7 @@ default[cookbook_name]["authorized_keys"] = {
 
 default_user = node["etc"]["passwd"].key?("vagrant") ? "vagrant" : "ubuntu"
 default["authorization"]["sudo"] = default["authorization"]["sudo"].merge({
-  "users": [default_user, "ian", "hussain", "pablo", "nicholas", "dil"],
+  "users": [default_user, "ian", "hussain", "pablo", "nicholas", "dil", "yixin"],
   "passwordless": "true",
   "sudoers_defaults": [
     "env_reset",
