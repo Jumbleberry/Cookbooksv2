@@ -69,6 +69,9 @@ default["redisio"]["version"] = "6.0.5"
 default["redisio"]["job_control"] = "systemd"
 
 default["hashicorp-vault"]["gems"] = {
+  "aws-eventstream" => "1.1.1",
+  "aws-sigv4" => "1.2.4",
+  "aws-sdk" => "~> 2.11.0",
   "vault" => "0.17.0",
 }
 default["hashicorp-vault"]["version"] = "1.14.1"

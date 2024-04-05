@@ -7,6 +7,9 @@ default[cookbook_name]["packages"] = ["git", "make", "curl", "unzip", "uuid", "r
 if (node["lsb"]["release"].to_i >= 20)
   default[cookbook_name]["packages"] += ["libncurses5", "libtinfo5"]
 end
+if (node["lsb"]["release"].to_i >= 22)
+  default[cookbook_name]["packages"] += ["libidn12"]
+end
 
 default["nodejs"]["npm_packages"] = []
 
