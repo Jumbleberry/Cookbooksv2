@@ -6,6 +6,17 @@ apt_repository "focal-archive" do
   retries 5
 end
 
+arch = case node["kernel"]["machine"]
+  when "aarch64", "arm64" then "arm64"
+  else "amd64"
+  end
+boost_deb = "libboost-program-options1.71.0_1.71.0-6ubuntu6_#{arch}.deb"
+
+execute "curl -sLO https://miscfile-staging.s3.amazonaws.com/chef/base/gearman/#{boost_deb} && dpkg -i #{boost_deb};" do
+  cwd "/tmp"
+  only_if { node["lsb"]["release"].to_i >= 22 }
+end
+
 apt_repository "gearman-ppa" do
   uri "ppa:ondrej/pkg-gearman"
   distribution node["lsb"]["release"].to_i <= 20 ? node["lsb"]["codename"] : "focal"

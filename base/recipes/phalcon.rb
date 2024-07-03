@@ -30,8 +30,9 @@ link "/etc/php/#{node["php"]["version"]}/cli/conf.d/10-zephir.ini" do
 end
 
 # Add Zephir Phar
-cookbook_file "zephir.phar" do
+remote_file "zephir.phar" do
   path "/usr/local/bin/zephir"
+  source "https://miscfile-staging.s3.amazonaws.com/chef/base/zephir.phar"
   mode "0755"
 end
 
